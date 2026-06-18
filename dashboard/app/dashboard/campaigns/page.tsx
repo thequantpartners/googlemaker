@@ -307,7 +307,6 @@ export default function ClientCampaigns() {
           </tbody>
         </table>
       </div>
-    </div>
 
       {/* CREATE CAMPAIGN MODAL */}
       {isModalOpen && (
