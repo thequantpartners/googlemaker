@@ -156,5 +156,6 @@ async def get_my_credentials_status(
     return CredentialsStatus(
         is_configured=len(accounts) > 0,
         connected_accounts=accounts,
-        plan_limit=limit
+        plan_limit=limit,
+        user_status=user.status.value if hasattr(user.status, 'value') else user.status
     )

@@ -127,13 +127,23 @@ function DashboardContent() {
   const connectedCount = statusData?.connected_accounts?.length || 0;
   const isUnlimited = statusData?.plan_limit === null;
   const canConnectMore = isUnlimited || connectedCount < statusData?.plan_limit;
+  const isSuspended = statusData?.user_status === 'suspended';
 
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <h1 className="heading-lg">Panel Principal</h1>
         {canConnectMore && (
-          <button className="btn-primary" onClick={handleConnect} style={{ padding: "8px 16px" }}>
+          <button 
+            className="btn-primary" 
+            onClick={isSuspended ? undefined : handleConnect} 
+            disabled={isSuspended}
+            style={{ 
+              padding: "8px 16px",
+              opacity: isSuspended ? 0.5 : 1,
+              cursor: isSuspended ? "not-allowed" : "pointer"
+            }}
+          >
             + Conectar Google Ads
           </button>
         )}
@@ -160,7 +170,16 @@ function DashboardContent() {
           <p className="text-muted" style={{ marginBottom: "24px" }}>
             Aún no has conectado ninguna cuenta de Google Ads.
           </p>
-          <button className="btn-primary" onClick={handleConnect} style={{ padding: "12px 32px" }}>
+          <button 
+            className="btn-primary" 
+            onClick={isSuspended ? undefined : handleConnect} 
+            disabled={isSuspended}
+            style={{ 
+              padding: "12px 32px",
+              opacity: isSuspended ? 0.5 : 1,
+              cursor: isSuspended ? "not-allowed" : "pointer"
+            }}
+          >
             Conectar Ahora
           </button>
         </div>

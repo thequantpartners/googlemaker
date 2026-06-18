@@ -24,7 +24,7 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_ADS_CLIENT_SECRET", "")
 
 
 @router.get("/login")
-async def google_ads_login(token: str, request: Request):
+async def google_ads_login(token: str, request: Request, db: AsyncSession = Depends(get_db)):
     """
     Initiate the Google Ads OAuth flow.
     The frontend passes the user's JWT as a query param `?token=...`
@@ -40,6 +40,12 @@ async def google_ads_login(token: str, request: Request):
             raise ValueError("No sub in token")
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Check user status
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user or user.status.value == "suspended":
+        raise HTTPException(status_code=403, detail="User account is suspended")
 
     # Encrypt user_id to use as state to prevent CSRF and identify the user in the callback
     state = encrypt_value(user_id)

@@ -73,6 +73,7 @@ class CredentialsStatus(BaseModel):
     is_configured: bool
     connected_accounts: list[ConnectedAccount] = []
     plan_limit: int | None = None
+    user_status: str | None = None
 
 
 # ── Orchestrator Logs ────────────────────────────────────────────────────────
