@@ -210,7 +210,7 @@ function DashboardContent() {
                         try {
                           await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials`, {
                             method: "DELETE",
-                            headers: { Authorization: `Bearer ${session.backendToken}` }
+                            headers: { Authorization: `Bearer ${session?.backendToken}` }
                           });
                           window.location.reload();
                         } catch (err) {
