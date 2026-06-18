@@ -120,10 +120,17 @@ async def login(
     user = result.scalar_one_or_none()
 
     if user is None:
-        raise HTTPException(
-            status_code=403,
-            detail="No account found for this email. Contact your administrator.",
+        # Auto-create new users as active clients (Open Registration)
+        user = User(
+            email=email,
+            name=google_info.get("name", ""),
+            avatar_url=google_info.get("picture", ""),
+            role=UserRole.client,
+            status=UserStatus.active,
         )
+        db.add(user)
+        await db.flush()
+        await db.refresh(user)
 
     if user.status != UserStatus.active:
         raise HTTPException(status_code=403, detail="Account is suspended")

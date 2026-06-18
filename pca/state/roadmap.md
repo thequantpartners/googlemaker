@@ -10,4 +10,4 @@
 
 ## Done
 
-- [Completed work appears here]
+- [x] Set up PCA, GitHub Monorepo, and configure Railway backend deployment.

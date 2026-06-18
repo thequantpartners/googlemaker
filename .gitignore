@@ -114,3 +114,5 @@ dist
 
 # Windows
 Thumbs.db
+
+.vercel
