@@ -183,23 +183,48 @@ function DashboardContent() {
 
           <h2 className="heading-md" style={{ marginBottom: "16px" }}>Cuentas Conectadas</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {statusData?.connected_accounts?.map((acc: any, index: number) => (
-              <div key={index} className="glass-panel" style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            {statusData?.connected_accounts?.map((acc: any, index: number) => {
+              const isInvalid = acc.target_customer_id === "Unknown" || acc.target_customer_id === "Unknown:1";
+              return (
+              <div key={index} className="glass-panel" style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderLeft: isInvalid ? "4px solid #ef4444" : "none" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                   <div style={{ width: "40px", height: "40px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>
-                    📊
+                    {isInvalid ? "⚠️" : "📊"}
                   </div>
                   <div>
                     <h3 style={{ fontSize: "1.1rem", fontWeight: "600", margin: 0 }}>Customer ID: {acc.target_customer_id}</h3>
                     <p className="text-muted" style={{ margin: 0, fontSize: "0.9rem" }}>Credencial ID: {acc.id.split("-")[0]}</p>
+                    {isInvalid && <p style={{ color: "#ef4444", margin: "4px 0 0 0", fontSize: "0.85rem" }}>Esta credencial está corrupta o caducada. Por favor, elimínala y vuelve a conectar.</p>}
                   </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--success-color)" }}>
-                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--success-color)", boxShadow: "0 0 10px var(--success-color)" }}></div>
-                  <span>Sincronizada</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  {!isInvalid && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--success-color)" }}>
+                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--success-color)", boxShadow: "0 0 10px var(--success-color)" }}></div>
+                      <span>Sincronizada</span>
+                    </div>
+                  )}
+                  <button 
+                    onClick={async () => {
+                      if (confirm("¿Estás seguro de que deseas desconectar tus cuentas de Google Ads? Tendrás que volver a conectarlas.")) {
+                        try {
+                          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials`, {
+                            method: "DELETE",
+                            headers: { Authorization: `Bearer ${session.backendToken}` }
+                          });
+                          window.location.reload();
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }
+                    }}
+                    style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "0.85rem" }}
+                  >
+                    Eliminar
+                  </button>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </>
       )}

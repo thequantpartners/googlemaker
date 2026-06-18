@@ -61,6 +61,9 @@ async def get_my_campaigns(
     if not creds:
         return []
     
+    if customer_id and customer_id.startswith("Unknown"):
+        raise HTTPException(status_code=400, detail="Credenciales inválidas. Por favor desconecta y vuelve a conectar tu cuenta de Google Ads.")
+
     selected_cred = None
     if customer_id:
         for c in creds:
@@ -86,7 +89,21 @@ async def get_my_campaigns(
         campaigns = fetch_campaign_metrics(client, target)
         return campaigns
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to connect to Google Ads. Please reconnect your account.")
+
+@router.delete("/me/credentials", status_code=204)
+async def delete_my_credentials(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Allows a client to delete all their connected Google Ads accounts."""
+    result = await db.execute(
+        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
+    )
+    creds = result.scalars().all()
+    for c in creds:
+        await db.delete(c)
+    await db.commit()
 
 
 # ── Get own orchestrator logs ────────────────────────────────────────────────
