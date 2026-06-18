@@ -17,3 +17,10 @@ pca sync
 pca query "project architecture"
 pca task "current task"
 ```
+
+## Features
+
+*   **Google Ads Orchestrator**: Uses a Hybrid Autopilot logic.
+    *   **Automated Protection**: Automatically pauses campaigns bleeding budget (Learning Phase heuristics implemented).
+    *   **Manual Scaling**: Generates scaling recommendations for high-performing campaigns, requiring manual approval via the dashboard.
+    *   **Multi-Account Support**: Supports multiple Google Ads customer IDs mapped to subscription limits.
