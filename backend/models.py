@@ -85,10 +85,13 @@ class GoogleAdsCredential(Base):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
 
-    # All token fields store AES-256 encrypted ciphertext
-    developer_token: Mapped[str] = mapped_column(Text, nullable=False)
-    oauth_client_id: Mapped[str] = mapped_column(Text, nullable=False)
-    oauth_client_secret: Mapped[str] = mapped_column(Text, nullable=False)
+    # In centralized OAuth, these fields are not needed per user, but to bypass
+    # SQLite's NOT NULL constraint without dropping the table, we provide a default empty string.
+    developer_token: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    oauth_client_id: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    oauth_client_secret: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    
+    # These are specific to the client
     refresh_token: Mapped[str] = mapped_column(Text, nullable=False)
     login_customer_id: Mapped[str] = mapped_column(Text, nullable=False)
     target_customer_id: Mapped[str] = mapped_column(Text, nullable=False)

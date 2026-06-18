@@ -50,3 +50,27 @@ async def get_my_logs(
         .limit(100)
     )
     return result.scalars().all()
+
+
+# ── Get own credential status ───────────────────────────────────────────────
+
+
+from models import GoogleAdsCredential
+from schemas import CredentialsStatus
+
+@router.get("/me/credentials/status", response_model=CredentialsStatus)
+async def get_my_credentials_status(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
+    )
+    cred = result.scalar_one_or_none()
+    if not cred:
+        return CredentialsStatus(is_configured=False, is_verified=False)
+    return CredentialsStatus(
+        is_configured=True,
+        is_verified=cred.is_verified,
+        last_verified_at=cred.last_verified_at,
+    )
