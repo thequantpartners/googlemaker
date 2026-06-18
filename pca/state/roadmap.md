@@ -16,3 +16,5 @@
 - [x] Implement multi-credential limits per plan.
 - [x] Integrate Dashboard Orchestrator Logs frontend with Backend API.
 - [x] Integrate "Mis Campañas" module using the real Google Ads API.
+- [x] Fix Railway build errors and handle frontend UI for suspended accounts.
+- [x] Fix 500 error on Google Ads connection for normal users (env vars, google-ads lib upgrade, graceful error handling).
