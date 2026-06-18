@@ -130,10 +130,16 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
     try:
         accessible_customers = fetch_accessible_customers(refresh_token)
         if not accessible_customers:
-            raise ValueError("No se encontraron cuentas de Google Ads accesibles para este usuario.")
+            raise ValueError("NO_ADS_ACCOUNTS")
         initial_customer_id = accessible_customers[0]
     except Exception as ex:
-        raise HTTPException(status_code=400, detail=f"Error obteniendo cuentas de Google Ads: {type(ex).__name__} - {str(ex)}")
+        frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
+        error_str = str(ex)
+        if "NOT_ADS_USER" in error_str or "NO_ADS_ACCOUNTS" in error_str:
+            error_msg = "Esta cuenta de Google no tiene cuentas de Google Ads asociadas. Crea una cuenta en ads.google.com o usa otra cuenta."
+        else:
+            error_msg = f"Error al conectar Google Ads: {error_str[:200]}"
+        return RedirectResponse(f"{frontend_url}/dashboard?connected=error&message={urllib.parse.quote(error_msg)}")
 
     cred = GoogleAdsCredential(
         user_id=user.id,

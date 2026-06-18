@@ -178,6 +178,12 @@ function DashboardContent() {
         </div>
       )}
 
+      {searchParams.get("connected") === "error" && (
+        <div style={{ padding: "16px", background: "rgba(255, 59, 48, 0.1)", border: "1px solid var(--error-color)", color: "var(--error-color)", borderRadius: "8px", marginBottom: "32px" }}>
+          ⚠️ {searchParams.get("message") || "Error al conectar la cuenta de Google Ads."}
+        </div>
+      )}
+
       {connectedCount === 0 ? (
         <div className="glass-panel" style={{ padding: "40px", textAlign: "center" }}>
           <div style={{ width: "64px", height: "64px", background: "var(--primary-color)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2rem", margin: "0 auto 16px" }}>
