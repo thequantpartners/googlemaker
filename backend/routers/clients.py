@@ -89,7 +89,7 @@ async def get_my_campaigns(
         campaigns = fetch_campaign_metrics(client, target)
         return campaigns
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Failed to connect to Google Ads. Please reconnect your account.")
+        raise HTTPException(status_code=500, detail=f"Google Ads error: {type(e).__name__} - {str(e)}")
 
 @router.delete("/me/credentials", status_code=204)
 async def delete_my_credentials(
