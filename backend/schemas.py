@@ -99,3 +99,15 @@ class OrchestratorResult(BaseModel):
     status: str
     message: str
     logs: list[LogOut] = []
+
+
+# ── Campaign Creation ────────────────────────────────────────────────────────
+
+
+class CreateCampaignRequest(BaseModel):
+    campaign_name: str = Field(..., min_length=1, max_length=255, description="Nombre de la campaña")
+    daily_budget: float = Field(..., gt=0, description="Presupuesto diario en USD")
+    keywords: list[str] = Field(..., min_length=1, description="Lista de keywords (mín 1)")
+    headlines: list[str] = Field(..., min_length=3, max_length=15, description="Títulos del anuncio (3-15, max 30 chars c/u)")
+    descriptions: list[str] = Field(..., min_length=2, max_length=4, description="Descripciones (2-4, max 90 chars c/u)")
+    final_url: str = Field(..., min_length=1, description="URL de destino del anuncio")

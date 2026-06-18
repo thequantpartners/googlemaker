@@ -95,6 +95,60 @@ async def get_my_campaigns(
             return []
         raise HTTPException(status_code=500, detail=f"Google Ads error: {type(e).__name__} - {str(e)}")
 
+from schemas import CreateCampaignRequest
+from services.google_ads_service import create_full_search_campaign
+
+@router.post("/me/campaigns")
+async def create_my_campaign(
+    request: CreateCampaignRequest,
+    customer_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Creates a new Search campaign for the given customer_id.
+    """
+    result = await db.execute(
+        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
+    )
+    creds = result.scalars().all()
+    if not creds:
+        raise HTTPException(status_code=400, detail="No tienes cuentas conectadas.")
+
+    selected_cred = None
+    for c in creds:
+        try:
+            target = decrypt_value(c.target_customer_id)
+            if target == customer_id or target.replace("-", "") == customer_id.replace("-", ""):
+                selected_cred = c
+                break
+        except:
+            pass
+
+    if not selected_cred:
+        raise HTTPException(status_code=404, detail="Customer ID not found in your connected accounts")
+
+    try:
+        refresh_token = decrypt_value(selected_cred.refresh_token)
+        login = decrypt_value(selected_cred.login_customer_id)
+        
+        client = get_google_ads_client(refresh_token, login)
+        
+        # Build the config dict for the service
+        config = {
+            "campaign_name": request.campaign_name,
+            "daily_budget": request.daily_budget,
+            "keywords": request.keywords,
+            "headlines": request.headlines,
+            "descriptions": request.descriptions,
+            "final_url": request.final_url
+        }
+        
+        result = create_full_search_campaign(client, target, config)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.delete("/me/credentials", status_code=204)
 async def delete_my_credentials(
     user: User = Depends(require_client),
