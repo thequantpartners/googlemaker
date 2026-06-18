@@ -41,8 +41,17 @@ async def lifespan(app: FastAPI):
 
     # Seed superadmin if not exists
     from database import async_session
+    from sqlalchemy import text
 
     async with async_session() as session:
+        # DB MIGRATION: Fix 'free' enum that breaks SQLAlchemy ORM mapping
+        try:
+            await session.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='pro' OR tier='enterprise';"))
+            await session.commit()
+            print("[OK] DB Migration: Fixed legacy tier enums.")
+        except Exception as e:
+            print(f"[WARN] DB Migration failed (might be ok): {e}")
+
         result = await session.execute(
             select(User).where(User.email == SUPERADMIN_EMAIL)
         )
