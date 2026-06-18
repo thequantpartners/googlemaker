@@ -244,19 +244,19 @@ export default function ClientCampaigns() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px", marginBottom: "40px" }}>
         <div className="glass-panel" style={{ padding: "24px" }}>
           <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>Inversión Total</p>
-          <h2 style={{ fontSize: "2rem", margin: 0 }}>${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+          <h2 style={{ fontSize: "2rem", margin: 0 }}>${totalCost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
         </div>
         <div className="glass-panel" style={{ padding: "24px" }}>
           <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>Clics</p>
-          <h2 style={{ fontSize: "2rem", margin: 0 }}>{totalClicks.toLocaleString()}</h2>
+          <h2 style={{ fontSize: "2rem", margin: 0 }}>{totalClicks.toLocaleString("en-US")}</h2>
         </div>
         <div className="glass-panel" style={{ padding: "24px" }}>
           <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>CPA Promedio</p>
-          <h2 style={{ fontSize: "2rem", margin: 0 }}>${avgCpa.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+          <h2 style={{ fontSize: "2rem", margin: 0 }}>${avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
         </div>
         <div className="glass-panel" style={{ padding: "24px" }}>
           <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>Conversiones</p>
-          <h2 style={{ fontSize: "2rem", margin: 0, color: "var(--primary-light)" }}>{totalConversions.toLocaleString()}</h2>
+          <h2 style={{ fontSize: "2rem", margin: 0, color: "var(--primary-light)" }}>{totalConversions.toLocaleString("en-US")}</h2>
         </div>
       </div>
 
@@ -297,10 +297,10 @@ export default function ClientCampaigns() {
                       {c.status}
                     </span>
                   </td>
-                  <td style={{ padding: "16px 24px" }}>{c.impressions.toLocaleString()}</td>
-                  <td style={{ padding: "16px 24px" }}>{c.clicks.toLocaleString()}</td>
-                  <td style={{ padding: "16px 24px" }}>${c.cost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td style={{ padding: "16px 24px", fontWeight: "bold" }}>{c.conversions.toLocaleString()}</td>
+                  <td style={{ padding: "16px 24px" }}>{c.impressions.toLocaleString("en-US")}</td>
+                  <td style={{ padding: "16px 24px" }}>{c.clicks.toLocaleString("en-US")}</td>
+                  <td style={{ padding: "16px 24px" }}>${c.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                  <td style={{ padding: "16px 24px", fontWeight: "bold" }}>{c.conversions.toLocaleString("en-US")}</td>
                 </tr>
               ))
             )}
@@ -343,7 +343,7 @@ export default function ClientCampaigns() {
 
               <div>
                 <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Palabras Clave (una por línea)</label>
-                <textarea required name="keywords_text" value={formData.keywords_text} onChange={handleFormChange} placeholder="ej: comprar zapatos&#10;zapatos de moda" style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none", minHeight: "100px", resize: "vertical" }} />
+                <textarea required name="keywords_text" value={formData.keywords_text} onChange={handleFormChange} placeholder={"ej: comprar zapatos\nzapatos de moda"} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none", minHeight: "100px", resize: "vertical" }} />
               </div>
 
               <div>
