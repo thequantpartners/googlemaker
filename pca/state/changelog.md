@@ -13,3 +13,4 @@
 - Injected SQL migration logic on application startup to fix invalid enum states.
 - Fixed root `.gitignore` to allow tracking of Next.js route folders named `logs`.
 - Integrated Dashboard "Historial del Orquestador" (`/dashboard/logs`) with Backend API.
+- Integrated "Mis Campañas" (`/dashboard/campaigns`) module using the official `google-ads` Python client and GAQL to display real metrics (Cost, Clicks, CPA, Conversions).

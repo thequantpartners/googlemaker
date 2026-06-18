@@ -15,3 +15,4 @@
 - [x] Implement 3 pricing tiers (Basic, Scale, Growth) and Paywall UI.
 - [x] Implement multi-credential limits per plan.
 - [x] Integrate Dashboard Orchestrator Logs frontend with Backend API.
+- [x] Integrate "Mis Campañas" module using the real Google Ads API.
