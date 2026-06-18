@@ -29,6 +29,10 @@ FRONTEND_ORIGINS: list[str] = [
     if o.strip()
 ]
 
+# Unconditionally add the main domain just in case FRONTEND_ORIGINS is overridden in Railway
+if "https://googlemaker.thequantpartners.com" not in FRONTEND_ORIGINS:
+    FRONTEND_ORIGINS.append("https://googlemaker.thequantpartners.com")
+
 
 # ── Lifespan (startup / shutdown) ────────────────────────────────────────────
 
