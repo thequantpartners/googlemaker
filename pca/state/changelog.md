@@ -11,3 +11,5 @@
 - Modified Google OAuth flow to allow connecting multiple Google Ads accounts per user based on plan limits.
 - Updated Superadmin dashboard to manage the new pricing tiers.
 - Injected SQL migration logic on application startup to fix invalid enum states.
+- Fixed root `.gitignore` to allow tracking of Next.js route folders named `logs`.
+- Integrated Dashboard "Historial del Orquestador" (`/dashboard/logs`) with Backend API.
