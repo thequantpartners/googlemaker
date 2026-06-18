@@ -127,8 +127,13 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
     await db.flush()
 
     # Fetch accessible customers
-    accessible_customers = fetch_accessible_customers(refresh_token)
-    initial_customer_id = accessible_customers[0] if accessible_customers else "PENDING"
+    try:
+        accessible_customers = fetch_accessible_customers(refresh_token)
+        if not accessible_customers:
+            raise ValueError("No se encontraron cuentas de Google Ads accesibles para este usuario.")
+        initial_customer_id = accessible_customers[0]
+    except Exception as ex:
+        raise HTTPException(status_code=400, detail=f"Error obteniendo cuentas de Google Ads: {type(ex).__name__} - {str(ex)}")
 
     cred = GoogleAdsCredential(
         user_id=user.id,

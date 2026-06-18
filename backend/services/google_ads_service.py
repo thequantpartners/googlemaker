@@ -30,14 +30,10 @@ def fetch_accessible_customers(refresh_token: str) -> list[str]:
         "refresh_token": refresh_token,
         "use_proto_plus": True
     }
-    try:
-        client = GoogleAdsClient.load_from_dict(credentials)
-        customer_service = client.get_service("CustomerService")
-        response = customer_service.list_accessible_customers()
-        return [resource_name.split("/")[-1] for resource_name in response.resource_names]
-    except GoogleAdsException as ex:
-        print(f"GoogleAdsException: {ex}")
-        return []
+    client = GoogleAdsClient.load_from_dict(credentials)
+    customer_service = client.get_service("CustomerService")
+    response = customer_service.list_accessible_customers()
+    return [resource_name.split("/")[-1] for resource_name in response.resource_names]
 
 def fetch_campaign_metrics(client: GoogleAdsClient, target_customer_id: str) -> list[dict]:
     """
