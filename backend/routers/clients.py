@@ -173,13 +173,16 @@ async def get_my_logs(
     user: User = Depends(require_client),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(OrchestratorLog)
-        .where(OrchestratorLog.user_id == user.id)
-        .order_by(OrchestratorLog.executed_at.desc())
-        .limit(100)
-    )
-    return result.scalars().all()
+    try:
+        result = await db.execute(
+            select(OrchestratorLog)
+            .where(OrchestratorLog.user_id == user.id)
+            .order_by(OrchestratorLog.executed_at.desc())
+            .limit(100)
+        )
+        return result.scalars().all()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/me/logs/{log_id}/approve")

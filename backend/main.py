@@ -52,6 +52,16 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             print(f"[WARN] DB Migration failed (might be ok): {e}")
 
+        # DB MIGRATION: Fix missing columns for Hybrid Autopilot in orchestrator_logs
+        try:
+            await session.execute(text("ALTER TABLE orchestrator_logs ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'auto_applied';"))
+            await session.execute(text("ALTER TABLE orchestrator_logs ADD COLUMN IF NOT EXISTS is_dry_run BOOLEAN DEFAULT true;"))
+            await session.commit()
+            print("[OK] DB Migration: Added missing columns to orchestrator_logs.")
+        except Exception as e:
+            await session.rollback()
+            print(f"[WARN] DB Migration failed for new columns: {e}")
+
         result = await session.execute(
             select(User).where(User.email == SUPERADMIN_EMAIL)
         )
@@ -107,6 +117,18 @@ app.include_router(auth_google.router)
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "healthy", "service": "google-ads-orchestrator"}
+
+
+@app.get("/test-logs", tags=["Test"])
+async def test_logs(db: AsyncSession = Depends(get_db)):
+    try:
+        from models import OrchestratorLog
+        result = await db.execute(select(OrchestratorLog).limit(1))
+        logs = result.scalars().all()
+        return {"status": "success", "count": len(logs), "logs": [{"id": l.id, "details": type(l.details).__name__} for l in logs]}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
 
 
 # ── Auth endpoints ───────────────────────────────────────────────────────────
