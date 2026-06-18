@@ -81,7 +81,7 @@ function DashboardContent() {
                 <li style={{ marginBottom: "8px" }}>✅ Reportes semanales</li>
               </ul>
             </div>
-            <button className="btn-secondary" onClick={() => handleSelectPlan("basic")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
+            <button className="btn-outline" onClick={() => handleSelectPlan("basic")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
               {selectingPlan ? "Activando..." : "Elegir Basic"}
             </button>
           </div>
@@ -114,7 +114,7 @@ function DashboardContent() {
                 <li style={{ marginBottom: "8px" }}>✅ Soporte prioritario 24/7</li>
               </ul>
             </div>
-            <button className="btn-secondary" onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
+            <button className="btn-outline" onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
               {selectingPlan ? "Activando..." : "Elegir Growth"}
             </button>
           </div>
