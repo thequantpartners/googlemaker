@@ -108,11 +108,16 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
         raise HTTPException(status_code=400, detail="No refresh token returned. Try revoking app access in Google Account and try again.")
 
     # Upsert the GoogleAdsCredential
-    old = await db.execute(select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id))
-    old_cred = old.scalar_one_or_none()
-    if old_cred:
-        await db.delete(old_cred)
-        await db.flush()
+    # Delete any existing PENDING credential for this user so they don't stack up
+    pending_old = await db.execute(
+        select(GoogleAdsCredential).where(
+            GoogleAdsCredential.user_id == user.id,
+            GoogleAdsCredential.target_customer_id == encrypt_value("PENDING")
+        )
+    )
+    for p_cred in pending_old.scalars().all():
+        await db.delete(p_cred)
+    await db.flush()
 
     cred = GoogleAdsCredential(
         user_id=user.id,

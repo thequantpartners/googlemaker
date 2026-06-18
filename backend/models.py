@@ -34,13 +34,19 @@ class UserStatus(str, enum.Enum):
 
 
 class UserTier(str, enum.Enum):
-    free = "free"
+    none = "none"
     basic = "basic"
-    pro = "pro"
-    enterprise = "enterprise"
+    scale = "scale"
+    growth = "growth"
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
+def get_plan_limit(tier: UserTier) -> int | None:
+    if tier == UserTier.basic: return 1
+    if tier == UserTier.scale: return 3
+    if tier == UserTier.growth: return None
+    return 0  # none
 
 def _uuid() -> str:
     return str(uuid.uuid4())
@@ -73,7 +79,7 @@ class User(Base):
     tier: Mapped[UserTier] = mapped_column(
         Enum(UserTier, native_enum=False, length=20),
         nullable=False,
-        default=UserTier.free,
+        default=UserTier.none,
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 

@@ -209,22 +209,44 @@ async def save_credentials(
 # ── Get credential status ───────────────────────────────────────────────────
 
 
+from models import get_plan_limit
+from schemas import ConnectedAccount
+from encryption import decrypt_value
+
 @router.get("/clients/{client_id}/credentials/status", response_model=CredentialsStatus)
 async def get_credentials_status(
     client_id: str,
     _admin: User = Depends(require_superadmin),
     db: AsyncSession = Depends(get_db),
 ):
+    # Get user to know tier
+    user_result = await db.execute(select(User).where(User.id == client_id))
+    user = user_result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Client not found")
+
     result = await db.execute(
         select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == client_id)
     )
-    cred = result.scalar_one_or_none()
-    if not cred:
-        return CredentialsStatus(is_configured=False, is_verified=False)
+    creds = result.scalars().all()
+    limit = get_plan_limit(user.tier)
+    
+    accounts = []
+    for c in creds:
+        try:
+            target = decrypt_value(c.target_customer_id)
+        except:
+            target = "Unknown"
+        accounts.append(ConnectedAccount(
+            id=c.id,
+            target_customer_id=target,
+            is_verified=c.is_verified
+        ))
+        
     return CredentialsStatus(
-        is_configured=True,
-        is_verified=cred.is_verified,
-        last_verified_at=cred.last_verified_at,
+        is_configured=len(accounts) > 0,
+        connected_accounts=accounts,
+        plan_limit=limit
     )
 
 

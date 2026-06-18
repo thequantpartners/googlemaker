@@ -7,79 +7,142 @@ import { useSearchParams } from "next/navigation";
 function DashboardContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
-  const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
+  const [statusData, setStatusData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [selectingPlan, setSelectingPlan] = useState(false);
+
+  async function checkStatus() {
+    if (!session?.backendToken) return;
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/status`, {
+        headers: { Authorization: `Bearer ${session.backendToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStatusData(data);
+      } else {
+        setStatusData(null);
+      }
+    } catch (err) {
+      console.error("Failed to fetch credential status", err);
+      setStatusData(null);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function checkStatus() {
-      if (!session?.backendToken) return;
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/status`, {
-          headers: { Authorization: `Bearer ${session.backendToken}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setIsConfigured(data.is_configured);
-        } else {
-          setIsConfigured(false);
-        }
-      } catch (err) {
-        console.error("Failed to fetch credential status", err);
-        setIsConfigured(false);
-      } finally {
-        setLoading(false);
-      }
-    }
     checkStatus();
   }, [session]);
 
   const handleConnect = () => {
     if (!session?.backendToken) return;
-    // Redirect to backend OAuth login which redirects to Google
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-ads/login?token=${session.backendToken}`;
+  };
+
+  const handleSelectPlan = async (tier: string) => {
+    if (!session?.backendToken) return;
+    setSelectingPlan(true);
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/tier?tier=${tier}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${session.backendToken}` },
+      });
+      await checkStatus();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSelectingPlan(false);
+    }
   };
 
   if (loading) {
     return <div style={{ padding: "40px", textAlign: "center" }}>Cargando panel...</div>;
   }
 
-  // --- ONBOARDING STATE ---
-  if (!isConfigured) {
+  // --- PAYWALL STATE ---
+  if (statusData?.plan_limit === 0) {
     return (
-      <div style={{ maxWidth: "600px", margin: "40px auto", textAlign: "center" }}>
-        <h1 className="heading-lg" style={{ marginBottom: "16px" }}>¡Bienvenido a GoogleMaker!</h1>
-        <p className="text-muted" style={{ marginBottom: "32px", fontSize: "1.1rem" }}>
-          Para comenzar a optimizar tus campañas y ver resultados mágicos, necesitamos conectar tu cuenta de Google Ads de forma segura.
+      <div style={{ maxWidth: "1000px", margin: "40px auto", textAlign: "center" }}>
+        <h1 className="heading-lg" style={{ marginBottom: "16px" }}>Elige tu Plan</h1>
+        <p className="text-muted" style={{ marginBottom: "40px", fontSize: "1.1rem" }}>
+          Desbloquea el poder de la optimización automática con GoogleMaker.
         </p>
 
-        {searchParams.get("connected") === "success" && (
-          <div style={{ padding: "16px", background: "rgba(0, 200, 83, 0.1)", border: "1px solid var(--success-color)", color: "var(--success-color)", borderRadius: "8px", marginBottom: "32px" }}>
-            Conexión exitosa. Estamos sincronizando tus datos...
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
+          <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div>
+              <h2 className="heading-md">Basic</h2>
+              <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$5<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
+              <p className="text-muted" style={{ marginBottom: "24px" }}>Ideal para emprendedores y negocios locales.</p>
+              <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
+                <li style={{ marginBottom: "8px" }}>✅ Conectar 1 cuenta de Google Ads</li>
+                <li style={{ marginBottom: "8px" }}>✅ Optimización base con IA</li>
+                <li style={{ marginBottom: "8px" }}>✅ Reportes semanales</li>
+              </ul>
+            </div>
+            <button className="btn-secondary" onClick={() => handleSelectPlan("basic")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
+              {selectingPlan ? "Activando..." : "Elegir Basic"}
+            </button>
           </div>
-        )}
 
-        <div className="glass-panel" style={{ padding: "40px", display: "flex", flexDirection: "column", alignItems: "center", gap: "24px" }}>
-          <div style={{ width: "64px", height: "64px", background: "var(--primary-color)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2rem" }}>
-            🔗
+          <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", border: "2px solid var(--primary-color)", transform: "scale(1.05)" }}>
+            <div>
+              <div style={{ background: "var(--primary-color)", color: "white", padding: "4px 12px", borderRadius: "20px", display: "inline-block", fontSize: "0.8rem", marginBottom: "16px", fontWeight: "bold" }}>MÁS POPULAR</div>
+              <h2 className="heading-md">Scale</h2>
+              <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$20<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
+              <p className="text-muted" style={{ marginBottom: "24px" }}>Para agencias pequeñas y negocios en crecimiento.</p>
+              <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
+                <li style={{ marginBottom: "8px" }}>✅ Hasta 3 cuentas de Google Ads</li>
+                <li style={{ marginBottom: "8px" }}>✅ Optimización avanzada en tiempo real</li>
+                <li style={{ marginBottom: "8px" }}>✅ Acompañamiento básico</li>
+              </ul>
+            </div>
+            <button className="btn-primary" onClick={() => handleSelectPlan("scale")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
+              {selectingPlan ? "Activando..." : "Elegir Scale"}
+            </button>
           </div>
-          <h2 className="heading-md">Paso 1: Conecta tu cuenta</h2>
-          <p className="text-muted">
-            Solo tomará un par de clics. Autoriza el acceso para que nuestro motor de IA analice tus campañas.
-          </p>
-          <button className="btn-primary" onClick={handleConnect} style={{ padding: "12px 32px", fontSize: "1.1rem" }}>
-            Conectar con Google Ads
-          </button>
+
+          <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div>
+              <h2 className="heading-md">Growth</h2>
+              <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$99<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
+              <p className="text-muted" style={{ marginBottom: "24px" }}>Para grandes agencias y operaciones robustas.</p>
+              <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
+                <li style={{ marginBottom: "8px" }}>✅ Cuentas de Google Ads ilimitadas</li>
+                <li style={{ marginBottom: "8px" }}>✅ Plan personalizado y estrategas</li>
+                <li style={{ marginBottom: "8px" }}>✅ Soporte prioritario 24/7</li>
+              </ul>
+            </div>
+            <button className="btn-secondary" onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
+              {selectingPlan ? "Activando..." : "Elegir Growth"}
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   // --- DASHBOARD STATE ---
+  const connectedCount = statusData?.connected_accounts?.length || 0;
+  const isUnlimited = statusData?.plan_limit === null;
+  const canConnectMore = isUnlimited || connectedCount < statusData?.plan_limit;
+
   return (
     <div>
-      <h1 className="heading-lg" style={{ marginBottom: "24px" }}>Panel Principal</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <h1 className="heading-lg">Panel Principal</h1>
+        {canConnectMore && (
+          <button className="btn-primary" onClick={handleConnect} style={{ padding: "8px 16px" }}>
+            + Conectar Google Ads
+          </button>
+        )}
+      </div>
+      
       <p className="text-muted" style={{ marginBottom: "40px" }}>
-        Revisa el rendimiento de tus campañas automatizadas.
+        {isUnlimited 
+          ? `Tienes cuentas ilimitadas. (${connectedCount} conectadas)`
+          : `Has conectado ${connectedCount} de ${statusData?.plan_limit} cuentas permitidas en tu plan.`}
       </p>
 
       {searchParams.get("connected") === "success" && (
@@ -88,28 +151,58 @@ function DashboardContent() {
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "40px" }}>
-        <div className="glass-card">
-          <p className="text-muted">CPA Promedio</p>
-          <h2 className="heading-lg" style={{ color: "var(--success-color)" }}>Calculando...</h2>
+      {connectedCount === 0 ? (
+        <div className="glass-panel" style={{ padding: "40px", textAlign: "center" }}>
+          <div style={{ width: "64px", height: "64px", background: "var(--primary-color)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2rem", margin: "0 auto 16px" }}>
+            🔗
+          </div>
+          <h2 className="heading-md">Sin cuentas conectadas</h2>
+          <p className="text-muted" style={{ marginBottom: "24px" }}>
+            Aún no has conectado ninguna cuenta de Google Ads.
+          </p>
+          <button className="btn-primary" onClick={handleConnect} style={{ padding: "12px 32px" }}>
+            Conectar Ahora
+          </button>
         </div>
-        <div className="glass-card">
-          <p className="text-muted">Conversiones (Mes)</p>
-          <h2 className="heading-lg">--</h2>
-        </div>
-        <div className="glass-card">
-          <p className="text-muted">Gasto (Mes)</p>
-          <h2 className="heading-lg">$ 0.00</h2>
-        </div>
-      </div>
+      ) : (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "40px" }}>
+            <div className="glass-card">
+              <p className="text-muted">Cuentas Activas</p>
+              <h2 className="heading-lg" style={{ color: "var(--success-color)" }}>{connectedCount}</h2>
+            </div>
+            <div className="glass-card">
+              <p className="text-muted">Conversiones (Mes)</p>
+              <h2 className="heading-lg">--</h2>
+            </div>
+            <div className="glass-card">
+              <p className="text-muted">Gasto (Mes)</p>
+              <h2 className="heading-lg">$ 0.00</h2>
+            </div>
+          </div>
 
-      <div className="glass-panel" style={{ padding: "32px" }}>
-        <h2 className="heading-md" style={{ marginBottom: "16px" }}>Estado de la Cuenta</h2>
-        <div className="flex-center" style={{ gap: "12px", justifyContent: "flex-start" }}>
-          <div style={{ width: "12px", height: "12px", borderRadius: "50%", background: "var(--success-color)", boxShadow: "0 0 10px var(--success-color)" }}></div>
-          <p>Conectado con Google Ads de forma segura.</p>
-        </div>
-      </div>
+          <h2 className="heading-md" style={{ marginBottom: "16px" }}>Cuentas Conectadas</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {statusData?.connected_accounts?.map((acc: any, index: number) => (
+              <div key={index} className="glass-panel" style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <div style={{ width: "40px", height: "40px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>
+                    📊
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: "1.1rem", fontWeight: "600", margin: 0 }}>Customer ID: {acc.target_customer_id}</h3>
+                    <p className="text-muted" style={{ margin: 0, fontSize: "0.9rem" }}>Credencial ID: {acc.id.split("-")[0]}</p>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--success-color)" }}>
+                  <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--success-color)", boxShadow: "0 0 10px var(--success-color)" }}></div>
+                  <span>Sincronizada</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

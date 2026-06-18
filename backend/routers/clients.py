@@ -23,6 +23,20 @@ async def get_my_profile(
 ):
     return user
 
+from models import UserTier
+
+@router.patch("/me/tier", response_model=UserOut)
+async def update_my_tier(
+    tier: UserTier,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Simulates a checkout process by updating the user's tier directly."""
+    user.tier = tier
+    await db.commit()
+    await db.refresh(user)
+    return user
+
 
 # ── Get own metrics (placeholder) ───────────────────────────────────────────
 
@@ -55,8 +69,9 @@ async def get_my_logs(
 # ── Get own credential status ───────────────────────────────────────────────
 
 
-from models import GoogleAdsCredential
-from schemas import CredentialsStatus
+from models import GoogleAdsCredential, UserTier, get_plan_limit
+from schemas import CredentialsStatus, ConnectedAccount
+from encryption import decrypt_value
 
 @router.get("/me/credentials/status", response_model=CredentialsStatus)
 async def get_my_credentials_status(
@@ -66,11 +81,23 @@ async def get_my_credentials_status(
     result = await db.execute(
         select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
     )
-    cred = result.scalar_one_or_none()
-    if not cred:
-        return CredentialsStatus(is_configured=False, is_verified=False)
+    creds = result.scalars().all()
+    limit = get_plan_limit(user.tier)
+    
+    accounts = []
+    for c in creds:
+        try:
+            target = decrypt_value(c.target_customer_id)
+        except:
+            target = "Unknown"
+        accounts.append(ConnectedAccount(
+            id=c.id,
+            target_customer_id=target,
+            is_verified=c.is_verified
+        ))
+        
     return CredentialsStatus(
-        is_configured=True,
-        is_verified=cred.is_verified,
-        last_verified_at=cred.last_verified_at,
+        is_configured=len(accounts) > 0,
+        connected_accounts=accounts,
+        plan_limit=limit
     )

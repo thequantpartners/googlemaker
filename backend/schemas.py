@@ -64,10 +64,15 @@ class CredentialsCreate(BaseModel):
     target_customer_id: str
 
 
+class ConnectedAccount(BaseModel):
+    id: str
+    target_customer_id: str
+    is_verified: bool
+
 class CredentialsStatus(BaseModel):
     is_configured: bool
-    is_verified: bool
-    last_verified_at: datetime | None = None
+    connected_accounts: list[ConnectedAccount] = []
+    plan_limit: int | None = None
 
 
 # ── Orchestrator Logs ────────────────────────────────────────────────────────

@@ -149,10 +149,10 @@ export default function AdminClients() {
                         cursor: "pointer"
                       }}
                     >
-                      <option value="free" style={{ color: "black" }}>Free</option>
+                      <option value="none" style={{ color: "black" }}>Sin Plan</option>
                       <option value="basic" style={{ color: "black" }}>Basic</option>
-                      <option value="pro" style={{ color: "black" }}>Pro</option>
-                      <option value="enterprise" style={{ color: "black" }}>Enterprise</option>
+                      <option value="scale" style={{ color: "black" }}>Scale</option>
+                      <option value="growth" style={{ color: "black" }}>Growth</option>
                     </select>
                   </td>
                   <td style={{ padding: "16px 24px" }}>
