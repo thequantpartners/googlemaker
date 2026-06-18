@@ -62,3 +62,37 @@ def fetch_campaign_metrics(client: GoogleAdsClient, target_customer_id: str) -> 
         for error in ex.failure.errors:
             print(f"Error: {error.message}")
         raise ValueError(f"Failed to fetch campaigns: {ex.failure.errors[0].message if ex.failure.errors else str(ex)}")
+
+def apply_campaign_action(client: GoogleAdsClient, target_customer_id: str, campaign_id: str, action: str):
+    """
+    Apply a recommendation action (e.g. PAUSAR) to a specific campaign.
+    """
+    customer_id_clean = target_customer_id.replace("-", "")
+    campaign_service = client.get_service("CampaignService")
+    campaign_operation = client.get_type("CampaignOperation")
+
+    campaign = campaign_operation.update
+    campaign.resource_name = campaign_service.campaign_path(customer_id_clean, campaign_id)
+
+    status_enum = client.enums.CampaignStatusEnum
+    if action == "PAUSAR":
+        campaign.status = status_enum.PAUSED
+    elif action == "ACTIVAR":
+        campaign.status = status_enum.ENABLED
+    else:
+        # We only support PAUSAR at the moment for status updates
+        # AUMENTAR PRESUPUESTO could be implemented later via budget operations
+        return
+
+    # Update field mask
+    campaign_operation.update_mask.paths.append("status")
+
+    try:
+        campaign_service.mutate_campaigns(
+            customer_id=customer_id_clean, operations=[campaign_operation]
+        )
+    except GoogleAdsException as ex:
+        print(f"GoogleAdsException: {ex}")
+        for error in ex.failure.errors:
+            print(f"Error: {error.message}")
+        raise ValueError(f"Failed to mutate campaign: {ex.failure.errors[0].message if ex.failure.errors else str(ex)}")
