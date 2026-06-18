@@ -22,6 +22,29 @@ from schemas import (
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
 
+# ── Dashboard Stats ────────────────────────────────────────────────────────
+
+
+@router.get("/stats")
+async def get_admin_stats(
+    _admin: User = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db),
+):
+    # Total Clients
+    result = await db.execute(select(User).where(User.role == UserRole.client))
+    total_clients = len(result.scalars().all())
+
+    # Total Logs (Decisions)
+    result_logs = await db.execute(select(OrchestratorLog))
+    total_logs = len(result_logs.scalars().all())
+
+    return {
+        "total_clients": total_clients,
+        "active_campaigns": 0,  # Placeholder until Google Ads integration is complete
+        "total_decisions": total_logs,
+    }
+
+
 # ── List all clients ────────────────────────────────────────────────────────
 
 
@@ -75,6 +98,44 @@ async def get_client(
     user = result.scalar_one_or_none()
     if not user or user.role != UserRole.client:
         raise HTTPException(status_code=404, detail="Client not found")
+    return user
+
+
+# ── Update client status / tier ─────────────────────────────────────────────
+
+
+from models import UserTier
+
+@router.patch("/clients/{client_id}/status", response_model=ClientOut)
+async def update_client_status(
+    client_id: str,
+    status: UserStatus,
+    _admin: User = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.id == client_id))
+    user = result.scalar_one_or_none()
+    if not user or user.role != UserRole.client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    user.status = status
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+@router.patch("/clients/{client_id}/tier", response_model=ClientOut)
+async def update_client_tier(
+    client_id: str,
+    tier: UserTier,
+    _admin: User = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.id == client_id))
+    user = result.scalar_one_or_none()
+    if not user or user.role != UserRole.client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    user.tier = tier
+    await db.commit()
+    await db.refresh(user)
     return user
 
 

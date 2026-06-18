@@ -33,6 +33,7 @@ class UserOut(BaseModel):
     avatar_url: str | None = None
     role: str
     status: str
+    tier: str
     created_at: datetime
 
     model_config = {"from_attributes": True}

@@ -33,6 +33,13 @@ class UserStatus(str, enum.Enum):
     suspended = "suspended"
 
 
+class UserTier(str, enum.Enum):
+    free = "free"
+    basic = "basic"
+    pro = "pro"
+    enterprise = "enterprise"
+
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def _uuid() -> str:
@@ -62,6 +69,11 @@ class User(Base):
         Enum(UserStatus, native_enum=False, length=20),
         nullable=False,
         default=UserStatus.active,
+    )
+    tier: Mapped[UserTier] = mapped_column(
+        Enum(UserTier, native_enum=False, length=20),
+        nullable=False,
+        default=UserTier.free,
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
