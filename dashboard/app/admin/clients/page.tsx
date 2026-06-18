@@ -9,6 +9,7 @@ interface Client {
   email: string;
   name: string;
   status: string;
+  tier: string;
 }
 
 export default function AdminClients() {
@@ -79,6 +80,30 @@ export default function AdminClients() {
     }
   };
 
+  const handleUpdateTier = async (clientId: string, newTier: string) => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/clients/${clientId}/tier?tier=${newTier}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${session?.backendToken}` },
+      });
+      fetchClients();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateStatus = async (clientId: string, newStatus: string) => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/clients/${clientId}/status?status=${newStatus}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${session?.backendToken}` },
+      });
+      fetchClients();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div>
       <div className="flex-between" style={{ marginBottom: "32px" }}>
@@ -101,8 +126,8 @@ export default function AdminClients() {
               <tr style={{ borderBottom: "1px solid var(--border-color)", background: "rgba(255,255,255,0.02)" }}>
                 <th style={{ padding: "16px 24px", fontWeight: 500 }}>Nombre</th>
                 <th style={{ padding: "16px 24px", fontWeight: 500 }}>Email</th>
+                <th style={{ padding: "16px 24px", fontWeight: 500 }}>Plan</th>
                 <th style={{ padding: "16px 24px", fontWeight: 500 }}>Estado</th>
-                <th style={{ padding: "16px 24px", fontWeight: 500, textAlign: "right" }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -111,14 +136,42 @@ export default function AdminClients() {
                   <td style={{ padding: "16px 24px" }}>{client.name || "Sin nombre"}</td>
                   <td style={{ padding: "16px 24px", color: "var(--text-secondary)" }}>{client.email}</td>
                   <td style={{ padding: "16px 24px" }}>
-                    <span className={client.status === "active" ? "badge badge-active" : "badge badge-warning"}>
-                      {client.status}
-                    </span>
+                    <select 
+                      value={client.tier} 
+                      onChange={(e) => handleUpdateTier(client.id, e.target.value)}
+                      style={{ 
+                        background: "rgba(255,255,255,0.05)", 
+                        color: "white", 
+                        border: "1px solid var(--border-color)",
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        outline: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <option value="free" style={{ color: "black" }}>Free</option>
+                      <option value="basic" style={{ color: "black" }}>Basic</option>
+                      <option value="pro" style={{ color: "black" }}>Pro</option>
+                      <option value="enterprise" style={{ color: "black" }}>Enterprise</option>
+                    </select>
                   </td>
-                  <td style={{ padding: "16px 24px", textAlign: "right" }}>
-                    <button className="btn-outline" style={{ padding: "6px 12px", fontSize: "0.85rem" }}>
-                      Ver Detalles
-                    </button>
+                  <td style={{ padding: "16px 24px" }}>
+                    <select 
+                      value={client.status} 
+                      onChange={(e) => handleUpdateStatus(client.id, e.target.value)}
+                      style={{ 
+                        background: client.status === "active" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)", 
+                        color: client.status === "active" ? "#10b981" : "#f59e0b", 
+                        border: `1px solid ${client.status === "active" ? "#10b981" : "#f59e0b"}`,
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        outline: "none",
+                        cursor: "pointer"
+                      }}
+                    >
+                      <option value="active" style={{ color: "black" }}>Activo</option>
+                      <option value="suspended" style={{ color: "black" }}>Suspendido</option>
+                    </select>
                   </td>
                 </tr>
               ))}
