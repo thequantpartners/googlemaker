@@ -11,8 +11,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <div className={styles.adminLayout}>
       <aside className={styles.sidebar}>
         <div className={styles.logo}>
-          <span className={styles.logoMark}>Q</span>
-          Mi Agencia
+          <span className={styles.logoMark}>G</span>
+          GoogleMaker
         </div>
         
         <div style={{ padding: "0 16px 24px", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
@@ -28,6 +28,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </Link>
           <Link href="/dashboard/logs" className={styles.navLink}>
             Historial del Orquestador
+          </Link>
+          <Link href="/dashboard/planes" className={styles.navLink}>
+            Mi Plan
+          </Link>
+          <Link href="/dashboard/configuracion" className={styles.navLink}>
+            Configuración
           </Link>
         </nav>
 
