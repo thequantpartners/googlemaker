@@ -89,6 +89,10 @@ async def get_my_campaigns(
         campaigns = fetch_campaign_metrics(client, target)
         return campaigns
     except Exception as e:
+        error_msg = str(e).lower()
+        # Account not enabled or deactivated — return empty campaigns, not a 500
+        if "not yet enabled" in error_msg or "deactivated" in error_msg:
+            return []
         raise HTTPException(status_code=500, detail=f"Google Ads error: {type(e).__name__} - {str(e)}")
 
 @router.delete("/me/credentials", status_code=204)
