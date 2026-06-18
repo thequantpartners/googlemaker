@@ -20,6 +20,8 @@ function DashboardContent() {
       if (res.ok) {
         const data = await res.json();
         setStatusData(data);
+      } else if (res.status === 403) {
+        setStatusData({ user_status: 'suspended' });
       } else {
         setStatusData(null);
       }
@@ -58,6 +60,21 @@ function DashboardContent() {
 
   if (loading) {
     return <div style={{ padding: "40px", textAlign: "center" }}>Cargando panel...</div>;
+  }
+
+  // --- SUSPENDED STATE ---
+  if (statusData?.user_status === 'suspended') {
+    return (
+      <div style={{ maxWidth: "800px", margin: "40px auto", textAlign: "center", padding: "40px" }} className="glass-panel">
+        <div style={{ width: "80px", height: "80px", background: "#ef4444", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.5rem", margin: "0 auto 24px" }}>
+          🚫
+        </div>
+        <h1 className="heading-lg" style={{ color: "#ef4444", marginBottom: "16px" }}>Cuenta Suspendida</h1>
+        <p className="text-muted" style={{ fontSize: "1.1rem" }}>
+          Tu cuenta ha sido suspendida. No puedes realizar acciones en el panel principal ni conectar cuentas de Google Ads.
+        </p>
+      </div>
+    );
   }
 
   // --- PAYWALL STATE ---
