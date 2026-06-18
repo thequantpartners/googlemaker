@@ -36,19 +36,25 @@ export default function PlanesPage() {
     setSelectingPlan(true);
     setErrorMsg("");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/tier?tier=${tier}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${session.backendToken}` },
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tier }),
       });
       if (res.ok) {
-        await fetchProfile();
-        window.location.reload(); // Reload to update limits across the app
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
       } else {
         const errData = await res.json();
-        setErrorMsg(errData.detail || "Error al cambiar de plan.");
+        setErrorMsg(errData.detail || "Error al iniciar el checkout.");
       }
     } catch (err) {
-      setErrorMsg("Error de conexión al cambiar de plan.");
+      setErrorMsg("Error de conexión al iniciar el checkout.");
     } finally {
       setSelectingPlan(false);
     }

@@ -24,20 +24,6 @@ async def get_my_profile(
 ):
     return user
 
-from models import UserTier
-
-@router.patch("/me/tier", response_model=UserOut)
-async def update_my_tier(
-    tier: UserTier,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    """Simulates a checkout process by updating the user's tier directly."""
-    user.tier = tier
-    await db.commit()
-    await db.refresh(user)
-    return user
-
 
 # ── Get own campaigns from Google Ads API ─────────────────────────────────────
 

@@ -46,11 +46,22 @@ function DashboardContent() {
     if (!session?.backendToken) return;
     setSelectingPlan(true);
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/tier?tier=${tier}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${session.backendToken}` },
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tier }),
       });
-      await checkStatus();
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        }
+      } else {
+        console.error("Error creating checkout session");
+      }
     } catch (err) {
       console.error(err);
     } finally {

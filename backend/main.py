@@ -19,7 +19,7 @@ load_dotenv()
 from auth import create_jwt, get_current_user, verify_google_token
 from database import Base, engine, get_db
 from models import User, UserRole, UserStatus
-from routers import admin, clients, orchestrator, auth_google
+from routers import admin, clients, orchestrator, auth_google, payments
 from schemas import GoogleLoginRequest, TokenResponse, UserOut
 
 SUPERADMIN_EMAIL: str = os.getenv("SUPERADMIN_EMAIL", "thequantpartners@gmail.com")
@@ -113,6 +113,7 @@ app.include_router(admin.router)
 app.include_router(clients.router)
 app.include_router(orchestrator.router)
 app.include_router(auth_google.router)
+app.include_router(payments.router)
 
 
 # ── Health check ─────────────────────────────────────────────────────────────
