@@ -25,7 +25,7 @@ from schemas import GoogleLoginRequest, TokenResponse, UserOut
 SUPERADMIN_EMAIL: str = os.getenv("SUPERADMIN_EMAIL", "thequantpartners@gmail.com")
 FRONTEND_ORIGINS: list[str] = [
     o.strip()
-    for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,https://googlemaker-pdf.vercel.app").split(",")
+    for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,https://googlemaker.thequantpartners.com,https://googlemaker-pdf.vercel.app,https://googlemaker-psi.vercel.app").split(",")
     if o.strip()
 ]
 

@@ -54,7 +54,7 @@ async def google_ads_login(token: str, request: Request, db: AsyncSession = Depe
     # Determine redirect URI dynamically
     redirect_uri = str(request.base_url).rstrip("/") + "/auth/google-ads/callback"
     # Ensure https in production
-    if "railway.app" in redirect_uri:
+    if "localhost" not in redirect_uri and "127.0.0.1" not in redirect_uri:
         redirect_uri = redirect_uri.replace("http://", "https://")
 
     # Build Google OAuth URL
@@ -88,7 +88,7 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
         raise HTTPException(status_code=404, detail="User not found")
 
     redirect_uri = str(request.base_url).rstrip("/") + "/auth/google-ads/callback"
-    if "railway.app" in redirect_uri:
+    if "localhost" not in redirect_uri and "127.0.0.1" not in redirect_uri:
         redirect_uri = redirect_uri.replace("http://", "https://")
 
     # Exchange code for tokens
