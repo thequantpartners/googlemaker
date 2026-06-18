@@ -164,6 +164,26 @@ async def delete_my_credentials(
         await db.delete(c)
     await db.commit()
 
+@router.delete("/me/credentials/{credential_id}", status_code=204)
+async def delete_single_credential(
+    credential_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Allows a client to delete a specific connected Google Ads account by ID."""
+    result = await db.execute(
+        select(GoogleAdsCredential).where(
+            GoogleAdsCredential.id == credential_id,
+            GoogleAdsCredential.user_id == user.id
+        )
+    )
+    cred = result.scalar_one_or_none()
+    if not cred:
+        raise HTTPException(status_code=404, detail="Credential not found")
+        
+    await db.delete(cred)
+    await db.commit()
+
 
 # ── Get own orchestrator logs ────────────────────────────────────────────────
 

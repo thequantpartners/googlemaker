@@ -248,9 +248,9 @@ function DashboardContent() {
                   )}
                   <button 
                     onClick={async () => {
-                      if (confirm("¿Estás seguro de que deseas desconectar tus cuentas de Google Ads? Tendrás que volver a conectarlas.")) {
+                      if (confirm(`¿Estás seguro de que deseas desconectar la cuenta ${acc.target_customer_id}?`)) {
                         try {
-                          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials`, {
+                          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${acc.id}`, {
                             method: "DELETE",
                             headers: { Authorization: `Bearer ${session?.backendToken}` }
                           });
