@@ -82,13 +82,13 @@ class CredentialsStatus(BaseModel):
 class LogOut(BaseModel):
     id: str
     action: str
-    campaign_id: str | None = None
+    campaign_id: Any | None = None
     campaign_name: str | None = None
     reason: str | None = None
-    details: dict[str, Any] | None = None
-    is_dry_run: bool
+    details: Any | None = None
+    is_dry_run: Any = None
     status: str
-    executed_at: datetime
+    executed_at: Any = None
 
     model_config = {"from_attributes": True}
 
