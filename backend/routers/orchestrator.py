@@ -97,11 +97,16 @@ async def dry_run(
 
     for cred in creds:
         try:
+            from encryption import decrypt_value
+            refresh_token = decrypt_value(cred.refresh_token)
+            login_id = decrypt_value(cred.login_customer_id)
+            target_id = decrypt_value(cred.target_customer_id)
+
             client = await asyncio.to_thread(
-                get_google_ads_client, cred.refresh_token, cred.login_customer_id
+                get_google_ads_client, refresh_token, login_id
             )
             campaigns = await asyncio.to_thread(
-                fetch_campaign_metrics, client, cred.target_customer_id
+                fetch_campaign_metrics, client, target_id
             )
 
             cred_logs = []
@@ -159,11 +164,16 @@ async def run(
 
     for cred in creds:
         try:
+            from encryption import decrypt_value
+            refresh_token = decrypt_value(cred.refresh_token)
+            login_id = decrypt_value(cred.login_customer_id)
+            target_id = decrypt_value(cred.target_customer_id)
+
             client = await asyncio.to_thread(
-                get_google_ads_client, cred.refresh_token, cred.login_customer_id
+                get_google_ads_client, refresh_token, login_id
             )
             campaigns = await asyncio.to_thread(
-                fetch_campaign_metrics, client, cred.target_customer_id
+                fetch_campaign_metrics, client, target_id
             )
 
             cred_logs = []
@@ -175,7 +185,7 @@ async def run(
                         await asyncio.to_thread(
                             apply_campaign_action,
                             client,
-                            cred.target_customer_id,
+                            target_id,
                             campaign["campaign_id"],
                             recommendation["action"]
                         )
