@@ -10,6 +10,7 @@ from auth import require_client
 from database import get_db
 from models import OrchestratorLog, User
 from schemas import LogOut, UserOut
+from services.google_ads_service import apply_campaign_action
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
 
@@ -179,6 +180,76 @@ async def get_my_logs(
         .limit(100)
     )
     return result.scalars().all()
+
+
+@router.post("/me/logs/{log_id}/approve")
+async def approve_log(
+    log_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(OrchestratorLog).where(
+            OrchestratorLog.id == log_id,
+            OrchestratorLog.user_id == user.id,
+            OrchestratorLog.status == "pending"
+        )
+    )
+    log = result.scalar_one_or_none()
+    if not log:
+        raise HTTPException(status_code=404, detail="Log not found or already processed")
+
+    # Get credentials to apply action
+    cred_result = await db.execute(
+        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
+    )
+    cred = cred_result.scalars().first()
+    if not cred:
+        raise HTTPException(status_code=400, detail="No Google Ads credentials")
+
+    try:
+        refresh_token = decrypt_value(cred.refresh_token)
+        target = decrypt_value(cred.target_customer_id)
+        login = decrypt_value(cred.login_customer_id)
+        
+        client = get_google_ads_client(refresh_token, login)
+        
+        import asyncio
+        await asyncio.to_thread(
+            apply_campaign_action,
+            client,
+            target,
+            log.campaign_id,
+            log.action
+        )
+        
+        log.status = "approved"
+        await db.commit()
+        return {"status": "success", "message": "Action applied and approved"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/me/logs/{log_id}/reject")
+async def reject_log(
+    log_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(OrchestratorLog).where(
+            OrchestratorLog.id == log_id,
+            OrchestratorLog.user_id == user.id,
+            OrchestratorLog.status == "pending"
+        )
+    )
+    log = result.scalar_one_or_none()
+    if not log:
+        raise HTTPException(status_code=404, detail="Log not found or already processed")
+
+    log.status = "rejected"
+    await db.commit()
+    return {"status": "success", "message": "Action rejected"}
 
 
 # ── Get own credential status ───────────────────────────────────────────────

@@ -139,6 +139,7 @@ class OrchestratorLog(Base):
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     is_dry_run: Mapped[bool] = mapped_column(Boolean, default=True)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="auto_applied")
     executed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     # Relationships

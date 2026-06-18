@@ -87,6 +87,7 @@ class LogOut(BaseModel):
     reason: str | None = None
     details: dict[str, Any] | None = None
     is_dry_run: bool
+    status: str
     executed_at: datetime
 
     model_config = {"from_attributes": True}

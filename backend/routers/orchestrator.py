@@ -45,36 +45,46 @@ async def _ensure_client_with_creds(
     return creds
 
 
-def evaluate_campaign(metrics: dict, target_cpa: float = 50.0) -> dict | None:
+def evaluate_campaign(metrics: dict, target_cpa: float = 20.0) -> dict | None:
     """
     Evaluates campaign metrics and returns a recommended action and reason.
     Rules:
-    - Rule 1: Spend > 50 and 0 conversions -> PAUSAR
-    - Rule 2: Conversions > 0 and CPA > target_cpa * 1.5 -> PAUSAR
-    - Rule 3: Conversions > 5 and CPA < target_cpa * 0.8 -> AUMENTAR PRESUPUESTO
+    - Rule 1 (PAUSE): Spend > 1.5x target CPA and 0 conversions
+    - Rule 2 (PAUSE): Conversions >= 3 and CPA > target_cpa * 1.5
+    - Rule 3 (SCALE_HORIZONTAL): Conversions >= 3 and CPA < target_cpa * 0.5
+    - Rule 4 (SCALE_VERTICAL): Conversions >= 3 and CPA < target_cpa * 0.7
     """
     cost = metrics["cost"]
     conversions = metrics["conversions"]
     cpa = cost / conversions if conversions > 0 else 0.0
 
-    if cost > 50.0 and conversions == 0:
+    # Rule 1: Bleeding budget (Learning Phase Protection)
+    if cost > (target_cpa * 1.5) and conversions == 0:
         return {
-            "action": "PAUSAR",
-            "reason": "Gasto superior a 50 sin conversiones",
-            "details": {"cost": cost, "conversions": conversions}
+            "action": "PAUSE",
+            "reason": f"APAGADO (Sangrado): Ha gastado ${cost:.2f} (más de 1.5x el CPA objetivo de ${target_cpa:.2f}) sin conversiones.",
+            "details": {"cost": cost, "conversions": conversions, "target_cpa": target_cpa}
         }
-    elif conversions > 0 and cpa > target_cpa * 1.5:
-        return {
-            "action": "PAUSAR",
-            "reason": f"CPA ({cpa:.2f}) supera el límite en un 50% (objetivo: {target_cpa})",
-            "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
-        }
-    elif conversions > 5 and cpa < target_cpa * 0.8:
-        return {
-            "action": "AUMENTAR PRESUPUESTO",
-            "reason": f"Excelente performance: CPA ({cpa:.2f}) muy por debajo del objetivo ({target_cpa})",
-            "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
-        }
+    
+    if conversions >= 3:
+        if cpa > target_cpa * 1.5:
+            return {
+                "action": "PAUSE",
+                "reason": f"APAGADO: CPA (${cpa:.2f}) supera el límite en un 50% (objetivo: ${target_cpa:.2f}).",
+                "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
+            }
+        elif cpa < target_cpa * 0.5:
+            return {
+                "action": "SCALE_HORIZONTAL",
+                "reason": f"ESCALADO HORIZONTAL: Mina de oro. CPA (${cpa:.2f}) es menor al 50% del objetivo. Sugerencia: Clonar estructura.",
+                "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
+            }
+        elif cpa < target_cpa * 0.7:
+            return {
+                "action": "SCALE_VERTICAL",
+                "reason": f"ESCALADO VERTICAL: Excelente performance. CPA (${cpa:.2f}) menor al 70% del objetivo. Sugerencia: Aumentar presupuesto un 25%.",
+                "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
+            }
 
     return None
 
@@ -181,23 +191,29 @@ async def run(
                 try:
                     recommendation = evaluate_campaign(campaign)
                     if recommendation:
-                        # Apply the action
-                        await asyncio.to_thread(
-                            apply_campaign_action,
-                            client,
-                            target_id,
-                            campaign["campaign_id"],
-                            recommendation["action"]
-                        )
+                        action_type = recommendation["action"]
+                        log_status = "pending"
+
+                        # Apply the action ONLY if it's PAUSE (budget protection)
+                        if action_type == "PAUSE":
+                            await asyncio.to_thread(
+                                apply_campaign_action,
+                                client,
+                                target_id,
+                                campaign["campaign_id"],
+                                action_type
+                            )
+                            log_status = "auto_applied"
 
                         log = OrchestratorLog(
                             user_id=client_id,
                             campaign_id=campaign["campaign_id"],
                             campaign_name=campaign["campaign_name"],
-                            action=recommendation["action"],
+                            action=action_type,
                             reason=recommendation["reason"],
                             details=recommendation["details"],
                             is_dry_run=False,
+                            status=log_status,
                         )
                         db.add(log)
                         cred_logs.append(log)
@@ -218,5 +234,93 @@ async def run(
     return OrchestratorResult(
         status="success",
         message="Live run completed. Google Ads campaigns have been modified according to recommendations.",
+        logs=[LogOut.model_validate(log) for log in logs_out],
+    )
+
+
+# ── Cron Run ─────────────────────────────────────────────────────────────────
+
+
+@router.post("/cron-run", response_model=OrchestratorResult)
+async def cron_run(
+    _admin: User = Depends(require_superadmin),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Cron run: evaluates campaigns for ALL clients and applies automatic rules.
+    Intended to be called by a scheduler (e.g. Railway cron) with a superadmin token.
+    """
+    # Fetch all clients
+    result = await db.execute(select(User).where(User.role == UserRole.client))
+    clients = result.scalars().all()
+
+    logs_out = []
+
+    for client_user in clients:
+        try:
+            # Re-use the existing `run` logic but call it programmatically 
+            # Or just duplicate the credential loop here
+            cred_result = await db.execute(
+                select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == client_user.id)
+            )
+            creds = cred_result.scalars().all()
+            if not creds:
+                continue
+
+            for cred in creds:
+                try:
+                    from encryption import decrypt_value
+                    refresh_token = decrypt_value(cred.refresh_token)
+                    login_id = decrypt_value(cred.login_customer_id)
+                    target_id = decrypt_value(cred.target_customer_id)
+
+                    client = await asyncio.to_thread(get_google_ads_client, refresh_token, login_id)
+                    campaigns = await asyncio.to_thread(fetch_campaign_metrics, client, target_id)
+
+                    cred_logs = []
+                    for campaign in campaigns:
+                        try:
+                            recommendation = evaluate_campaign(campaign)
+                            if recommendation:
+                                action_type = recommendation["action"]
+                                log_status = "pending"
+
+                                if action_type == "PAUSE":
+                                    await asyncio.to_thread(
+                                        apply_campaign_action,
+                                        client, target_id, campaign["campaign_id"], action_type
+                                    )
+                                    log_status = "auto_applied"
+
+                                log = OrchestratorLog(
+                                    user_id=client_user.id,
+                                    campaign_id=campaign["campaign_id"],
+                                    campaign_name=campaign["campaign_name"],
+                                    action=action_type,
+                                    reason=recommendation["reason"],
+                                    details=recommendation["details"],
+                                    is_dry_run=False,
+                                    status=log_status,
+                                )
+                                db.add(log)
+                                cred_logs.append(log)
+                        except Exception as inner_e:
+                            print(f"Error mutating campaign {campaign['campaign_id']}: {inner_e}")
+
+                    if cred_logs:
+                        await db.commit()
+                        for log in cred_logs:
+                            await db.refresh(log)
+                        logs_out.extend(cred_logs)
+
+                except Exception as e:
+                    print(f"Error processing credentials for client {client_user.id}: {e}")
+
+        except Exception as e:
+            print(f"Error processing cron for client {client_user.id}: {e}")
+
+    return OrchestratorResult(
+        status="success",
+        message=f"Cron run completed for {len(clients)} clients.",
         logs=[LogOut.model_validate(log) for log in logs_out],
     )

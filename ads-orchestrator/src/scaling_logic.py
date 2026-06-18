@@ -54,21 +54,22 @@ def evaluate_campaign(campaign: dict, target_cpa: float = None, max_daily_spend:
 
     # ====================================================
     # REGLA 1: APAGADO INMEDIATO (Protección de capital)
-    # Si gasta dinero sin generar leads calificados
     # ====================================================
-    if cost > 0 and conversions == 0 and clicks >= MIN_CLICKS_FOR_TRACTION:
+    # Fase de Aprendizaje (Learning Phase): No pausamos si no ha gastado 
+    # al menos 1.5x el CPA objetivo, para darle oportunidad de optimizar.
+    if cost > (_target_cpa * 1.5) and conversions == 0:
         return {
             "action": "PAUSE",
             "campaign_id": campaign_id,
             "campaign_name": campaign_name,
             "reason": (
-                f"APAGADO: La campaña '{campaign_name}' ha gastado ${cost:.2f} "
-                f"con {clicks} clicks y 0 conversiones. "
-                f"Se pausa para proteger el capital."
+                f"APAGADO (Sangrado): La campaña '{campaign_name}' ha gastado ${cost:.2f} "
+                f"(más de 1.5x el CPA objetivo de ${_target_cpa:.2f}) sin conversiones. "
+                f"Se pausa para proteger el presupuesto."
             ),
             "details": {
                 "cost": cost,
-                "clicks": clicks,
+                "target_cpa": _target_cpa,
                 "conversions": conversions
             }
         }
