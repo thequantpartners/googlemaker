@@ -61,7 +61,7 @@ async def get_my_campaigns(
     if not creds:
         return []
     
-    if customer_id and customer_id.startswith("Unknown"):
+    if customer_id and (customer_id.startswith("Unknown") or customer_id.startswith("PENDING")):
         raise HTTPException(status_code=400, detail="Credenciales inválidas. Por favor desconecta y vuelve a conectar tu cuenta de Google Ads.")
 
     selected_cred = None

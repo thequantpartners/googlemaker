@@ -220,7 +220,7 @@ function DashboardContent() {
           <h2 className="heading-md" style={{ marginBottom: "16px" }}>Cuentas Conectadas</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {statusData?.connected_accounts?.map((acc: any, index: number) => {
-              const isInvalid = acc.target_customer_id === "Unknown" || acc.target_customer_id === "Unknown:1";
+              const isInvalid = acc.target_customer_id === "Unknown" || acc.target_customer_id === "Unknown:1" || acc.target_customer_id === "PENDING" || acc.target_customer_id === "PENDING:1";
               return (
               <div key={index} className="glass-panel" style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderLeft: isInvalid ? "4px solid #ef4444" : "none" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>

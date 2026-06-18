@@ -16,6 +16,7 @@ from database import get_db
 from models import GoogleAdsCredential, User
 from encryption import encrypt_value, decrypt_value
 from auth import JWT_SECRET, JWT_ALGORITHM
+from services.google_ads_service import fetch_accessible_customers
 
 router = APIRouter(prefix="/auth/google-ads", tags=["OAuth"])
 
@@ -125,14 +126,18 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
         await db.delete(p_cred)
     await db.flush()
 
+    # Fetch accessible customers
+    accessible_customers = fetch_accessible_customers(refresh_token)
+    initial_customer_id = accessible_customers[0] if accessible_customers else "PENDING"
+
     cred = GoogleAdsCredential(
         user_id=user.id,
         developer_token="",  # Handled by system env variables now
         oauth_client_id="",
         oauth_client_secret="",
         refresh_token=encrypt_value(refresh_token),
-        login_customer_id=encrypt_value("PENDING"),
-        target_customer_id=encrypt_value("PENDING"),
+        login_customer_id=encrypt_value(initial_customer_id),
+        target_customer_id=encrypt_value(initial_customer_id),
         is_verified=True,
     )
     db.add(cred)

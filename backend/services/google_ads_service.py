@@ -11,13 +11,33 @@ def get_google_ads_client(refresh_token: str, login_customer_id: str) -> GoogleA
     """
     credentials = {
         "developer_token": os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN", ""),
-        "client_id": os.getenv("GOOGLE_CLIENT_ID", ""),
-        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET", ""),
+        "client_id": os.getenv("GOOGLE_ADS_CLIENT_ID", ""),
+        "client_secret": os.getenv("GOOGLE_ADS_CLIENT_SECRET", ""),
         "refresh_token": refresh_token,
         "login_customer_id": login_customer_id.replace("-", ""),
         "use_proto_plus": True
     }
     return GoogleAdsClient.load_from_dict(credentials)
+
+def fetch_accessible_customers(refresh_token: str) -> list[str]:
+    """
+    Fetch accessible customers for a given refresh token.
+    """
+    credentials = {
+        "developer_token": os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN", ""),
+        "client_id": os.getenv("GOOGLE_ADS_CLIENT_ID", ""),
+        "client_secret": os.getenv("GOOGLE_ADS_CLIENT_SECRET", ""),
+        "refresh_token": refresh_token,
+        "use_proto_plus": True
+    }
+    try:
+        client = GoogleAdsClient.load_from_dict(credentials)
+        customer_service = client.get_service("CustomerService")
+        response = customer_service.list_accessible_customers()
+        return [resource_name.split("/")[-1] for resource_name in response.resource_names]
+    except GoogleAdsException as ex:
+        print(f"GoogleAdsException: {ex}")
+        return []
 
 def fetch_campaign_metrics(client: GoogleAdsClient, target_customer_id: str) -> list[dict]:
     """
