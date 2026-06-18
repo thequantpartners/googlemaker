@@ -1,10 +1,10 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function ClientDashboard() {
+function DashboardContent() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
@@ -111,5 +111,13 @@ export default function ClientDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClientDashboard() {
+  return (
+    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center" }}>Cargando panel...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
