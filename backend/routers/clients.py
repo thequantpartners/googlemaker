@@ -38,15 +38,55 @@ async def update_my_tier(
     return user
 
 
-# ── Get own metrics (placeholder) ───────────────────────────────────────────
+# ── Get own campaigns from Google Ads API ─────────────────────────────────────
 
 
-@router.get("/me/metrics")
-async def get_my_metrics(
-    _user: User = Depends(require_client),
+from fastapi import HTTPException
+from services.google_ads_service import get_google_ads_client, fetch_campaign_metrics
+
+@router.get("/me/campaigns")
+async def get_my_campaigns(
+    customer_id: str | None = None,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
 ):
-    """Placeholder — will connect to real metrics data source later."""
-    return []
+    """
+    Fetch campaigns and metrics from Google Ads API for the given customer_id,
+    or default to the first available credential.
+    """
+    result = await db.execute(
+        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
+    )
+    creds = result.scalars().all()
+    if not creds:
+        return []
+    
+    selected_cred = None
+    if customer_id:
+        for c in creds:
+            try:
+                target = decrypt_value(c.target_customer_id)
+                if target == customer_id or target.replace("-", "") == customer_id.replace("-", ""):
+                    selected_cred = c
+                    break
+            except:
+                pass
+    else:
+        selected_cred = creds[0]
+
+    if not selected_cred:
+        raise HTTPException(status_code=404, detail="Customer ID not found in your connected accounts")
+
+    try:
+        refresh_token = decrypt_value(selected_cred.refresh_token)
+        target = decrypt_value(selected_cred.target_customer_id)
+        login = decrypt_value(selected_cred.login_customer_id)
+        
+        client = get_google_ads_client(refresh_token, login)
+        campaigns = fetch_campaign_metrics(client, target)
+        return campaigns
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ── Get own orchestrator logs ────────────────────────────────────────────────

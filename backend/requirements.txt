@@ -9,6 +9,7 @@ cryptography==43.0.1
 httpx==0.27.2
 pydantic==2.9.2
 pydantic-settings==2.5.2
+google-ads==25.0.0
 
 # Production only (requires C build tools — install on Railway/Linux):
 asyncpg>=0.30.0
