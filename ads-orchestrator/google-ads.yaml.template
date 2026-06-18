@@ -1,0 +1,8 @@
+# google-ads.yaml (Configuración base para la librería de Python)
+# Antigravity rellenará este archivo dinámicamente o lo usará junto a las variables de entorno.
+developer_token: INSERT_DEVELOPER_TOKEN_HERE
+client_id: INSERT_OAUTH2_CLIENT_ID_HERE
+client_secret: INSERT_OAUTH2_CLIENT_SECRET_HERE
+refresh_token: INSERT_REFRESH_TOKEN_HERE
+login_customer_id: INSERT_LOGIN_CUSTOMER_ID_HERE
+use_proto_plus: True

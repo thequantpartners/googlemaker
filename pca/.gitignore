@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.pca/auth.json
+.pca/secrets.json
+.pca/pca.db
+.pca/last-context.md
+.pca/last-task-context.md
+*.tgz
+*.log
+.DS_Store
+CODEBASE_SNAPSHOT.md
+CODEBASE_SNAPSHOT.txt
+ESTADO_ACTUAL.md

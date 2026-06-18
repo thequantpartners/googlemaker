@@ -1,0 +1,107 @@
+.main {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav {
+  height: 80px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(10, 10, 11, 0.8);
+  backdrop-filter: blur(12px);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 50;
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoMark {
+  width: 32px;
+  height: 32px;
+  background: var(--accent-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.hero {
+  padding: 160px 0 100px;
+  text-align: center;
+  position: relative;
+}
+
+.heroContent {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin: 24px 0 40px;
+  line-height: 1.6;
+}
+
+.ctaGroup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.bgGlow1 {
+  position: absolute;
+  top: 0;
+  left: 20%;
+  width: 600px;
+  height: 600px;
+  background: rgba(99, 102, 241, 0.15);
+  filter: blur(120px);
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.bgGlow2 {
+  position: absolute;
+  top: 20%;
+  right: 10%;
+  width: 500px;
+  height: 500px;
+  background: rgba(139, 92, 246, 0.15);
+  filter: blur(120px);
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.features {
+  padding: 60px 0 120px;
+  position: relative;
+  z-index: 10;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.featureIcon {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  display: inline-block;
+}
