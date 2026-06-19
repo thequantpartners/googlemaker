@@ -112,3 +112,4 @@ class CreateCampaignRequest(BaseModel):
     headlines: list[str] = Field(..., min_length=3, max_length=15, description="Títulos del anuncio (3-15, max 30 chars c/u)")
     descriptions: list[str] = Field(..., min_length=2, max_length=4, description="Descripciones (2-4, max 90 chars c/u)")
     final_url: str = Field(..., min_length=1, description="URL de destino del anuncio")
+    target_cpa: float | None = Field(None, gt=0, description="CPA objetivo en USD (Requiere plan Growth)")

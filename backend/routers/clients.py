@@ -112,6 +112,9 @@ async def create_my_campaign(
         except:
             pass
 
+    if request.target_cpa and user.tier != UserTier.growth:
+        raise HTTPException(status_code=403, detail="Custom CPA strategies are only available on the Growth plan.")
+
     if not selected_cred:
         raise HTTPException(status_code=404, detail="Customer ID not found in your connected accounts")
 
@@ -130,6 +133,8 @@ async def create_my_campaign(
             "descriptions": request.descriptions,
             "final_url": request.final_url
         }
+        if request.target_cpa:
+            config["target_cpa"] = request.target_cpa
         
         result = create_full_search_campaign(client, target, config)
         return result

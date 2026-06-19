@@ -45,14 +45,14 @@ async def _ensure_client_with_creds(
     return creds
 
 
-def evaluate_campaign(metrics: dict, target_cpa: float = 20.0) -> dict | None:
+def evaluate_campaign(metrics: dict, target_cpa: float = 20.0, tier: UserTier = UserTier.none) -> dict | None:
     """
     Evaluates campaign metrics and returns a recommended action and reason.
     Rules:
     - Rule 1 (PAUSE): Spend > 1.5x target CPA and 0 conversions
     - Rule 2 (PAUSE): Conversions >= 3 and CPA > target_cpa * 1.5
-    - Rule 3 (SCALE_HORIZONTAL): Conversions >= 3 and CPA < target_cpa * 0.5
-    - Rule 4 (SCALE_VERTICAL): Conversions >= 3 and CPA < target_cpa * 0.7
+    - Rule 3 (SCALE_HORIZONTAL): Conversions >= 3 and CPA < target_cpa * 0.5 (Scale/Growth only)
+    - Rule 4 (SCALE_VERTICAL): Conversions >= 3 and CPA < target_cpa * 0.7 (Scale/Growth only)
     """
     cost = metrics["cost"]
     conversions = metrics["conversions"]
@@ -73,13 +73,13 @@ def evaluate_campaign(metrics: dict, target_cpa: float = 20.0) -> dict | None:
                 "reason": f"APAGADO: CPA (${cpa:.2f}) supera el límite en un 50% (objetivo: ${target_cpa:.2f}).",
                 "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
             }
-        elif cpa < target_cpa * 0.5:
+        elif cpa < target_cpa * 0.5 and tier in [UserTier.scale, UserTier.growth]:
             return {
                 "action": "SCALE_HORIZONTAL",
                 "reason": f"ESCALADO HORIZONTAL: Mina de oro. CPA (${cpa:.2f}) es menor al 50% del objetivo. Sugerencia: Clonar estructura.",
                 "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
             }
-        elif cpa < target_cpa * 0.7:
+        elif cpa < target_cpa * 0.7 and tier in [UserTier.scale, UserTier.growth]:
             return {
                 "action": "SCALE_VERTICAL",
                 "reason": f"ESCALADO VERTICAL: Excelente performance. CPA (${cpa:.2f}) menor al 70% del objetivo. Sugerencia: Aumentar presupuesto un 25%.",
@@ -101,7 +101,11 @@ async def dry_run(
     """
     Dry-run: evaluates campaigns for a client without modifying Google Ads.
     """
+    """
     creds = await _ensure_client_with_creds(client_id, db)
+    
+    result = await db.execute(select(User).where(User.id == client_id))
+    client_user = result.scalar_one_or_none()
 
     logs_out = []
 
@@ -122,7 +126,7 @@ async def dry_run(
             cred_logs = []
             for campaign in campaigns:
                 try:
-                    recommendation = evaluate_campaign(campaign)
+                    recommendation = evaluate_campaign(campaign, tier=client_user.tier)
                     if recommendation:
                         log = OrchestratorLog(
                             user_id=client_id,
@@ -168,7 +172,11 @@ async def run(
     """
     Live run: evaluates campaigns and mutates Google Ads for a client.
     """
+    """
     creds = await _ensure_client_with_creds(client_id, db)
+    
+    result = await db.execute(select(User).where(User.id == client_id))
+    client_user = result.scalar_one_or_none()
 
     logs_out = []
 
@@ -189,7 +197,7 @@ async def run(
             cred_logs = []
             for campaign in campaigns:
                 try:
-                    recommendation = evaluate_campaign(campaign)
+                    recommendation = evaluate_campaign(campaign, tier=client_user.tier)
                     if recommendation:
                         action_type = recommendation["action"]
                         log_status = "pending"
@@ -280,7 +288,7 @@ async def cron_run(
                     cred_logs = []
                     for campaign in campaigns:
                         try:
-                            recommendation = evaluate_campaign(campaign)
+                            recommendation = evaluate_campaign(campaign, tier=client_user.tier)
                             if recommendation:
                                 action_type = recommendation["action"]
                                 log_status = "pending"

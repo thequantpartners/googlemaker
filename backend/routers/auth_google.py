@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from jose import JWTError, jwt
 
 from database import get_db
-from models import GoogleAdsCredential, User
+from models import GoogleAdsCredential, User, get_plan_limit
 from encryption import encrypt_value, decrypt_value
 from auth import JWT_SECRET, JWT_ALGORITHM
 from services.google_ads_service import fetch_accessible_customers
@@ -47,6 +47,22 @@ async def google_ads_login(token: str, request: Request, db: AsyncSession = Depe
     user = result.scalar_one_or_none()
     if not user or user.status.value == "suspended":
         raise HTTPException(status_code=403, detail="User account is suspended")
+
+    # Check plan limit before starting OAuth
+    from sqlalchemy import func
+    limit = get_plan_limit(user.tier)
+    if limit is not None:
+        count_result = await db.execute(
+            select(func.count(GoogleAdsCredential.id)).where(
+                GoogleAdsCredential.user_id == user.id,
+                GoogleAdsCredential.target_customer_id != encrypt_value("PENDING")
+            )
+        )
+        current_count = count_result.scalar_one()
+        if current_count >= limit:
+            frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
+            error_msg = f"Has alcanzado el límite de {limit} cuenta(s) para tu plan {user.tier.value.capitalize()}."
+            return RedirectResponse(f"{frontend_url}/dashboard?connected=error&message={urllib.parse.quote(error_msg)}")
 
     # Encrypt user_id to use as state to prevent CSRF and identify the user in the callback
     state = encrypt_value(user_id)
