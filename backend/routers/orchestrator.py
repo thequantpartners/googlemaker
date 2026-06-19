@@ -12,7 +12,7 @@ from typing import Sequence
 
 from auth import require_superadmin
 from database import get_db
-from models import GoogleAdsCredential, OrchestratorLog, User, UserRole
+from models import GoogleAdsCredential, OrchestratorLog, User, UserRole, UserTier
 from schemas import OrchestratorResult, LogOut
 
 from services.google_ads_service import (
