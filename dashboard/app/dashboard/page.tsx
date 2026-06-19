@@ -16,6 +16,32 @@ function DashboardContent() {
   const [globalMetrics, setGlobalMetrics] = useState({ cost: 0, clicks: 0, conversions: 0, avgCpa: 0 });
   const [chartData, setChartData] = useState<any[]>([]);
 
+  const [pixelSnippet, setPixelSnippet] = useState<string | null>(null);
+  const [generatingPixel, setGeneratingPixel] = useState<string | null>(null);
+
+  const handleGeneratePixel = async (credentialId: string) => {
+    if (!session?.backendToken) return;
+    setGeneratingPixel(credentialId);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${credentialId}/pixel`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.backendToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const snippet = `<!-- Google tag (gtag.js) -->\n${data.global_site_tag}\n\n<!-- Event snippet -->\n${data.event_snippet}`;
+        setPixelSnippet(snippet);
+      } else {
+        alert("Error generating pixel");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error");
+    } finally {
+      setGeneratingPixel(null);
+    }
+  };
+
   async function checkStatus() {
     if (!session?.backendToken) return;
     try {
@@ -229,6 +255,34 @@ function DashboardContent() {
   return (
     <div className="animate-fade-in-up max-w-[1400px] mx-auto pb-20">
       
+      {pixelSnippet && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl max-w-2xl w-full">
+            <h3 className="text-xl font-bold text-white mb-4">Your Conversion Pixel</h3>
+            <p className="text-gray-400 mb-4 text-sm">
+              Copy this code snippet and paste it inside the <code>&lt;head&gt;</code> tags of your website or "Thank You" page.
+            </p>
+            <div className="bg-black/50 p-4 rounded-lg overflow-x-auto text-sm text-neon-green font-mono mb-6 max-h-[400px] overflow-y-auto">
+              <pre>{pixelSnippet}</pre>
+            </div>
+            <div className="flex justify-end gap-4">
+              <button 
+                onClick={() => { navigator.clipboard.writeText(pixelSnippet); alert('Copied to clipboard!'); }}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white font-medium transition"
+              >
+                Copy
+              </button>
+              <button 
+                onClick={() => setPixelSnippet(null)}
+                className="px-4 py-2 bg-neon-purple hover:bg-purple-600 rounded-lg text-white font-medium transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top action bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
@@ -324,7 +378,16 @@ function DashboardContent() {
                             </span>
                           )}
                         </td>
-                        <td className="py-4 px-6 text-right">
+                        <td className="py-4 px-6 text-right space-x-4">
+                          {!isInvalid && (
+                            <button
+                              onClick={() => handleGeneratePixel(acc.id)}
+                              disabled={generatingPixel === acc.id}
+                              className="text-neon-purple hover:text-white transition-colors text-sm font-medium"
+                            >
+                              {generatingPixel === acc.id ? "Generating..." : "Generate Pixel"}
+                            </button>
+                          )}
                           <button 
                             onClick={async () => {
                               if (confirm(`Are you sure you want to disconnect account ${acc.target_customer_id}?`)) {

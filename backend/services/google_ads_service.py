@@ -302,3 +302,60 @@ def create_full_search_campaign(client: GoogleAdsClient, customer_id: str,
     except GoogleAdsException as ex:
         errors = [error.message for error in ex.failure.errors]
         raise ValueError(f"Error de Google Ads: {'; '.join(errors)}")
+
+# ── Conversion Tracking ──────────────────────────────────────────────────────
+
+def create_conversion_action(client: GoogleAdsClient, customer_id: str, name: str = "GoogleMaker Conversion") -> dict:
+    """
+    Creates a WEBPAGE conversion action and fetches the global tag and event snippet.
+    Returns a dict with 'snippet' and 'event_snippet'.
+    """
+    customer_id_clean = customer_id.replace("-", "")
+    
+    # 1. Create Conversion Action
+    conversion_action_service = client.get_service("ConversionActionService")
+    conversion_action_operation = client.get_type("ConversionActionOperation")
+    
+    conversion_action = conversion_action_operation.create
+    conversion_action.name = f"{name} ({uuid.uuid4().hex[:4]})"
+    conversion_action.type_ = client.enums.ConversionActionTypeEnum.WEBPAGE
+    conversion_action.status = client.enums.ConversionActionStatusEnum.ENABLED
+    conversion_action.category = client.enums.ConversionActionCategoryEnum.LEAD
+    
+    conversion_action.value_settings.default_value = 1.0
+    conversion_action.value_settings.always_use_default_value = True
+
+    try:
+        response = conversion_action_service.mutate_conversion_actions(
+            customer_id=customer_id_clean, operations=[conversion_action_operation]
+        )
+        resource_name = response.results[0].resource_name
+    except GoogleAdsException as ex:
+        errors = [error.message for error in ex.failure.errors]
+        raise ValueError(f"Error creando conversión: {'; '.join(errors)}")
+        
+    # 2. Fetch the Snippets via GAQL
+    ga_service = client.get_service("GoogleAdsService")
+    query = f"""
+        SELECT
+            conversion_action.id,
+            conversion_action.tag_snippets
+        FROM conversion_action
+        WHERE conversion_action.resource_name = '{resource_name}'
+    """
+    
+    try:
+        search_response = ga_service.search(customer_id=customer_id_clean, query=query)
+        for row in search_response:
+            snippets = row.conversion_action.tag_snippets
+            if snippets:
+                # The snippets list typically contains the global tag and the event tag
+                return {
+                    "global_site_tag": snippets[0].global_site_tag,
+                    "event_snippet": snippets[0].event_snippet,
+                    "conversion_action_id": row.conversion_action.id
+                }
+        return {"error": "Snippet not generated"}
+    except GoogleAdsException as ex:
+        errors = [error.message for error in ex.failure.errors]
+        raise ValueError(f"Error obteniendo snippet: {'; '.join(errors)}")

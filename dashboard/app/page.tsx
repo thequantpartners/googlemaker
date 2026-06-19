@@ -59,13 +59,14 @@ const translations = {
     ps_desc: "For small agencies and growing businesses.",
     pg_desc: "For large agencies and robust operations.",
     pb_1: "1 Google Ads Account",
-    pb_2: "Basic AI Optimization",
-    ps_1: "Up to 3 Ad Accounts",
+    pb_2: "Standard Autopilot",
+    pb_3: "Basic Analytics",
+    ps_1: "Up to 3 Google Ads Accounts",
     ps_2: "Real-time Hybrid Scaling",
-    ps_3: "Priority Execution",
-    pg_1: "Unlimited Accounts",
+    ps_3: "Hourly Account Sync",
+    pg_1: "Unlimited Google Ads Accounts",
     pg_2: "Custom CPA Strategies",
-    pg_3: "Dedicated Support",
+    pg_3: "Priority Background Execution",
     btn_basic: "Start Basic",
     btn_scale: "Start Scale",
     btn_growth: "Start Growth",
@@ -135,13 +136,14 @@ const translations = {
     ps_desc: "Para pequeñas agencias y negocios en crecimiento.",
     pg_desc: "Para grandes agencias y operaciones robustas.",
     pb_1: "1 Cuenta de Google Ads",
-    pb_2: "Optimización Base con IA",
+    pb_2: "Piloto Automático Estándar",
+    pb_3: "Analítica Básica",
     ps_1: "Hasta 3 Cuentas de Ads",
     ps_2: "Escalado Híbrido en Tiempo Real",
-    ps_3: "Ejecución Prioritaria",
-    pg_1: "Cuentas Ilimitadas",
+    ps_3: "Sincronización de Cuenta por Hora",
+    pg_1: "Cuentas de Ads Ilimitadas",
     pg_2: "Estrategias CPA Personalizadas",
-    pg_3: "Soporte Dedicado",
+    pg_3: "Ejecución Prioritaria en Segundo Plano",
     btn_basic: "Empezar Básico",
     btn_scale: "Empezar Escala",
     btn_growth: "Empezar Crecimiento",
@@ -510,6 +512,7 @@ export default function LandingPage() {
               <ul className="space-y-4 mb-8 flex-1 text-gray-300">
                 <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_1}</li>
                 <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_2}</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_3}</li>
               </ul>
               <Link href="/login" className="text-center w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">{t.btn_basic}</Link>
             </div>

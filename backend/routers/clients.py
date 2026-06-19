@@ -176,6 +176,45 @@ async def delete_single_credential(
     await db.commit()
 
 
+@router.post("/me/credentials/{credential_id}/pixel")
+async def generate_tracking_pixel(
+    credential_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generates a Google Ads Conversion Action (Pixel) and returns the gtag snippet."""
+    result = await db.execute(
+        select(GoogleAdsCredential).where(
+            GoogleAdsCredential.id == credential_id,
+            GoogleAdsCredential.user_id == user.id
+        )
+    )
+    cred = result.scalar_one_or_none()
+    if not cred:
+        raise HTTPException(status_code=404, detail="Credential not found")
+        
+    try:
+        refresh_token = decrypt_value(cred.refresh_token)
+        target = decrypt_value(cred.target_customer_id)
+        login = decrypt_value(cred.login_customer_id)
+        
+        from services.google_ads_service import get_google_ads_client, create_conversion_action
+        client = get_google_ads_client(refresh_token, login)
+        
+        # We run this in a thread since it's blocking
+        import asyncio
+        pixel_data = await asyncio.to_thread(
+            create_conversion_action,
+            client,
+            target,
+            "GoogleMaker Lead Conversion"
+        )
+        return pixel_data
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+
 # ── Get own orchestrator logs ────────────────────────────────────────────────
 
 
