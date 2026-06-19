@@ -3,13 +3,32 @@
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X } from "lucide-react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [tier, setTier] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchTier() {
+      if (!session?.backendToken) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me`, {
+          headers: { Authorization: `Bearer ${session.backendToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTier(data.tier);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    fetchTier();
+  }, [session]);
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -100,7 +119,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex px-4 py-1.5 rounded-full border border-neon-purple/30 bg-neon-purple/10 text-neon-purple text-xs font-semibold items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-neon-green animate-pulse" />
-              SCALE PLAN - Active
+              {tier ? `${tier.toUpperCase()} PLAN - Active` : "Loading..."}
             </div>
             
             <div className="w-10 h-10 rounded-full bg-dark-card border border-dark-card-border flex items-center justify-center text-sm font-bold text-white shadow-[0_0_10px_rgba(255,255,255,0.1)]">
