@@ -379,8 +379,30 @@ def fetch_conversion_actions(client: GoogleAdsClient, customer_id: str) -> list[
         WHERE conversion_action.status IN ('ENABLED', 'HIDDEN')
     """
     
-    results = []
     try:
+        # First query: fetch campaigns with recent conversions
+        campaigns_query = """
+            SELECT
+                campaign.name,
+                segments.conversion_action
+            FROM campaign
+            WHERE segments.date DURING LAST_30_DAYS AND metrics.conversions > 0
+        """
+        active_campaigns_map = {}
+        try:
+            campaigns_response = ga_service.search(customer_id=customer_id_clean, query=campaigns_query)
+            for row in campaigns_response:
+                action_rn = row.segments.conversion_action
+                if action_rn:
+                    action_id = action_rn.split("/")[-1]
+                    if action_id not in active_campaigns_map:
+                        active_campaigns_map[action_id] = set()
+                    active_campaigns_map[action_id].add(row.campaign.name)
+        except GoogleAdsException:
+            # If the account has no metrics or segments error, we just silently continue
+            pass
+
+        results = []
         search_response = ga_service.search(customer_id=customer_id_clean, query=query)
         for row in search_response:
             ca = row.conversion_action
@@ -389,13 +411,16 @@ def fetch_conversion_actions(client: GoogleAdsClient, customer_id: str) -> list[
                 # Store the full HTML block
                 snippet = f"<!-- Google tag (gtag.js) -->\n{ca.tag_snippets[0].global_site_tag}\n\n<!-- Event snippet -->\n{ca.tag_snippets[0].event_snippet}"
                 
+            active_camps = list(active_campaigns_map.get(str(ca.id), []))
+            
             results.append({
                 "id": ca.id,
                 "name": ca.name,
                 "status": ca.status.name,
                 "category": ca.category.name,
                 "type": ca.type_.name,
-                "snippet": snippet
+                "snippet": snippet,
+                "active_campaigns": active_camps
             })
         return results
     except GoogleAdsException as ex:

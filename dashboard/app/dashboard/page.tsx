@@ -346,11 +346,25 @@ function DashboardContent() {
                     <div key={pixel.id} className="bg-white/5 border border-white/10 p-4 rounded-lg flex items-center justify-between group hover:bg-white/10 transition">
                       <div>
                         <div className="text-white font-medium mb-1">{pixel.name}</div>
-                        <div className="text-xs text-gray-400 flex gap-3">
+                        <div className="text-xs text-gray-400 flex flex-wrap gap-3 mb-2">
                           <span>Status: <span className="text-neon-green">{pixel.status}</span></span>
                           <span>Category: {pixel.category}</span>
                           <span>ID: {pixel.id}</span>
                         </div>
+                        {pixel.active_campaigns && pixel.active_campaigns.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            <span className="text-[10px] text-neon-purple uppercase font-bold tracking-wider mr-1 py-1">Active in:</span>
+                            {pixel.active_campaigns.map((camp: string, idx: number) => (
+                              <span key={idx} className="text-[11px] bg-neon-purple/10 border border-neon-purple/20 text-neon-purple px-2 py-0.5 rounded-full">
+                                {camp}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="mt-1">
+                            <span className="text-[11px] text-gray-500 italic">No conversions recorded in active campaigns (last 30 days)</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {pixel.snippet && (
