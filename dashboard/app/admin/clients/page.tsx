@@ -205,9 +205,10 @@ export default function AdminClients() {
                         className="bg-black/30 text-white border border-dark-card-border text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-orange-500/50 appearance-none cursor-pointer hover:bg-black/50 transition-colors"
                       >
                         <option value="none" className="text-black">Sin Plan</option>
-                        <option value="basic" className="text-black">Basic</option>
-                        <option value="scale" className="text-black">Scale</option>
+                        <option value="starter" className="text-black">Starter</option>
                         <option value="growth" className="text-black">Growth</option>
+                        <option value="pro" className="text-black">Pro</option>
+                        <option value="elite" className="text-black">Elite</option>
                       </select>
                     </td>
                     <td className="px-6 py-4">
