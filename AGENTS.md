@@ -40,6 +40,7 @@ Then use the generated compact context.
 * Prefer exact code changes over vague recommendations.
 * Validate before saying done.
 * For UI tasks, check visual memory first.
+* External AI agents (like Jules) always submit their work via Pull Requests. When reviewing other agents' work, always fetch and check remote branches (e.g., `git fetch --all`) instead of looking for local changes in `main`.
 * If major/important changes are made to the project, update README.md and AGENTS.md (if rules change). Do not update them for minor changes.
 
 ## Regla de Cierre (Closure Rule)

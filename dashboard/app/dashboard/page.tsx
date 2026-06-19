@@ -3,6 +3,26 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, Activity, AlertCircle, Plus, CheckCircle2, XCircle } from "lucide-react";
+
+// Mock data for the chart as seen in the v0 design
+const chartData = [
+  { name: 'Mon', spend: 400, conversions: 240 },
+  { name: '12', spend: 300, conversions: 139 },
+  { name: '16', spend: 500, conversions: 600 },
+  { name: '20', spend: 800, conversions: 900 },
+  { name: 'J.', spend: 400, conversions: 800 },
+  { name: '8', spend: 300, conversions: 600 },
+  { name: '13', spend: 1000, conversions: 1200 },
+  { name: '15', spend: 1500, conversions: 1600 },
+  { name: '29', spend: 700, conversions: 900 },
+  { name: 'May', spend: 600, conversions: 800 },
+  { name: '13', spend: 800, conversions: 1000 },
+  { name: '23', spend: 1200, conversions: 1400 },
+  { name: '24', spend: 1100, conversions: 1100 },
+  { name: 'Day', spend: 900, conversions: 1300 },
+];
 
 function DashboardContent() {
   const { data: session } = useSession();
@@ -70,19 +90,25 @@ function DashboardContent() {
   };
 
   if (loading) {
-    return <div style={{ padding: "40px", textAlign: "center" }}>Cargando panel...</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-pulse text-neon-purple font-medium flex items-center gap-2">
+          <Activity className="animate-spin" /> Loading Dashboard...
+        </div>
+      </div>
+    );
   }
 
   // --- SUSPENDED STATE ---
   if (statusData?.user_status === 'suspended') {
     return (
-      <div style={{ maxWidth: "800px", margin: "40px auto", textAlign: "center", padding: "40px" }} className="glass-panel">
-        <div style={{ width: "80px", height: "80px", background: "#ef4444", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2.5rem", margin: "0 auto 24px" }}>
-          🚫
+      <div className="max-w-2xl mx-auto mt-20 text-center bg-dark-card backdrop-blur-xl border border-red-500/30 p-12 rounded-3xl shadow-[0_0_30px_rgba(239,68,68,0.1)]">
+        <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/50">
+          <AlertCircle className="text-red-500 w-10 h-10" />
         </div>
-        <h1 className="heading-lg" style={{ color: "#ef4444", marginBottom: "16px" }}>Cuenta Suspendida</h1>
-        <p className="text-muted" style={{ fontSize: "1.1rem" }}>
-          Tu cuenta ha sido suspendida. No puedes realizar acciones en el panel principal ni conectar cuentas de Google Ads.
+        <h1 className="text-3xl font-bold text-red-500 mb-4">Account Suspended</h1>
+        <p className="text-gray-400 text-lg">
+          Your account has been suspended. You cannot perform actions or connect Google Ads accounts.
         </p>
       </div>
     );
@@ -91,59 +117,58 @@ function DashboardContent() {
   // --- PAYWALL STATE ---
   if (statusData?.plan_limit === 0) {
     return (
-      <div style={{ maxWidth: "1000px", margin: "40px auto", textAlign: "center" }}>
-        <h1 className="heading-lg" style={{ marginBottom: "16px" }}>Elige tu Plan</h1>
-        <p className="text-muted" style={{ marginBottom: "40px", fontSize: "1.1rem" }}>
-          Desbloquea el poder de la optimización automática con GoogleMaker.
+      <div className="max-w-5xl mx-auto mt-10 text-center animate-fade-in-up">
+        <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
+        <p className="text-gray-400 text-lg mb-12">
+          Unlock the power of automatic optimization with GoogleMaker.
         </p>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
-          <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-            <div>
-              <h2 className="heading-md">Basic</h2>
-              <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$5<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
-              <p className="text-muted" style={{ marginBottom: "24px" }}>Ideal para emprendedores y negocios locales.</p>
-              <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
-                <li style={{ marginBottom: "8px" }}>✅ Conectar 1 cuenta de Google Ads</li>
-                <li style={{ marginBottom: "8px" }}>✅ Optimización base con IA</li>
-                <li style={{ marginBottom: "8px" }}>✅ Reportes semanales</li>
-              </ul>
-            </div>
-            <button className="btn-outline" onClick={() => handleSelectPlan("basic")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
-              {selectingPlan ? "Activando..." : "Elegir Basic"}
+        <div className="grid md:grid-cols-3 gap-6 text-left">
+          {/* Basic Plan */}
+          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-neon-blue/50 transition-colors">
+            <h2 className="text-2xl font-bold text-white mb-2">Basic</h2>
+            <div className="text-4xl font-extrabold text-neon-blue mb-4">$5<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+            <p className="text-gray-400 mb-8 h-12">Ideal for entrepreneurs and local businesses.</p>
+            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Connect 1 Ad Account</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Basic AI Optimization</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Weekly Reports</li>
+            </ul>
+            <button onClick={() => handleSelectPlan("basic")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
+              {selectingPlan ? "Activating..." : "Choose Basic"}
             </button>
           </div>
 
-          <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", border: "2px solid var(--primary-color)", transform: "scale(1.05)" }}>
-            <div>
-              <div style={{ background: "var(--primary-color)", color: "white", padding: "4px 12px", borderRadius: "20px", display: "inline-block", fontSize: "0.8rem", marginBottom: "16px", fontWeight: "bold" }}>MÁS POPULAR</div>
-              <h2 className="heading-md">Scale</h2>
-              <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$20<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
-              <p className="text-muted" style={{ marginBottom: "24px" }}>Para agencias pequeñas y negocios en crecimiento.</p>
-              <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
-                <li style={{ marginBottom: "8px" }}>✅ Hasta 3 cuentas de Google Ads</li>
-                <li style={{ marginBottom: "8px" }}>✅ Optimización avanzada en tiempo real</li>
-                <li style={{ marginBottom: "8px" }}>✅ Acompañamiento básico</li>
-              </ul>
+          {/* Scale Plan */}
+          <div className="bg-dark-card backdrop-blur-xl border border-neon-purple p-8 rounded-[2rem] flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(168,85,247,0.15)]">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">
+              MOST POPULAR
             </div>
-            <button className="btn-primary" onClick={() => handleSelectPlan("scale")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
-              {selectingPlan ? "Activando..." : "Elegir Scale"}
+            <h2 className="text-2xl font-bold text-white mb-2">Scale</h2>
+            <div className="text-4xl font-extrabold text-neon-purple mb-4">$20<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+            <p className="text-gray-400 mb-8 h-12">For small agencies and growing businesses.</p>
+            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Up to 3 Ad Accounts</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Real-time Optimization</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Priority Support</li>
+            </ul>
+            <button onClick={() => handleSelectPlan("scale")} disabled={selectingPlan} className="w-full py-4 rounded-full bg-gradient-to-r from-neon-purple to-neon-blue font-semibold text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+              {selectingPlan ? "Activating..." : "Choose Scale"}
             </button>
           </div>
 
-          <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-            <div>
-              <h2 className="heading-md">Growth</h2>
-              <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$99<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
-              <p className="text-muted" style={{ marginBottom: "24px" }}>Para grandes agencias y operaciones robustas.</p>
-              <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
-                <li style={{ marginBottom: "8px" }}>✅ Cuentas de Google Ads ilimitadas</li>
-                <li style={{ marginBottom: "8px" }}>✅ Plan personalizado y estrategas</li>
-                <li style={{ marginBottom: "8px" }}>✅ Soporte prioritario 24/7</li>
-              </ul>
-            </div>
-            <button className="btn-outline" onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} style={{ width: "100%", padding: "12px" }}>
-              {selectingPlan ? "Activando..." : "Elegir Growth"}
+          {/* Growth Plan */}
+          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-neon-green/50 transition-colors">
+            <h2 className="text-2xl font-bold text-white mb-2">Growth</h2>
+            <div className="text-4xl font-extrabold text-neon-green mb-4">$99<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+            <p className="text-gray-400 mb-8 h-12">For large agencies and robust operations.</p>
+            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Unlimited Ad Accounts</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Custom AI Strategies</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> 24/7 Dedicated Support</li>
+            </ul>
+            <button onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
+              {selectingPlan ? "Activating..." : "Choose Growth"}
             </button>
           </div>
         </div>
@@ -158,136 +183,231 @@ function DashboardContent() {
   const isSuspended = statusData?.user_status === 'suspended';
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1 className="heading-lg">Panel Principal</h1>
+    <div className="animate-fade-in-up max-w-[1400px] mx-auto pb-20">
+      
+      {/* Top action bar */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
+          <p className="text-gray-400 text-sm">
+            {isUnlimited 
+              ? `You have unlimited accounts. (${connectedCount} connected)`
+              : `You have connected ${connectedCount} out of ${statusData?.plan_limit} allowed accounts.`}
+          </p>
+        </div>
+        
         {canConnectMore && (
           <button 
-            className="btn-primary" 
             onClick={isSuspended ? undefined : handleConnect} 
             disabled={isSuspended}
-            style={{ 
-              padding: "8px 16px",
-              opacity: isSuspended ? 0.5 : 1,
-              cursor: isSuspended ? "not-allowed" : "pointer"
-            }}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white transition-all
+              ${isSuspended 
+                ? "bg-gray-700 cursor-not-allowed opacity-50" 
+                : "bg-gradient-to-r from-neon-green/80 to-emerald-600 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+              }
+            `}
           >
-            + Conectar Google Ads
+            <Plus size={18} /> Connect Google Ads
           </button>
         )}
       </div>
-      
-      <p className="text-muted" style={{ marginBottom: "40px" }}>
-        {isUnlimited 
-          ? `Tienes cuentas ilimitadas. (${connectedCount} conectadas)`
-          : `Has conectado ${connectedCount} de ${statusData?.plan_limit} cuentas permitidas en tu plan.`}
-      </p>
 
       {searchParams.get("connected") === "success" && (
-        <div style={{ padding: "16px", background: "rgba(0, 200, 83, 0.1)", border: "1px solid var(--success-color)", color: "var(--success-color)", borderRadius: "8px", marginBottom: "32px" }}>
-          ¡Cuenta de Google Ads conectada con éxito!
+        <div className="mb-8 p-4 bg-neon-green/10 border border-neon-green/30 text-neon-green rounded-xl flex items-center gap-3">
+          <CheckCircle2 size={20} /> Google Ads Account successfully connected!
         </div>
       )}
 
       {searchParams.get("connected") === "error" && (
-        <div style={{ padding: "16px", background: "rgba(255, 59, 48, 0.1)", border: "1px solid var(--error-color)", color: "var(--error-color)", borderRadius: "8px", marginBottom: "32px" }}>
-          ⚠️ {searchParams.get("message") || "Error al conectar la cuenta de Google Ads."}
+        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3">
+          <AlertCircle size={20} /> {searchParams.get("message") || "Error connecting Google Ads account."}
         </div>
       )}
 
-      {connectedCount === 0 ? (
-        <div className="glass-panel" style={{ padding: "40px", textAlign: "center" }}>
-          <div style={{ width: "64px", height: "64px", background: "var(--primary-color)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2rem", margin: "0 auto 16px" }}>
-            🔗
+      {/* 4 Metric Widgets */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Widget 1 */}
+        <div className="bg-dark-card backdrop-blur-xl border border-neon-green/30 p-6 rounded-2xl relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.05)]">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-neon-green/10 rounded-full blur-[40px] -mr-10 -mt-10" />
+          <p className="text-gray-400 text-sm mb-2">Total Spend</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-3xl font-bold text-white">$12,450</h2>
+            <span className="flex items-center text-xs font-semibold text-neon-green bg-neon-green/10 px-2 py-1 rounded-md mb-1">
+              <TrendingUp size={12} className="mr-1" /> 9.5%
+            </span>
           </div>
-          <h2 className="heading-md">Sin cuentas conectadas</h2>
-          <p className="text-muted" style={{ marginBottom: "24px" }}>
-            Aún no has conectado ninguna cuenta de Google Ads.
-          </p>
+        </div>
+
+        {/* Widget 2 */}
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
+          <p className="text-gray-400 text-sm mb-2">Conversions</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-3xl font-bold text-white">1,230</h2>
+            <span className="flex items-center text-xs font-semibold text-neon-green bg-neon-green/10 px-2 py-1 rounded-md mb-1">
+              <TrendingUp size={12} className="mr-1" /> 12.9%
+            </span>
+          </div>
+        </div>
+
+        {/* Widget 3 */}
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
+          <p className="text-gray-400 text-sm mb-2">Avg. CPA</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-3xl font-bold text-white">$10.12</h2>
+            <span className="flex items-center text-xs font-semibold text-neon-purple bg-neon-purple/10 px-2 py-1 rounded-md mb-1">
+              <TrendingDown size={12} className="mr-1" /> 10.5%
+            </span>
+          </div>
+        </div>
+
+        {/* Widget 4 */}
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
+          <p className="text-gray-400 text-sm mb-2">ROAS</p>
+          <div className="flex items-end gap-3">
+            <h2 className="text-3xl font-bold text-white">3.5x</h2>
+            <span className="flex items-center text-xs font-semibold text-neon-green bg-neon-green/10 px-2 py-1 rounded-md mb-1">
+              <TrendingUp size={12} className="mr-1" /> 3.5%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Chart Area */}
+      <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-[2rem] mb-8">
+        <div className="flex justify-between items-center mb-8">
+          <h3 className="text-lg font-semibold text-white">Total Ad Spend vs Conversions</h3>
+          <div className="flex items-center gap-4 text-sm font-medium">
+            <div className="flex items-center gap-2 text-gray-300">
+              <div className="w-3 h-1 rounded-full bg-neon-green" /> Conversions
+            </div>
+            <div className="flex items-center gap-2 text-gray-300">
+              <div className="w-3 h-1 rounded-full bg-neon-purple" /> Total Ad Spend
+            </div>
+          </div>
+        </div>
+        
+        <div className="w-full h-[350px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorConversions" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#A855F7" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+              <XAxis dataKey="name" stroke="#52525b" tick={{fill: '#a1a1aa', fontSize: 12}} axisLine={false} tickLine={false} />
+              <YAxis stroke="#52525b" tick={{fill: '#a1a1aa', fontSize: 12}} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#141822', borderColor: '#27272a', borderRadius: '12px', color: '#fff' }}
+                itemStyle={{ color: '#fff' }}
+              />
+              <Area type="monotone" dataKey="conversions" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorConversions)" />
+              <Area type="monotone" dataKey="spend" stroke="#A855F7" strokeWidth={3} fillOpacity={1} fill="url(#colorSpend)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Connected Accounts / Campaigns Table */}
+      <h3 className="text-xl font-semibold text-white mb-4">Connected Accounts</h3>
+      {connectedCount === 0 ? (
+        <div className="bg-dark-card border border-dark-card-border p-12 text-center rounded-[2rem]">
+          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Activity className="text-gray-500" size={32} />
+          </div>
+          <p className="text-gray-400 mb-6">No Google Ads accounts connected yet.</p>
           <button 
-            className="btn-primary" 
             onClick={isSuspended ? undefined : handleConnect} 
             disabled={isSuspended}
-            style={{ 
-              padding: "12px 32px",
-              opacity: isSuspended ? 0.5 : 1,
-              cursor: isSuspended ? "not-allowed" : "pointer"
-            }}
+            className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
           >
-            Conectar Ahora
+            Connect Now
           </button>
         </div>
       ) : (
-        <>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "40px" }}>
-            <div className="glass-card">
-              <p className="text-muted">Cuentas Activas</p>
-              <h2 className="heading-lg" style={{ color: "var(--success-color)" }}>{connectedCount}</h2>
-            </div>
-            <div className="glass-card">
-              <p className="text-muted">Conversiones (Mes)</p>
-              <h2 className="heading-lg">--</h2>
-            </div>
-            <div className="glass-card">
-              <p className="text-muted">Gasto (Mes)</p>
-              <h2 className="heading-lg">$ 0.00</h2>
-            </div>
+        <div className="bg-dark-card border border-dark-card-border rounded-[2rem] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-dark-card-border text-gray-400 text-sm">
+                  <th className="py-4 px-6 font-medium">Customer ID</th>
+                  <th className="py-4 px-6 font-medium">Credential</th>
+                  <th className="py-4 px-6 font-medium">Status</th>
+                  <th className="py-4 px-6 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statusData?.connected_accounts?.map((acc: any, index: number) => {
+                  const isInvalid = acc.target_customer_id === "Unknown" || acc.target_customer_id === "Unknown:1" || acc.target_customer_id === "PENDING" || acc.target_customer_id === "PENDING:1";
+                  return (
+                    <tr key={index} className="border-b border-dark-card-border hover:bg-white/[0.02] transition-colors group">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3 text-white font-medium">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isInvalid ? 'bg-red-500/20 text-red-500' : 'bg-neon-blue/20 text-neon-blue'}`}>
+                            {isInvalid ? <AlertCircle size={16} /> : <Activity size={16} />}
+                          </div>
+                          {acc.target_customer_id}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-gray-400">
+                        {acc.id.split("-")[0]}
+                      </td>
+                      <td className="py-4 px-6">
+                        {isInvalid ? (
+                          <span className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-1 w-max">
+                            <XCircle size={12} /> Corrupt/Expired
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-semibold flex items-center gap-1 w-max shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                            <CheckCircle2 size={12} /> Active Sync
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <button 
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to disconnect account ${acc.target_customer_id}?`)) {
+                              try {
+                                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${acc.id}`, {
+                                  method: "DELETE",
+                                  headers: { Authorization: `Bearer ${session?.backendToken}` }
+                                });
+                                window.location.reload();
+                              } catch (err) {
+                                console.error(err);
+                              }
+                            }
+                          }}
+                          className="text-gray-500 hover:text-red-500 transition-colors text-sm font-medium"
+                        >
+                          Disconnect
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-
-          <h2 className="heading-md" style={{ marginBottom: "16px" }}>Cuentas Conectadas</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {statusData?.connected_accounts?.map((acc: any, index: number) => {
-              const isInvalid = acc.target_customer_id === "Unknown" || acc.target_customer_id === "Unknown:1" || acc.target_customer_id === "PENDING" || acc.target_customer_id === "PENDING:1";
-              return (
-              <div key={index} className="glass-panel" style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderLeft: isInvalid ? "4px solid #ef4444" : "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div style={{ width: "40px", height: "40px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem" }}>
-                    {isInvalid ? "⚠️" : "📊"}
-                  </div>
-                  <div>
-                    <h3 style={{ fontSize: "1.1rem", fontWeight: "600", margin: 0 }}>Customer ID: {acc.target_customer_id}</h3>
-                    <p className="text-muted" style={{ margin: 0, fontSize: "0.9rem" }}>Credencial ID: {acc.id.split("-")[0]}</p>
-                    {isInvalid && <p style={{ color: "#ef4444", margin: "4px 0 0 0", fontSize: "0.85rem" }}>Esta credencial está corrupta o caducada. Por favor, elimínala y vuelve a conectar.</p>}
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  {!isInvalid && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--success-color)" }}>
-                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--success-color)", boxShadow: "0 0 10px var(--success-color)" }}></div>
-                      <span>Sincronizada</span>
-                    </div>
-                  )}
-                  <button 
-                    onClick={async () => {
-                      if (confirm(`¿Estás seguro de que deseas desconectar la cuenta ${acc.target_customer_id}?`)) {
-                        try {
-                          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${acc.id}`, {
-                            method: "DELETE",
-                            headers: { Authorization: `Bearer ${session?.backendToken}` }
-                          });
-                          window.location.reload();
-                        } catch (err) {
-                          console.error(err);
-                        }
-                      }
-                    }}
-                    style={{ background: "transparent", border: "1px solid #ef4444", color: "#ef4444", padding: "6px 12px", borderRadius: "6px", cursor: "pointer", fontSize: "0.85rem" }}
-                  >
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            )})}
-          </div>
-        </>
+        </div>
       )}
+
     </div>
   );
 }
 
 export default function ClientDashboard() {
   return (
-    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center" }}>Cargando panel...</div>}>
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-background text-neon-purple">
+        <Activity className="animate-spin" size={32} />
+      </div>
+    }>
       <DashboardContent />
     </Suspense>
   );
