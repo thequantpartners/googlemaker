@@ -12,17 +12,25 @@ export default function PrivacyPage() {
         <div className="space-y-4 text-gray-300 leading-relaxed">
           <p>Last updated: June 2026</p>
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">1. Information We Collect</h2>
-          <p>We collect information you provide directly to us, such as your Google Account details (email, name) when you sign in using Google OAuth. We also access your Google Ads data exclusively to provide our automation service. We do not store your Google Ads data longer than necessary for processing.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. How We Use Your Information</h2>
-          <p>We use the information we collect to operate, maintain, and improve our Service. Your Google Ads metrics are analyzed to pause underperforming campaigns and scale winning ones according to the settings you provide.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. Information Sharing</h2>
-          <p>We do not share your personal information or Google Ads data with third parties except as necessary to provide the service (e.g., payment processing via Lemon Squeezy, server hosting). We do not sell your data.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Security</h2>
-          <p>We implement reasonable security measures to protect your information, including AES-256 encryption for sensitive credentials. However, no security system is impenetrable, and we cannot guarantee the absolute security of our systems.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">5. Your Rights</h2>
-          <p>You have the right to access, update, or delete your information at any time. You can revoke our access to your Google Ads account directly from your Google Account security settings or by deleting your account in our dashboard.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Contact Us</h2>
-          <p>If you have any questions about this Privacy Policy, please contact us at partners@thequantpartners.com.</p>
+          <p>We collect information you provide directly to us, such as your Google Account details (email, name) when you sign in using Google OAuth. We also request access to your Google Ads API to provide automation.</p>
+          
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. Client Confidentiality (For Law Firms)</h2>
+          <p>GMaker strictly accesses aggregate advertising metrics (clicks, impressions, cost, conversion counts). <strong>We do not read, extract, or store Personally Identifiable Information (PII) of your legal clients.</strong> We do not have access to your CRM, emails, or specific case details.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. How We Use Your Information</h2>
+          <p>We use your Google Ads metrics strictly to execute the algorithmic automation you configured (pausing underperforming ads and scaling winners). We do not use your data to train public AI models.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Information Sharing</h2>
+          <p>We do not share your personal information or Google Ads data with third parties except as necessary to provide the service (e.g., payment processing via Lemon Squeezy). <strong>We will never sell your data to other law firms or third parties.</strong></p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">5. Security</h2>
+          <p>We implement strict security measures, including AES-256 encryption for API tokens. While we strive to protect your data, no internet transmission is 100% secure.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Your Rights & Revocation</h2>
+          <p>You can revoke our access to your Google Ads account at any time directly from your Google Account security settings. Upon account deletion, all associated API tokens and metrics are permanently removed from our databases.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">7. Contact Us</h2>
+          <p>If you have any privacy concerns, please contact us at partners@thequantpartners.com.</p>
         </div>
       </div>
     </div>

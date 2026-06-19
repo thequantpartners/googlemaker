@@ -2,7 +2,7 @@
 
 ## In Process
 
-- [ ] Execute Autopilot Pivot Implementation Plan (Ad Spend pricing, Soft Pause logic, Immigration Lawyer Templates).
+- [Define upcoming work]
 
 ## Pending
 
@@ -10,6 +10,7 @@
 
 ## Done
 
+- [x] Execute Autopilot Pivot Implementation Plan (Ad Spend pricing, Soft Pause logic, Immigration Lawyer Templates).
 - [x] Conceptual Alignment on Autopilot Pivot (Immigration Lawyer ICP, Ad Spend pricing).
 - [x] Set up PCA, GitHub Monorepo, and configure Railway backend deployment.
 - [x] Migrate to PostgreSQL on Railway for persistent storage.
@@ -22,6 +23,7 @@
 - [x] Implement Hybrid Autopilot (Learning Phase heuristic, automated PAUSE, pending UI for SCALE, backend CRON).
 - [x] Integrate real payment gateway (Lemon Squeezy) with checkout sessions and webhook for automatic tier assignment.
 - [x] Configure Lemon Squeezy Store ID, Variant IDs, and Webhook Secret in backend and verify end-to-end payment flow.
+- [x] Transition Lemon Squeezy integration from Test Mode to Live Mode with real Variant IDs mapped to UI and Backend.
 - [x] Add mandatory legal pages (Terms, Privacy, Refunds) and update footer links for Lemon Squeezy store approval.
 - [x] Migrated Landing Page and Dashboard UI to a premium dark-mode aesthetic using Tailwind CSS and Recharts.
 - [x] Upgraded Landing Page to a High-Conversion B2B Funnel with marketing psychology, Social Proof, and exposed Pricing tiers.
@@ -32,3 +34,4 @@
 - [x] Implemented logic to strictly enforce plan limits in backend and updated the landing page UI accordingly.
 - [x] Integrated Google Ads Conversion Pixel generation with Backend GAQL logic and Frontend Modal UI.
 - [x] Rebranding to GMaker, CORS domain updates, and SEO metadata update.
+- [x] Refined Landing Page copy for Immigration Lawyers ICP and reinforced Legal Pages (Terms, Privacy, Refunds) to mitigate liability.

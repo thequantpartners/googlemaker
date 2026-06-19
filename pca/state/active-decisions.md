@@ -20,3 +20,4 @@
 - **Ideal Customer Profile (ICP)**: Product marketing and default templates are hyper-focused on **US Immigration Lawyers** (targeting the US Latino market).
 - **Ad-Spend Based Pricing**: Pricing tiers are gated by managed Google Ads spend volume rather than feature access. All users get the full Autopilot core.
 - **Soft Pause Policy**: When a user exceeds their tier's ad-spend limit, GMaker will **NEVER** pause their actual Google Ads campaigns. Instead, GMaker will execute a "Soft Pause", disabling its own Autopilot optimizations and displaying a warning to upgrade, protecting the client's underlying business operations from accidental disruption.
+- **Legal & Compliance**: Overhauled all legal clauses (Terms, Privacy, Refunds) specifically tailored to the litigious US Immigration Lawyer market. Added strict liability caps, ad-spend waivers, indemnification, and mandatory arbitration clauses to protect the company.

@@ -45,3 +45,7 @@
 - Updated CORS backend policies to accept gmaker.thequantpartners.com.
 - Updated Landing Page SEO metadata (Title and Description) with a professional English slogan.
 - Strategically pivoted product definition: Defined "Autopilot" as the core value proposition, Immigration Lawyers (US Latinos) as the target ICP, and planned the migration to Ad-Spend based pricing tiers with a "Soft Pause" limit enforcement.
+- Executed Autopilot Pivot Implementation Plan: Ad Spend pricing limits (Starter, Growth, Pro, Elite), Soft Pause orchestrator logic, and Immigration Lawyer Templates.
+- Transitioned Lemon Squeezy integration from Test Mode to Live Mode. Queried real live products via API, updated backend `VARIANT_MAP` to match the new Starter ($49), Growth ($199), and Pro ($499) plans, and synchronized the frontend `PricingCards.tsx` UI. Guided user on configuring production Webhook with the correct URL, Secret, and Events.
+- Refined Landing Page (ES) copywriting to specifically target US Immigration Lawyers, emphasizing the "Piloto Automático" core benefit and addressing niche pain points (bad clicks, lack of time, high CPA).
+- Overhauled Legal Pages (Terms of Service, Privacy Policy, Refund Policy) to include robust liability waivers, indemnification, mandatory arbitration, no-refunds for Ad Spend, and client confidentiality clauses specifically tailored to protect against litigious markets.

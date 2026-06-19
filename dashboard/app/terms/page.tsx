@@ -12,16 +12,27 @@ export default function TermsPage() {
         <div className="space-y-4 text-gray-300 leading-relaxed">
           <p>Last updated: June 2026</p>
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">1. Agreement to Terms</h2>
-          <p>By accessing or using GMaker, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. Description of Service</h2>
-          <p>GMaker provides automated Google Ads management software. We do not guarantee specific advertising results, CPA, or ROI. The tool operates based on the parameters you define.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. Subscriptions and Payments</h2>
-          <p>GMaker is billed on a subscription basis. Our order process is conducted by our online reseller Lemon Squeezy. Lemon Squeezy is the Merchant of Record for all our orders. They process all payments and handle tax compliance.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Account Responsibilities</h2>
-          <p>You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password. You must not connect unauthorized Google Ads accounts.</p>
+          <p>By accessing or using GMaker, you agree to be bound by these Terms of Service. If you are using GMaker on behalf of a law firm, agency, or other entity, you represent that you have the authority to bind such entity.</p>
+          
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. Description of Service & No Guarantee of Results</h2>
+          <p>GMaker provides automated Google Ads management software. Advertising is inherently unpredictable. We <strong>DO NOT</strong> guarantee specific advertising results, a specific Cost Per Acquisition (CPA), or Return on Investment (ROI). The tool operates algorithmically based on the parameters you define.</p>
+          
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. Assumption of Risk and Ad Spend Liability</h2>
+          <p>You acknowledge that algorithms, AI models, and APIs are subject to latency, bugs, and unpredictable behavior. <strong>YOU ARE SOLELY RESPONSIBLE FOR YOUR GOOGLE ADS SPEND.</strong> GMaker is not liable for any unintended ad spend, budget overruns, or erroneous campaign pauses/scalings. You agree to monitor your own ad accounts regularly.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Indemnification</h2>
+          <p>You agree to defend, indemnify, and hold harmless GMaker and TheQuantPartners from any claims, damages, or lawsuits arising from your use of the Service, including but not limited to claims from your clients, malpractice allegations, or violations of advertising regulations (e.g., Bar Association advertising rules).</p>
+
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">5. Limitation of Liability</h2>
-          <p>In no event shall GMaker, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Contact Us</h2>
+          <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL GMAKER BE LIABLE FOR ANY INDIRECT, PUNITIVE, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF AD SPEND, OR BUSINESS INTERRUPTION. IN NO EVENT SHALL OUR TOTAL CUMULATIVE LIABILITY EXCEED THE AMOUNT PAID BY YOU TO US IN THE THREE (3) MONTHS PRECEDING THE CLAIM, OR $100 USD, WHICHEVER IS GREATER.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Mandatory Arbitration and Class Action Waiver</h2>
+          <p>Any dispute arising out of or relating to these Terms shall be resolved through binding arbitration in the State of Delaware, rather than in court. You agree to waive any right to participate in a class action lawsuit or class-wide arbitration.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">7. Subscriptions and Payments</h2>
+          <p>GMaker is billed on a subscription basis. Our order process is conducted by our online reseller Lemon Squeezy, which is the Merchant of Record for all orders.</p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-4">8. Contact Us</h2>
           <p>If you have any questions about these Terms, please contact us at partners@thequantpartners.com.</p>
         </div>
       </div>
