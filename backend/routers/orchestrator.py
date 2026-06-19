@@ -101,7 +101,6 @@ async def dry_run(
     """
     Dry-run: evaluates campaigns for a client without modifying Google Ads.
     """
-    """
     creds = await _ensure_client_with_creds(client_id, db)
     
     result = await db.execute(select(User).where(User.id == client_id))
@@ -171,7 +170,6 @@ async def run(
 ):
     """
     Live run: evaluates campaigns and mutates Google Ads for a client.
-    """
     """
     creds = await _ensure_client_with_creds(client_id, db)
     
