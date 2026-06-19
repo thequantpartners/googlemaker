@@ -3,7 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { CheckCircle2, AlertCircle, Activity } from "lucide-react";
-import PricingCards from "../../../components/PricingCards";
+import PricingCards from "../../components/PricingCards";
 
 export default function PlanesPage() {
   const { data: session } = useSession();
