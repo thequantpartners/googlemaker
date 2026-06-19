@@ -22,3 +22,5 @@
 - [x] Integrate real payment gateway (Lemon Squeezy) with checkout sessions and webhook for automatic tier assignment.
 - [x] Migrated Landing Page and Dashboard UI to a premium dark-mode aesthetic using Tailwind CSS and Recharts.
 - [x] Upgraded Landing Page to a High-Conversion B2B Funnel with marketing psychology, Social Proof, and exposed Pricing tiers.
+- [x] Adapted Landing Page, Client Dashboard, and Admin Dashboard for Mobile devices (hamburger menus, sliding sidebars, responsive tables).
+- [x] Redesigned SuperAdmin Dashboard removing legacy CSS in favor of a premium Tailwind aesthetic (Neon Orange accents).
