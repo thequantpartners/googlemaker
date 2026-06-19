@@ -10,6 +10,7 @@ interface Client {
   name: string;
   status: string;
   tier: string;
+  role: string;
 }
 
 export default function AdminClients() {
@@ -17,12 +18,16 @@ export default function AdminClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Dropdown & Delete state
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchClients = async () => {
     if (!session?.backendToken) return;
@@ -101,6 +106,29 @@ export default function AdminClients() {
       fetchClients();
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleDeleteClient = async () => {
+    if (!clientToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/clients/${clientToDelete.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.backendToken}` },
+      });
+      if (res.ok) {
+        setClientToDelete(null);
+        setOpenMenuId(null);
+        fetchClients();
+      } else {
+        alert("Error al eliminar cliente. Puede que sea superadmin.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error de conexión");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -196,10 +224,27 @@ export default function AdminClients() {
                         <option value="suspended" className="text-black">Suspendido</option>
                       </select>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                    <td className="px-6 py-4 text-right relative">
+                      <button 
+                        onClick={() => setOpenMenuId(openMenuId === client.id ? null : client.id)}
+                        className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      >
                         <MoreHorizontal size={20} />
                       </button>
+                      
+                      {openMenuId === client.id && client.role !== 'superadmin' && (
+                        <div className="absolute right-6 top-12 mt-2 w-40 bg-[#12161f] border border-dark-card-border rounded-xl shadow-2xl z-20 py-2 animate-fade-in-up">
+                          <button
+                            onClick={() => {
+                              setClientToDelete(client);
+                              setOpenMenuId(null);
+                            }}
+                            className="w-full text-left px-4 py-2 text-red-400 hover:bg-white/5 transition-colors text-sm font-medium"
+                          >
+                            Eliminar Cliente
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -271,6 +316,34 @@ export default function AdminClients() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Eliminar Cliente */}
+      {clientToDelete && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-card border border-dark-card-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up p-6">
+            <h2 className="text-xl font-bold text-white mb-2">¿Eliminar Cliente?</h2>
+            <p className="text-gray-400 mb-6">
+              Estás a punto de eliminar al cliente <span className="text-white font-bold">{clientToDelete.email}</span>. 
+              Esta acción es permanente y eliminará todas sus campañas y credenciales asociadas.
+            </p>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => setClientToDelete(null)}
+                className="flex-1 py-3 px-4 rounded-xl border border-dark-card-border text-white font-medium hover:bg-white/5 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleDeleteClient}
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 rounded-xl bg-red-500/10 text-red-500 border border-red-500/50 font-bold hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? "Eliminando..." : "Sí, Eliminar"}
+              </button>
+            </div>
           </div>
         </div>
       )}
