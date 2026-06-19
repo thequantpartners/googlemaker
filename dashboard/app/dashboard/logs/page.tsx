@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { Activity, Check, X, Clock, AlertCircle } from "lucide-react";
 
 interface LogOut {
   id: string;
@@ -66,88 +67,107 @@ export default function ClientLogs() {
   };
 
   return (
-    <div>
-      <h1 className="heading-lg" style={{ marginBottom: "24px" }}>Historial de Decisiones</h1>
-      <p className="text-muted" style={{ marginBottom: "40px" }}>
-        Registro de todas las acciones tomadas por la IA sobre tus campañas.
-      </p>
+    <div className="space-y-8 animate-fade-in-up pb-20">
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">Historial de Decisiones</h1>
+        <p className="text-gray-400">
+          Registro de todas las acciones tomadas por la IA sobre tus campañas.
+        </p>
+      </div>
 
-      <div className="glass-panel" style={{ overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid var(--border-color)", background: "rgba(255,255,255,0.02)" }}>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Fecha</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Campaña</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Acción</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Motivo</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} style={{ padding: "32px", textAlign: "center" }} className="text-muted">
-                  Cargando...
-                </td>
+      <div className="bg-dark-card border border-dark-card-border rounded-[2rem] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[900px]">
+            <thead>
+              <tr className="border-b border-dark-card-border bg-black/20 text-gray-400 text-sm uppercase tracking-wider font-semibold">
+                <th className="px-6 py-4">Fecha</th>
+                <th className="px-6 py-4">Campaña</th>
+                <th className="px-6 py-4">Acción</th>
+                <th className="px-6 py-4">Motivo</th>
+                <th className="px-6 py-4">Estado</th>
               </tr>
-            ) : logs.length === 0 ? (
-              <tr>
-                <td colSpan={5} style={{ padding: "32px", textAlign: "center" }} className="text-muted">
-                  No hay decisiones recientes registradas.
-                </td>
-              </tr>
-            ) : (
-              logs.map((log) => (
-                <tr key={log.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <td style={{ padding: "16px 24px", color: "var(--text-secondary)" }}>
-                    {new Date(log.executed_at).toLocaleString()}
-                    {log.is_dry_run && (
-                      <span className="badge badge-warning" style={{ marginLeft: "8px" }}>Simulación</span>
-                    )}
-                  </td>
-                  <td style={{ padding: "16px 24px" }}>
-                    {log.campaign_name || log.campaign_id || "N/A"}
-                  </td>
-                  <td style={{ padding: "16px 24px" }}>
-                    <span className="badge badge-active">{log.action}</span>
-                  </td>
-                  <td style={{ padding: "16px 24px", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                    {log.reason || "Sin detalles"}
-                  </td>
-                  <td style={{ padding: "16px 24px" }}>
-                    {log.status === "auto_applied" && (
-                      <span style={{ color: "var(--success-color)", fontSize: "0.9rem" }}>✅ Ejecutado Automáticamente</span>
-                    )}
-                    {log.status === "approved" && (
-                      <span style={{ color: "var(--primary-light)", fontSize: "0.9rem" }}>✅ Aprobado por ti</span>
-                    )}
-                    {log.status === "rejected" && (
-                      <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>❌ Ignorado</span>
-                    )}
-                    {log.status === "pending" && (
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button 
-                          onClick={() => handleAction(log.id, "approve")}
-                          disabled={actionLoading === log.id}
-                          style={{ padding: "6px 12px", background: "var(--success-color)", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "0.85rem", opacity: actionLoading === log.id ? 0.5 : 1 }}
-                        >
-                          {actionLoading === log.id ? "Procesando..." : "✅ Aprobar"}
-                        </button>
-                        <button 
-                          onClick={() => handleAction(log.id, "reject")}
-                          disabled={actionLoading === log.id}
-                          style={{ padding: "6px 12px", background: "transparent", color: "var(--text-muted)", border: "1px solid var(--border-color)", borderRadius: "6px", cursor: "pointer", fontSize: "0.85rem", opacity: actionLoading === log.id ? 0.5 : 1 }}
-                        >
-                          ❌ Rechazar
-                        </button>
-                      </div>
-                    )}
+            </thead>
+            <tbody className="divide-y divide-dark-card-border">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
+                    <Activity className="animate-spin mx-auto mb-4" size={24} />
+                    Cargando historial de decisiones...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : logs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <Clock className="mx-auto mb-4 opacity-50" size={32} />
+                    No hay decisiones recientes registradas.
+                  </td>
+                </tr>
+              ) : (
+                logs.map((log) => (
+                  <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="text-gray-300 font-medium">{new Date(log.executed_at).toLocaleString()}</div>
+                      {log.is_dry_run && (
+                        <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
+                          Simulación
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-white font-medium">{log.campaign_name || "Desconocida"}</div>
+                      <div className="text-gray-500 text-xs mt-1">ID: {log.campaign_id || "N/A"}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-neon-purple/10 text-neon-purple border border-neon-purple/30 shadow-[0_0_10px_rgba(168,85,247,0.1)]">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-400 max-w-xs leading-relaxed">
+                        {log.reason || "Sin detalles"}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {log.status === "auto_applied" && (
+                        <span className="flex items-center gap-1.5 text-neon-green text-sm font-medium">
+                          <Check size={16} /> Auto-Ejecutado
+                        </span>
+                      )}
+                      {log.status === "approved" && (
+                        <span className="flex items-center gap-1.5 text-neon-blue text-sm font-medium">
+                          <Check size={16} /> Aprobado por ti
+                        </span>
+                      )}
+                      {log.status === "rejected" && (
+                        <span className="flex items-center gap-1.5 text-gray-500 text-sm font-medium">
+                          <X size={16} /> Rechazado
+                        </span>
+                      )}
+                      {log.status === "pending" && (
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => handleAction(log.id, "approve")}
+                            disabled={actionLoading === log.id}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-neon-green/10 hover:bg-neon-green/20 text-neon-green border border-neon-green/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                          >
+                            <Check size={14} /> Aprobar
+                          </button>
+                          <button 
+                            onClick={() => handleAction(log.id, "reject")}
+                            disabled={actionLoading === log.id}
+                            className="flex items-center gap-1 px-3 py-1.5 hover:bg-white/5 text-gray-400 border border-dark-card-border rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                          >
+                            <X size={14} /> Rechazar
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

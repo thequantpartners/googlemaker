@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import { Search, Play, TrendingUp, ShieldCheck, Copy, ArrowRight, PlayCircle, Globe, CheckCircle2, ChevronDown, Zap, BarChart3, Clock } from "lucide-react";
+import { useState } from "react";
+import { Search, Play, TrendingUp, ShieldCheck, Copy, ArrowRight, PlayCircle, Globe, CheckCircle2, ChevronDown, Zap, BarChart3, Clock, Menu, X } from "lucide-react";
 
 export default function LandingPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   return (
     <div className="min-h-screen bg-background text-white overflow-hidden relative selection:bg-neon-purple selection:text-white font-sans">
       {/* Ambient background glows */}
@@ -33,12 +37,40 @@ export default function LandingPage() {
           </div>
           <Link 
             href="/login" 
-            className="px-5 py-2.5 rounded-full bg-dark-card border border-dark-card-border text-sm font-medium hover:bg-white/10 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+            className="hidden md:inline-flex px-5 py-2.5 rounded-full bg-dark-card border border-dark-card-border text-sm font-medium hover:bg-white/10 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
           >
             Sign In
           </Link>
+          <button 
+            className="md:hidden p-2 text-gray-300 hover:text-white"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-20 left-6 right-6 bg-dark-card border border-dark-card-border rounded-2xl p-6 shadow-2xl z-50 flex flex-col gap-6 backdrop-blur-xl">
+          <Link href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Features</Link>
+          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">How it Works</Link>
+          <Link href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Pricing</Link>
+          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">FAQ</Link>
+          <hr className="border-dark-card-border" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-gray-400 text-sm font-medium">
+              <Globe size={16} /> EN
+            </div>
+            <Link 
+              href="/login" 
+              className="px-5 py-2.5 rounded-full bg-gradient-to-r from-neon-blue to-neon-purple text-sm font-medium text-white text-center shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <main className="relative z-10 px-6 lg:px-12 max-w-7xl mx-auto pt-16 lg:pt-24 pb-20">
@@ -54,7 +86,7 @@ export default function LandingPage() {
               Google Ads API v31 Supported
             </div>
             <div className="space-y-4">
-              <h1 className="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
                 Stop Burning Ad Spend. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue via-neon-purple to-pink-500">
                   Scale Your Winners.
@@ -66,28 +98,28 @@ export default function LandingPage() {
               The hybrid AI autopilot designed exclusively for marketing agencies and high-growth businesses. We protect your capital from bad clicks and automatically scale campaigns that hit your target CPA.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
               <Link 
                 href="/login" 
-                className="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-full font-semibold text-white overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] transition-all flex items-center gap-2"
+                className="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-full font-semibold text-white overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] transition-all flex items-center justify-center gap-2"
               >
                 <span className="relative z-10 flex items-center gap-2">
                   Start Free Trial
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
-              <button className="px-6 py-4 rounded-full font-medium text-gray-300 hover:text-white flex items-center gap-2 transition-colors">
+              <button className="px-6 py-4 rounded-full font-medium text-gray-300 hover:text-white flex items-center justify-center gap-2 transition-colors border border-white/10 sm:border-transparent">
                 <PlayCircle size={20} className="text-neon-purple" />
                 See How It Works
               </button>
             </div>
             
             <div className="pt-8 border-t border-dark-card-border mt-4">
-              <p className="text-sm text-gray-500 font-medium mb-4">TRUSTED BY 50+ SCALING AGENCIES IN US & LATAM</p>
-              <div className="flex gap-8 opacity-50 grayscale">
-                <div className="font-bold text-xl tracking-tighter">AGENCY<span className="text-neon-blue">PRO</span></div>
-                <div className="font-bold text-xl tracking-tighter">LATAM<span className="text-neon-purple">MARKETING</span></div>
-                <div className="font-bold text-xl tracking-tighter">GROWTH<span className="text-neon-green">X</span></div>
+              <p className="text-sm text-gray-500 font-medium mb-4 text-center lg:text-left">TRUSTED BY 50+ SCALING AGENCIES IN US & LATAM</p>
+              <div className="flex flex-wrap justify-center lg:justify-start gap-6 md:gap-8 opacity-50 grayscale">
+                <div className="font-bold text-lg md:text-xl tracking-tighter">AGENCY<span className="text-neon-blue">PRO</span></div>
+                <div className="font-bold text-lg md:text-xl tracking-tighter">LATAM<span className="text-neon-purple">MARKETING</span></div>
+                <div className="font-bold text-lg md:text-xl tracking-tighter">GROWTH<span className="text-neon-green">X</span></div>
               </div>
             </div>
           </div>

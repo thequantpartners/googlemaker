@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { CheckCircle2, AlertCircle, Activity } from "lucide-react";
 
 export default function PlanesPage() {
   const { data: session } = useSession();
@@ -62,98 +63,112 @@ export default function PlanesPage() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: "1000px", margin: "40px auto", textAlign: "center" }}>
-        <p className="text-muted">Cargando planes...</p>
+      <div className="flex flex-col items-center justify-center h-[50vh]">
+        <Activity className="animate-spin text-neon-purple mb-4" size={32} />
+        <p className="text-gray-400">Cargando planes...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", paddingBottom: "40px" }}>
-      <h1 className="heading-lg" style={{ marginBottom: "16px" }}>Mi Plan</h1>
-      <p className="text-muted" style={{ marginBottom: "40px", fontSize: "1.1rem" }}>
-        Gestiona tu suscripción y desbloquea más capacidades para tu agencia.
-      </p>
+    <div className="max-w-6xl mx-auto pb-20 animate-fade-in-up">
+      <div className="text-center md:text-left mb-12">
+        <h1 className="text-3xl font-bold text-white mb-2">Mi Plan</h1>
+        <p className="text-gray-400 text-lg">
+          Gestiona tu suscripción y desbloquea más capacidades para tu agencia.
+        </p>
+      </div>
 
       {errorMsg && (
-        <div style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", padding: "16px", borderRadius: "8px", marginBottom: "24px", border: "1px solid #ef4444" }}>
-          {errorMsg}
+        <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3 max-w-3xl mx-auto md:mx-0">
+          <AlertCircle size={20} /> {errorMsg}
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 text-left">
         {/* BASIC PLAN */}
-        <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", border: currentTier === "basic" ? "2px solid var(--text-color)" : "1px solid rgba(255,255,255,0.05)" }}>
-          <div>
+        <div className={`bg-dark-card backdrop-blur-xl border rounded-[2rem] p-8 flex flex-col relative transition-all ${currentTier === "basic" ? "border-white/50" : "border-dark-card-border hover:border-white/20"}`}>
+          <div className="flex-1">
             {currentTier === "basic" && (
-              <div style={{ background: "var(--text-color)", color: "black", padding: "4px 12px", borderRadius: "20px", display: "inline-block", fontSize: "0.8rem", marginBottom: "16px", fontWeight: "bold" }}>TU PLAN ACTUAL</div>
+              <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-xs font-bold tracking-wider mb-6">
+                TU PLAN ACTUAL
+              </div>
             )}
-            <h2 className="heading-md">Basic</h2>
-            <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$5<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
-            <p className="text-muted" style={{ marginBottom: "24px" }}>Ideal para emprendedores y negocios locales.</p>
-            <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
-              <li style={{ marginBottom: "8px" }}>✅ Conectar 1 cuenta de Google Ads</li>
-              <li style={{ marginBottom: "8px" }}>✅ Optimización base con IA</li>
-              <li style={{ marginBottom: "8px" }}>✅ Reportes semanales</li>
+            <h2 className="text-2xl font-bold text-white mb-2">Basic</h2>
+            <div className="text-4xl font-extrabold text-neon-blue mb-4">$5<span className="text-lg text-gray-500 font-normal">/mes</span></div>
+            <p className="text-gray-400 mb-8 h-12">Ideal para emprendedores y negocios locales.</p>
+            <ul className="space-y-4 mb-8 text-gray-300">
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-blue" /> Conectar 1 cuenta de Google Ads</li>
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-blue" /> Optimización base con IA</li>
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-blue" /> Reportes semanales</li>
             </ul>
           </div>
           <button 
-            className={currentTier === "basic" ? "btn-outline" : "btn-outline"} 
             onClick={() => handleSelectPlan("basic")} 
             disabled={selectingPlan || currentTier === "basic"} 
-            style={{ width: "100%", padding: "12px", opacity: currentTier === "basic" ? 0.5 : 1 }}
+            className={`w-full py-4 rounded-full font-semibold transition-colors border ${
+              currentTier === "basic" 
+                ? "bg-white/10 text-gray-400 border-white/10 cursor-not-allowed" 
+                : "border-dark-card-border hover:bg-white/5 text-white"
+            }`}
           >
             {selectingPlan ? "Procesando..." : currentTier === "basic" ? "Plan Actual" : "Cambiar a Basic"}
           </button>
         </div>
 
         {/* SCALE PLAN */}
-        <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", border: currentTier === "scale" ? "2px solid var(--primary-color)" : "2px solid var(--primary-color)", transform: "scale(1.05)" }}>
-          <div>
-            {currentTier === "scale" ? (
-              <div style={{ background: "var(--primary-color)", color: "white", padding: "4px 12px", borderRadius: "20px", display: "inline-block", fontSize: "0.8rem", marginBottom: "16px", fontWeight: "bold" }}>TU PLAN ACTUAL</div>
-            ) : (
-              <div style={{ background: "var(--primary-color)", color: "white", padding: "4px 12px", borderRadius: "20px", display: "inline-block", fontSize: "0.8rem", marginBottom: "16px", fontWeight: "bold" }}>MÁS POPULAR</div>
-            )}
-            <h2 className="heading-md">Scale</h2>
-            <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$20<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
-            <p className="text-muted" style={{ marginBottom: "24px" }}>Para agencias pequeñas y negocios en crecimiento.</p>
-            <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
-              <li style={{ marginBottom: "8px" }}>✅ Hasta 3 cuentas de Google Ads</li>
-              <li style={{ marginBottom: "8px" }}>✅ Optimización avanzada en tiempo real</li>
-              <li style={{ marginBottom: "8px" }}>✅ Acompañamiento básico</li>
+        <div className={`bg-dark-card backdrop-blur-xl border rounded-[2rem] p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(168,85,247,0.15)] ${currentTier === "scale" ? "border-neon-purple" : "border-neon-purple/50"}`}>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">
+            {currentTier === "scale" ? "TU PLAN ACTUAL" : "MÁS POPULAR"}
+          </div>
+          <div className="flex-1 mt-4">
+            <h2 className="text-2xl font-bold text-white mb-2">Scale</h2>
+            <div className="text-4xl font-extrabold text-neon-purple mb-4">$20<span className="text-lg text-gray-500 font-normal">/mes</span></div>
+            <p className="text-gray-400 mb-8 h-12">Para agencias pequeñas y negocios en crecimiento.</p>
+            <ul className="space-y-4 mb-8 text-gray-300">
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-purple" /> Hasta 3 cuentas de Google Ads</li>
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-purple" /> Optimización avanzada en tiempo real</li>
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-purple" /> Acompañamiento básico</li>
             </ul>
           </div>
           <button 
-            className={currentTier === "scale" ? "btn-outline" : "btn-primary"} 
             onClick={() => handleSelectPlan("scale")} 
             disabled={selectingPlan || currentTier === "scale"} 
-            style={{ width: "100%", padding: "12px", opacity: currentTier === "scale" ? 0.5 : 1 }}
+            className={`w-full py-4 rounded-full font-semibold transition-all ${
+              currentTier === "scale" 
+                ? "bg-neon-purple/20 text-neon-purple cursor-not-allowed" 
+                : "bg-gradient-to-r from-neon-purple to-neon-blue text-white hover:opacity-90 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+            }`}
           >
             {selectingPlan ? "Procesando..." : currentTier === "scale" ? "Plan Actual" : "Cambiar a Scale"}
           </button>
         </div>
 
         {/* GROWTH PLAN */}
-        <div className="glass-card" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", border: currentTier === "growth" ? "2px solid var(--text-color)" : "1px solid rgba(255,255,255,0.05)" }}>
-          <div>
+        <div className={`bg-dark-card backdrop-blur-xl border rounded-[2rem] p-8 flex flex-col relative transition-all ${currentTier === "growth" ? "border-white/50" : "border-dark-card-border hover:border-white/20"}`}>
+          <div className="flex-1">
             {currentTier === "growth" && (
-              <div style={{ background: "var(--text-color)", color: "black", padding: "4px 12px", borderRadius: "20px", display: "inline-block", fontSize: "0.8rem", marginBottom: "16px", fontWeight: "bold" }}>TU PLAN ACTUAL</div>
+              <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-xs font-bold tracking-wider mb-6">
+                TU PLAN ACTUAL
+              </div>
             )}
-            <h2 className="heading-md">Growth</h2>
-            <h1 className="heading-lg" style={{ color: "var(--primary-color)", margin: "16px 0" }}>$99<span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>/mes</span></h1>
-            <p className="text-muted" style={{ marginBottom: "24px" }}>Para grandes agencias y operaciones robustas.</p>
-            <ul style={{ textAlign: "left", marginBottom: "24px", color: "var(--text-color)" }}>
-              <li style={{ marginBottom: "8px" }}>✅ Cuentas de Google Ads ilimitadas</li>
-              <li style={{ marginBottom: "8px" }}>✅ Plan personalizado y estrategas</li>
-              <li style={{ marginBottom: "8px" }}>✅ Soporte prioritario 24/7</li>
+            <h2 className="text-2xl font-bold text-white mb-2">Growth</h2>
+            <div className="text-4xl font-extrabold text-neon-green mb-4">$99<span className="text-lg text-gray-500 font-normal">/mes</span></div>
+            <p className="text-gray-400 mb-8 h-12">Para grandes agencias y operaciones robustas.</p>
+            <ul className="space-y-4 mb-8 text-gray-300">
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-green" /> Cuentas de Google Ads ilimitadas</li>
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-green" /> Plan personalizado y estrategas</li>
+              <li className="flex items-center gap-3"><CheckCircle2 size={20} className="text-neon-green" /> Soporte prioritario 24/7</li>
             </ul>
           </div>
           <button 
-            className={currentTier === "growth" ? "btn-outline" : "btn-outline"} 
             onClick={() => handleSelectPlan("growth")} 
             disabled={selectingPlan || currentTier === "growth"} 
-            style={{ width: "100%", padding: "12px", opacity: currentTier === "growth" ? 0.5 : 1 }}
+            className={`w-full py-4 rounded-full font-semibold transition-colors border ${
+              currentTier === "growth" 
+                ? "bg-white/10 text-gray-400 border-white/10 cursor-not-allowed" 
+                : "border-dark-card-border hover:bg-white/5 text-white"
+            }`}
           >
             {selectingPlan ? "Procesando..." : currentTier === "growth" ? "Plan Actual" : "Cambiar a Growth"}
           </button>

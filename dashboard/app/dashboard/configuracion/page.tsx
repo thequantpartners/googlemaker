@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug } from "lucide-react";
 
 export default function ConfiguracionPage() {
   const { data: session } = useSession();
@@ -44,7 +45,6 @@ export default function ConfiguracionPage() {
       });
       if (res.ok) {
         setMsg({ text: "Cuentas de Google Ads desconectadas exitosamente.", type: "success" });
-        // Give the user a moment to read the success message before reloading
         setTimeout(() => window.location.reload(), 2000);
       } else {
         setMsg({ text: "Error al desconectar las cuentas.", type: "error" });
@@ -58,101 +58,89 @@ export default function ConfiguracionPage() {
 
   if (loading) {
     return (
-      <div style={{ maxWidth: "800px", margin: "40px auto", textAlign: "center" }}>
-        <p className="text-muted">Cargando configuración...</p>
+      <div className="flex flex-col items-center justify-center h-[50vh]">
+        <Activity className="animate-spin text-neon-purple mb-4" size={32} />
+        <p className="text-gray-400">Cargando configuración...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", paddingBottom: "40px" }}>
-      <h1 className="heading-lg" style={{ marginBottom: "16px" }}>Configuración</h1>
-      <p className="text-muted" style={{ marginBottom: "40px", fontSize: "1.1rem" }}>
-        Administra tu perfil personal y las conexiones de tu cuenta.
-      </p>
+    <div className="max-w-4xl mx-auto pb-20 animate-fade-in-up">
+      <div className="mb-10 text-center md:text-left">
+        <h1 className="text-3xl font-bold text-white mb-2">Configuración</h1>
+        <p className="text-gray-400 text-lg">
+          Administra tu perfil personal y las conexiones de tu cuenta.
+        </p>
+      </div>
 
       {msg.text && (
-        <div style={{ 
-          background: msg.type === "error" ? "rgba(239, 68, 68, 0.1)" : "rgba(16, 185, 129, 0.1)", 
-          color: msg.type === "error" ? "#ef4444" : "#10b981", 
-          padding: "16px", 
-          borderRadius: "8px", 
-          marginBottom: "24px", 
-          border: `1px solid ${msg.type === "error" ? "#ef4444" : "#10b981"}` 
-        }}>
-          {msg.text}
+        <div className={`mb-8 p-4 rounded-xl flex items-center gap-3 border ${
+          msg.type === "error" 
+            ? "bg-red-500/10 border-red-500/30 text-red-500" 
+            : "bg-neon-green/10 border-neon-green/30 text-neon-green"
+        }`}>
+          <AlertTriangle size={20} /> {msg.text}
         </div>
       )}
 
       {/* PERFIL */}
-      <div className="glass-card" style={{ marginBottom: "24px" }}>
-        <h2 className="heading-md" style={{ marginBottom: "16px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px" }}>Perfil del Usuario</h2>
+      <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 mb-8">
+        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2 border-b border-dark-card-border pb-4">
+          <User className="text-neon-purple" size={24} /> Perfil del Usuario
+        </h2>
         
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "16px" }}>
-          <div>
-            <label style={{ display: "block", color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "8px" }}>Nombre</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
+              <User size={16} /> Nombre
+            </label>
             <input 
               type="text" 
               value={profile?.name || session?.user?.name || ""} 
               disabled 
-              style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-color)" }}
+              className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none cursor-not-allowed opacity-70"
             />
           </div>
-          <div>
-            <label style={{ display: "block", color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "8px" }}>Correo Electrónico</label>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
+              <Mail size={16} /> Correo Electrónico
+            </label>
             <input 
               type="email" 
               value={profile?.email || session?.user?.email || ""} 
               disabled 
-              style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-color)" }}
+              className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none cursor-not-allowed opacity-70"
             />
           </div>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-          <div>
-            <label style={{ display: "block", color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "8px" }}>Plan Actual</label>
+          <div className="space-y-2 md:col-span-2 lg:col-span-1">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
+              <CreditCard size={16} /> Plan Actual
+            </label>
             <input 
               type="text" 
               value={(profile?.tier || "ninguno").toUpperCase()} 
               disabled 
-              style={{ width: "100%", padding: "10px", borderRadius: "8px", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.1)", color: "var(--primary-color)", fontWeight: "bold" }}
+              className="w-full bg-neon-purple/5 border border-neon-purple/20 rounded-xl px-4 py-3 text-neon-purple font-bold focus:outline-none cursor-not-allowed uppercase"
             />
           </div>
         </div>
       </div>
 
       {/* CONEXIONES */}
-      <div className="glass-card" style={{ border: "1px solid rgba(239, 68, 68, 0.3)" }}>
-        <h2 className="heading-md" style={{ marginBottom: "16px", color: "#ef4444", borderBottom: "1px solid rgba(239, 68, 68, 0.1)", paddingBottom: "12px" }}>Conexiones Activas</h2>
-        <p className="text-muted" style={{ marginBottom: "24px" }}>
+      <div className="bg-dark-card backdrop-blur-xl border border-red-500/30 rounded-[2rem] p-6 md:p-8">
+        <h2 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2 border-b border-red-500/10 pb-4">
+          <Unplug size={24} /> Conexiones Activas
+        </h2>
+        <p className="text-gray-400 mb-6 leading-relaxed">
           Si tienes problemas de sincronización o quieres usar una cuenta de Google diferente, puedes desconectar tus credenciales actuales. Se revocarán los accesos y podrás volver a conectar desde el Panel Principal.
         </p>
         <button 
           onClick={handleDisconnect} 
           disabled={disconnecting}
-          style={{ 
-            background: "rgba(239, 68, 68, 0.1)", 
-            color: "#ef4444", 
-            border: "1px solid #ef4444", 
-            padding: "10px 20px", 
-            borderRadius: "8px", 
-            cursor: disconnecting ? "not-allowed" : "pointer",
-            fontWeight: "bold",
-            transition: "all 0.2s"
-          }}
-          onMouseOver={(e) => {
-            if(!disconnecting) {
-              e.currentTarget.style.background = "#ef4444";
-              e.currentTarget.style.color = "white";
-            }
-          }}
-          onMouseOut={(e) => {
-            if(!disconnecting) {
-              e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)";
-              e.currentTarget.style.color = "#ef4444";
-            }
-          }}
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/50 hover:border-red-500 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
         >
+          <Unplug size={18} />
           {disconnecting ? "Desconectando..." : "Desconectar Google Ads"}
         </button>
       </div>

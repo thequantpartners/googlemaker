@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Plus, X, Search, MoreHorizontal } from "lucide-react";
 
 interface Client {
   id: string;
@@ -105,121 +105,168 @@ export default function AdminClients() {
   };
 
   return (
-    <div>
-      <div className="flex-between" style={{ marginBottom: "32px" }}>
-        <h1 className="heading-lg">Gestión de Clientes</h1>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-          + Nuevo Cliente
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Gestión de Clientes</h1>
+          <p className="text-gray-400">Administra los accesos y planes de los usuarios.</p>
+        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2.5 px-5 rounded-full transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(249,115,22,0.4)]"
+        >
+          <Plus size={20} />
+          Nuevo Cliente
         </button>
       </div>
 
-      <div className="glass-panel" style={{ overflow: "hidden" }}>
-        {loading ? (
-          <div style={{ padding: "32px", textAlign: "center" }}>Cargando clientes...</div>
-        ) : clients.length === 0 ? (
-          <div style={{ padding: "32px", textAlign: "center" }} className="text-muted">
-            No hay clientes registrados aún.
+      {/* Main Table Card */}
+      <div className="bg-dark-card border border-dark-card-border rounded-2xl shadow-xl overflow-hidden backdrop-blur-xl">
+        <div className="p-6 border-b border-dark-card-border flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Buscar por nombre o correo..." 
+              className="w-full bg-black/20 border border-dark-card-border rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-colors"
+            />
           </div>
-        ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--border-color)", background: "rgba(255,255,255,0.02)" }}>
-                <th style={{ padding: "16px 24px", fontWeight: 500 }}>Nombre</th>
-                <th style={{ padding: "16px 24px", fontWeight: 500 }}>Email</th>
-                <th style={{ padding: "16px 24px", fontWeight: 500 }}>Plan</th>
-                <th style={{ padding: "16px 24px", fontWeight: 500 }}>Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clients.map((client) => (
-                <tr key={client.id} style={{ borderBottom: "1px solid var(--border-color)" }}>
-                  <td style={{ padding: "16px 24px" }}>{client.name || "Sin nombre"}</td>
-                  <td style={{ padding: "16px 24px", color: "var(--text-secondary)" }}>{client.email}</td>
-                  <td style={{ padding: "16px 24px" }}>
-                    <select 
-                      value={client.tier} 
-                      onChange={(e) => handleUpdateTier(client.id, e.target.value)}
-                      style={{ 
-                        background: "rgba(255,255,255,0.05)", 
-                        color: "white", 
-                        border: "1px solid var(--border-color)",
-                        padding: "6px 12px",
-                        borderRadius: "6px",
-                        outline: "none",
-                        cursor: "pointer"
-                      }}
-                    >
-                      <option value="none" style={{ color: "black" }}>Sin Plan</option>
-                      <option value="basic" style={{ color: "black" }}>Basic</option>
-                      <option value="scale" style={{ color: "black" }}>Scale</option>
-                      <option value="growth" style={{ color: "black" }}>Growth</option>
-                    </select>
-                  </td>
-                  <td style={{ padding: "16px 24px" }}>
-                    <select 
-                      value={client.status} 
-                      onChange={(e) => handleUpdateStatus(client.id, e.target.value)}
-                      style={{ 
-                        background: client.status === "active" ? "rgba(16, 185, 129, 0.1)" : "rgba(245, 158, 11, 0.1)", 
-                        color: client.status === "active" ? "#10b981" : "#f59e0b", 
-                        border: `1px solid ${client.status === "active" ? "#10b981" : "#f59e0b"}`,
-                        padding: "6px 12px",
-                        borderRadius: "6px",
-                        outline: "none",
-                        cursor: "pointer"
-                      }}
-                    >
-                      <option value="active" style={{ color: "black" }}>Activo</option>
-                      <option value="suspended" style={{ color: "black" }}>Suspendido</option>
-                    </select>
-                  </td>
+        </div>
+
+        <div className="overflow-x-auto">
+          {loading ? (
+            <div className="p-12 text-center text-gray-400">
+              <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin mx-auto mb-4" />
+              Cargando clientes...
+            </div>
+          ) : clients.length === 0 ? (
+            <div className="p-12 text-center text-gray-500 flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <Search size={32} />
+              </div>
+              <p>No hay clientes registrados aún.</p>
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="border-b border-dark-card-border bg-black/20">
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nombre / Empresa</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Plan Activo</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody className="divide-y divide-dark-card-border">
+                {clients.map((client) => (
+                  <tr key={client.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 font-bold text-sm shadow-sm">
+                          {client.name ? client.name.charAt(0).toUpperCase() : "U"}
+                        </div>
+                        <span className="font-medium text-white">{client.name || "Sin nombre"}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-400 text-sm">{client.email}</td>
+                    <td className="px-6 py-4">
+                      <select 
+                        value={client.tier} 
+                        onChange={(e) => handleUpdateTier(client.id, e.target.value)}
+                        className="bg-black/30 text-white border border-dark-card-border text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-orange-500/50 appearance-none cursor-pointer hover:bg-black/50 transition-colors"
+                      >
+                        <option value="none" className="text-black">Sin Plan</option>
+                        <option value="basic" className="text-black">Basic</option>
+                        <option value="scale" className="text-black">Scale</option>
+                        <option value="growth" className="text-black">Growth</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4">
+                      <select 
+                        value={client.status} 
+                        onChange={(e) => handleUpdateStatus(client.id, e.target.value)}
+                        className={`text-sm rounded-full px-3 py-1 border focus:outline-none appearance-none cursor-pointer transition-colors ${
+                          client.status === "active" 
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
+                          : "bg-red-500/10 text-red-400 border-red-500/30"
+                        }`}
+                      >
+                        <option value="active" className="text-black">Activo</option>
+                        <option value="suspended" className="text-black">Suspendido</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button className="p-2 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+                        <MoreHorizontal size={20} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       {/* Modal Nuevo Cliente */}
       {isModalOpen && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
-        }}>
-          <div className="glass-panel" style={{ width: "400px", padding: "24px" }}>
-            <h2 className="heading-md" style={{ marginBottom: "24px" }}>Registrar Nuevo Cliente</h2>
-            <form onSubmit={handleCreateClient}>
-              <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem" }}>Nombre o Empresa</label>
-                <input 
-                  type="text" 
-                  value={newName} 
-                  onChange={(e) => setNewName(e.target.value)} 
-                  className="glass-panel"
-                  style={{ width: "100%", padding: "12px", background: "rgba(0,0,0,0.2)", border: "1px solid var(--border-color)", color: "white", borderRadius: "8px" }}
-                  placeholder="Ej. The Quant Partners"
-                />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-card border border-dark-card-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">
+            <div className="px-6 py-4 border-b border-dark-card-border flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Registrar Nuevo Cliente</h2>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateClient} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Nombre o Empresa</label>
+                  <input 
+                    type="text" 
+                    value={newName} 
+                    onChange={(e) => setNewName(e.target.value)} 
+                    className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-colors"
+                    placeholder="Ej. The Quant Partners"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Correo Electrónico (Cuenta de Google)</label>
+                  <input 
+                    type="email" 
+                    value={newEmail} 
+                    onChange={(e) => setNewEmail(e.target.value)} 
+                    className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500/50 transition-colors"
+                    placeholder="cliente@gmail.com"
+                  />
+                </div>
+                
+                {errorMsg && (
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2">
+                    <X className="text-red-400 mt-0.5" size={16} />
+                    <p className="text-red-400 text-sm">{errorMsg}</p>
+                  </div>
+                )}
               </div>
-              <div style={{ marginBottom: "24px" }}>
-                <label style={{ display: "block", marginBottom: "8px", fontSize: "0.9rem" }}>Correo Electrónico (Google)</label>
-                <input 
-                  type="email" 
-                  value={newEmail} 
-                  onChange={(e) => setNewEmail(e.target.value)} 
-                  className="glass-panel"
-                  style={{ width: "100%", padding: "12px", background: "rgba(0,0,0,0.2)", border: "1px solid var(--border-color)", color: "white", borderRadius: "8px" }}
-                  placeholder="cliente@gmail.com"
-                />
-              </div>
-              
-              {errorMsg && <p style={{ color: "var(--color-danger)", marginBottom: "16px", fontSize: "0.9rem" }}>{errorMsg}</p>}
 
-              <div className="flex-between">
-                <button type="button" className="btn-outline" onClick={() => setIsModalOpen(false)}>
+              <div className="mt-8 flex items-center gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-3 px-4 rounded-xl border border-dark-card-border text-white font-medium hover:bg-white/5 transition-colors"
+                >
                   Cancelar
                 </button>
-                <button type="submit" className="btn-primary" disabled={isSubmitting}>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 px-4 rounded-xl bg-orange-500 text-white font-bold hover:bg-orange-600 transition-colors shadow-[0_0_15px_rgba(249,115,22,0.3)] disabled:opacity-50"
+                >
                   {isSubmitting ? "Guardando..." : "Registrar"}
                 </button>
               </div>

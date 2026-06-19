@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2 } from "lucide-react";
 
 interface ConnectedAccount {
   id: string;
@@ -116,7 +117,6 @@ export default function ClientCampaigns() {
         setTimeout(() => {
           setIsModalOpen(false);
           setCreateSuccess("");
-          // Reset form
           setFormData({
             campaign_name: "",
             daily_budget: 50,
@@ -125,9 +125,7 @@ export default function ClientCampaigns() {
             headlines: ["", "", ""],
             descriptions: ["", ""]
           });
-          // Refresh campaigns
           setLoading(true);
-          // Trigger re-fetch somehow (we can just call the API again or wait for user to refresh)
           window.location.reload();
         }, 2000);
       } else {
@@ -141,7 +139,6 @@ export default function ClientCampaigns() {
     }
   };
 
-  // 1. Fetch connected accounts on load
   useEffect(() => {
     async function fetchAccounts() {
       if (!session?.backendToken) return;
@@ -163,7 +160,6 @@ export default function ClientCampaigns() {
     fetchAccounts();
   }, [session]);
 
-  // 2. Fetch campaigns when selectedAccount changes
   useEffect(() => {
     async function fetchCampaigns() {
       if (!session?.backendToken || !selectedAccount) return;
@@ -197,189 +193,291 @@ export default function ClientCampaigns() {
   const avgCpa = totalConversions > 0 ? totalCost / totalConversions : 0;
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-        <h1 className="heading-lg">Mis Campañas</h1>
+    <div className="space-y-8 animate-fade-in-up pb-20">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Mis Campañas</h1>
+          <p className="text-gray-400">Métricas agregadas de los últimos 30 días para la cuenta seleccionada.</p>
+        </div>
         
         {accounts.length > 0 && (
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
             <select 
               value={selectedAccount}
               onChange={(e) => setSelectedAccount(e.target.value)}
-              style={{ 
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid var(--border-color)",
-                color: "white",
-                padding: "10px 16px",
-                borderRadius: "8px",
-                outline: "none",
-                cursor: "pointer",
-                minWidth: "200px"
-              }}
+              className="bg-black/20 border border-dark-card-border text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:border-neon-purple transition-colors cursor-pointer min-w-[200px]"
             >
               {accounts.map(acc => (
-                <option key={acc.id} value={acc.target_customer_id} style={{ color: "black" }}>
+                <option key={acc.id} value={acc.target_customer_id} className="text-black">
                   ID: {acc.target_customer_id}
                 </option>
               ))}
             </select>
-            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-              ➕ Crear Campaña
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-neon-purple text-white px-5 py-3 rounded-lg font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2"
+            >
+              <Plus size={18} /> Crear Campaña
             </button>
           </div>
         )}
       </div>
 
-      <p className="text-muted" style={{ marginBottom: "32px" }}>
-        Métricas agregadas de los últimos 30 días para la cuenta seleccionada.
-      </p>
-
       {errorMsg && (
-        <div className="glass-panel" style={{ borderLeft: "4px solid #ef4444", padding: "16px", marginBottom: "32px" }}>
-          <p style={{ color: "#ef4444", margin: 0 }}>{errorMsg}</p>
+        <div className="p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3">
+          <AlertCircle size={20} /> {errorMsg}
         </div>
       )}
 
       {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px", marginBottom: "40px" }}>
-        <div className="glass-panel" style={{ padding: "24px" }}>
-          <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>Inversión Total</p>
-          <h2 style={{ fontSize: "2rem", margin: 0 }}>${totalCost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl flex flex-col">
+          <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
+            <DollarSign size={16} className="text-gray-500" /> Inversión Total
+          </p>
+          <h2 className="text-3xl font-bold text-white">${totalCost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
         </div>
-        <div className="glass-panel" style={{ padding: "24px" }}>
-          <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>Clics</p>
-          <h2 style={{ fontSize: "2rem", margin: 0 }}>{totalClicks.toLocaleString("en-US")}</h2>
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl flex flex-col">
+          <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
+            <Activity size={16} className="text-gray-500" /> Clics
+          </p>
+          <h2 className="text-3xl font-bold text-white">{totalClicks.toLocaleString("en-US")}</h2>
         </div>
-        <div className="glass-panel" style={{ padding: "24px" }}>
-          <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>CPA Promedio</p>
-          <h2 style={{ fontSize: "2rem", margin: 0 }}>${avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl flex flex-col">
+          <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
+            <TrendingUp size={16} className="text-gray-500" /> CPA Promedio
+          </p>
+          <h2 className="text-3xl font-bold text-white">${avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
         </div>
-        <div className="glass-panel" style={{ padding: "24px" }}>
-          <p className="text-muted" style={{ fontSize: "0.9rem", marginBottom: "8px" }}>Conversiones</p>
-          <h2 style={{ fontSize: "2rem", margin: 0, color: "var(--primary-light)" }}>{totalConversions.toLocaleString("en-US")}</h2>
+        <div className="bg-dark-card backdrop-blur-xl border border-neon-purple/30 p-6 rounded-2xl flex flex-col shadow-[0_0_20px_rgba(168,85,247,0.05)]">
+          <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-neon-purple" /> Conversiones
+          </p>
+          <h2 className="text-3xl font-bold text-neon-purple">{totalConversions.toLocaleString("en-US")}</h2>
         </div>
       </div>
 
-      <div className="glass-panel" style={{ overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid var(--border-color)", background: "rgba(255,255,255,0.02)" }}>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Campaña</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Estado</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Impresiones</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Clics</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Costo</th>
-              <th style={{ padding: "16px 24px", fontWeight: 500 }}>Conversiones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={6} style={{ padding: "32px", textAlign: "center" }} className="text-muted">
-                  Cargando métricas desde Google Ads...
-                </td>
+      {/* Campaigns Table */}
+      <div className="bg-dark-card border border-dark-card-border rounded-[2rem] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead>
+              <tr className="border-b border-dark-card-border bg-black/20 text-gray-400 text-sm uppercase tracking-wider font-semibold">
+                <th className="px-6 py-4">Campaña</th>
+                <th className="px-6 py-4">Estado</th>
+                <th className="px-6 py-4 text-right">Impresiones</th>
+                <th className="px-6 py-4 text-right">Clics</th>
+                <th className="px-6 py-4 text-right">Costo</th>
+                <th className="px-6 py-4 text-right">Conversiones</th>
               </tr>
-            ) : campaigns.length === 0 ? (
-              <tr>
-                <td colSpan={6} style={{ padding: "32px", textAlign: "center" }} className="text-muted">
-                  {accounts.length === 0 ? "No tienes cuentas de Google Ads conectadas." : "No se encontraron campañas activas en los últimos 30 días."}
-                </td>
-              </tr>
-            ) : (
-              campaigns.map((c) => (
-                <tr key={c.campaign_id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                  <td style={{ padding: "16px 24px" }}>
-                    <div style={{ fontWeight: 500 }}>{c.campaign_name}</div>
-                    <div className="text-muted" style={{ fontSize: "0.8rem", marginTop: "4px" }}>ID: {c.campaign_id}</div>
+            </thead>
+            <tbody className="divide-y divide-dark-card-border">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                    <Activity className="animate-spin mx-auto mb-4" size={24} />
+                    Cargando métricas desde Google Ads...
                   </td>
-                  <td style={{ padding: "16px 24px" }}>
-                    <span className={c.status === "ENABLED" ? "badge badge-active" : "badge badge-warning"}>
-                      {c.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: "16px 24px" }}>{c.impressions.toLocaleString("en-US")}</td>
-                  <td style={{ padding: "16px 24px" }}>{c.clicks.toLocaleString("en-US")}</td>
-                  <td style={{ padding: "16px 24px" }}>${c.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                  <td style={{ padding: "16px 24px", fontWeight: "bold" }}>{c.conversions.toLocaleString("en-US")}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : campaigns.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <AlertCircle className="mx-auto mb-4 opacity-50" size={32} />
+                    {accounts.length === 0 ? "No tienes cuentas de Google Ads conectadas." : "No se encontraron campañas activas en los últimos 30 días."}
+                  </td>
+                </tr>
+              ) : (
+                campaigns.map((c) => (
+                  <tr key={c.campaign_id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-white">{c.campaign_name}</div>
+                      <div className="text-gray-500 text-xs mt-1">ID: {c.campaign_id}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {c.status === "ENABLED" ? (
+                        <span className="px-3 py-1 bg-neon-green/10 border border-neon-green/30 text-neon-green rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                          <Play size={12} fill="currentColor" /> Activa
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
+                          <Pause size={12} fill="currentColor" /> Pausada
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-300">{c.impressions.toLocaleString("en-US")}</td>
+                    <td className="px-6 py-4 text-right text-gray-300">{c.clicks.toLocaleString("en-US")}</td>
+                    <td className="px-6 py-4 text-right text-gray-300">${c.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td className="px-6 py-4 text-right font-bold text-white">{c.conversions.toLocaleString("en-US")}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* CREATE CAMPAIGN MODAL */}
       {isModalOpen && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.8)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
-          <div className="glass-panel" style={{ width: "90%", maxWidth: "600px", maxHeight: "90vh", overflowY: "auto", padding: "32px", position: "relative" }}>
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              style={{ position: "absolute", top: "24px", right: "24px", background: "none", border: "none", color: "white", fontSize: "1.5rem", cursor: "pointer" }}
-            >
-              ✕
-            </button>
-            <h2 className="heading-md" style={{ marginBottom: "24px" }}>Crear Campaña de Búsqueda</h2>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-card border border-dark-card-border rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
             
-            {createError && <div style={{ padding: "12px", background: "rgba(255,59,48,0.1)", color: "var(--error-color)", borderRadius: "8px", marginBottom: "16px" }}>{createError}</div>}
-            {createSuccess && <div style={{ padding: "12px", background: "rgba(0,200,83,0.1)", color: "var(--success-color)", borderRadius: "8px", marginBottom: "16px" }}>{createSuccess}</div>}
-
-            <form onSubmit={submitCampaign} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div>
-                <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Nombre de la Campaña</label>
-                <input required type="text" name="campaign_name" value={formData.campaign_name} onChange={handleFormChange} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }} />
-              </div>
-              
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                <div>
-                  <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Presupuesto Diario (USD)</label>
-                  <input required type="number" min="1" step="0.01" name="daily_budget" value={formData.daily_budget} onChange={handleFormChange} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }} />
+            <div className="px-6 py-4 border-b border-dark-card-border flex items-center justify-between bg-[#0B0E14]">
+              <h2 className="text-xl font-bold text-white">Crear Campaña de Búsqueda</h2>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto">
+              {createError && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3">
+                  <AlertCircle size={20} /> {createError}
                 </div>
-                <div>
-                  <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>URL Final de Destino</label>
-                  <input required type="url" name="final_url" placeholder="https://..." value={formData.final_url} onChange={handleFormChange} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }} />
+              )}
+              {createSuccess && (
+                <div className="mb-6 p-4 bg-neon-green/10 border border-neon-green/30 text-neon-green rounded-xl flex items-center gap-3">
+                  <CheckCircle2 size={20} /> {createSuccess}
                 </div>
-              </div>
+              )}
 
-              <div>
-                <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Palabras Clave (una por línea)</label>
-                <textarea required name="keywords_text" value={formData.keywords_text} onChange={handleFormChange} placeholder={"ej: comprar zapatos\nzapatos de moda"} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none", minHeight: "100px", resize: "vertical" }} />
-              </div>
-
-              <div>
-                <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Títulos del Anuncio (Mínimo 3, Max 15)</label>
-                <p className="text-muted" style={{ fontSize: "0.8rem", marginBottom: "8px" }}>Máximo 30 caracteres cada uno.</p>
-                {formData.headlines.map((hl, i) => (
-                  <div key={`hl-${i}`} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
-                    <input required={i < 3} type="text" maxLength={30} value={hl} onChange={(e) => handleArrayChange('headlines', i, e.target.value)} placeholder={`Título ${i + 1}`} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }} />
-                    {i >= 3 && <button type="button" onClick={() => removeArrayItem('headlines', i)} style={{ padding: "0 16px", background: "rgba(255,59,48,0.2)", color: "var(--error-color)", border: "none", borderRadius: "8px", cursor: "pointer" }}>✕</button>}
+              <form id="createCampaignForm" onSubmit={submitCampaign} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Nombre de la Campaña</label>
+                  <input 
+                    required 
+                    type="text" 
+                    name="campaign_name" 
+                    value={formData.campaign_name} 
+                    onChange={handleFormChange} 
+                    className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors" 
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1.5">Presupuesto Diario (USD)</label>
+                    <input 
+                      required 
+                      type="number" 
+                      min="1" 
+                      step="0.01" 
+                      name="daily_budget" 
+                      value={formData.daily_budget} 
+                      onChange={handleFormChange} 
+                      className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors" 
+                    />
                   </div>
-                ))}
-                {formData.headlines.length < 15 && (
-                  <button type="button" onClick={() => addArrayItem('headlines')} style={{ padding: "8px 16px", background: "none", border: "1px dashed var(--border-color)", color: "var(--primary-light)", borderRadius: "8px", cursor: "pointer", width: "100%", marginTop: "8px" }}>+ Añadir Título</button>
-                )}
-              </div>
-
-              <div>
-                <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Descripciones del Anuncio (Mínimo 2, Max 4)</label>
-                <p className="text-muted" style={{ fontSize: "0.8rem", marginBottom: "8px" }}>Máximo 90 caracteres cada una.</p>
-                {formData.descriptions.map((desc, i) => (
-                  <div key={`desc-${i}`} style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
-                    <input required={i < 2} type="text" maxLength={90} value={desc} onChange={(e) => handleArrayChange('descriptions', i, e.target.value)} placeholder={`Descripción ${i + 1}`} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "rgba(255,255,255,0.05)", color: "white", outline: "none" }} />
-                    {i >= 2 && <button type="button" onClick={() => removeArrayItem('descriptions', i)} style={{ padding: "0 16px", background: "rgba(255,59,48,0.2)", color: "var(--error-color)", border: "none", borderRadius: "8px", cursor: "pointer" }}>✕</button>}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-1.5">URL Final de Destino</label>
+                    <input 
+                      required 
+                      type="url" 
+                      name="final_url" 
+                      placeholder="https://..." 
+                      value={formData.final_url} 
+                      onChange={handleFormChange} 
+                      className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors" 
+                    />
                   </div>
-                ))}
-                {formData.descriptions.length < 4 && (
-                  <button type="button" onClick={() => addArrayItem('descriptions')} style={{ padding: "8px 16px", background: "none", border: "1px dashed var(--border-color)", color: "var(--primary-light)", borderRadius: "8px", cursor: "pointer", width: "100%", marginTop: "8px" }}>+ Añadir Descripción</button>
-                )}
-              </div>
+                </div>
 
-              <div style={{ marginTop: "16px", paddingTop: "24px", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "flex-end", gap: "16px" }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: "12px 24px", background: "transparent", color: "white", border: "1px solid var(--border-color)", borderRadius: "8px", cursor: "pointer" }}>Cancelar</button>
-                <button type="submit" disabled={createLoading} className="btn-primary">
-                  {createLoading ? "Creando..." : "Crear Campaña (Iniciará Pausada)"}
-                </button>
-              </div>
-            </form>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Palabras Clave (una por línea)</label>
+                  <textarea 
+                    required 
+                    name="keywords_text" 
+                    value={formData.keywords_text} 
+                    onChange={handleFormChange} 
+                    placeholder={"ej: comprar zapatos\nzapatos de moda"} 
+                    className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors min-h-[100px] resize-y" 
+                  />
+                </div>
+
+                <div className="bg-white/[0.02] border border-dark-card-border p-4 rounded-xl">
+                  <label className="block text-sm font-medium text-white mb-1">Títulos del Anuncio</label>
+                  <p className="text-gray-500 text-xs mb-4">Mínimo 3, Max 15. Máximo 30 caracteres cada uno.</p>
+                  <div className="space-y-3">
+                    {formData.headlines.map((hl, i) => (
+                      <div key={`hl-${i}`} className="flex gap-2 items-center">
+                        <input 
+                          required={i < 3} 
+                          type="text" 
+                          maxLength={30} 
+                          value={hl} 
+                          onChange={(e) => handleArrayChange('headlines', i, e.target.value)} 
+                          placeholder={`Título ${i + 1}`} 
+                          className="flex-1 bg-black/20 border border-dark-card-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-purple transition-colors text-sm" 
+                        />
+                        {i >= 3 && (
+                          <button type="button" onClick={() => removeArrayItem('headlines', i)} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors">
+                            <X size={18} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {formData.headlines.length < 15 && (
+                    <button type="button" onClick={() => addArrayItem('headlines')} className="mt-4 text-neon-purple text-sm font-medium hover:underline flex items-center gap-1">
+                      <Plus size={16} /> Añadir Título
+                    </button>
+                  )}
+                </div>
+
+                <div className="bg-white/[0.02] border border-dark-card-border p-4 rounded-xl">
+                  <label className="block text-sm font-medium text-white mb-1">Descripciones del Anuncio</label>
+                  <p className="text-gray-500 text-xs mb-4">Mínimo 2, Max 4. Máximo 90 caracteres cada una.</p>
+                  <div className="space-y-3">
+                    {formData.descriptions.map((desc, i) => (
+                      <div key={`desc-${i}`} className="flex gap-2 items-center">
+                        <input 
+                          required={i < 2} 
+                          type="text" 
+                          maxLength={90} 
+                          value={desc} 
+                          onChange={(e) => handleArrayChange('descriptions', i, e.target.value)} 
+                          placeholder={`Descripción ${i + 1}`} 
+                          className="flex-1 bg-black/20 border border-dark-card-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-purple transition-colors text-sm" 
+                        />
+                        {i >= 2 && (
+                          <button type="button" onClick={() => removeArrayItem('descriptions', i)} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors">
+                            <X size={18} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {formData.descriptions.length < 4 && (
+                    <button type="button" onClick={() => addArrayItem('descriptions')} className="mt-4 text-neon-purple text-sm font-medium hover:underline flex items-center gap-1">
+                      <Plus size={16} /> Añadir Descripción
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            <div className="px-6 py-4 border-t border-dark-card-border flex flex-col sm:flex-row justify-end gap-3 bg-[#0B0E14]">
+              <button 
+                type="button" 
+                onClick={() => setIsModalOpen(false)} 
+                className="px-6 py-2.5 border border-dark-card-border rounded-xl text-gray-300 font-medium hover:bg-white/5 transition-colors w-full sm:w-auto"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                form="createCampaignForm"
+                disabled={createLoading} 
+                className="px-6 py-2.5 bg-neon-purple text-white rounded-xl font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 w-full sm:w-auto flex items-center justify-center"
+              >
+                {createLoading ? "Creando..." : "Crear (Iniciará Pausada)"}
+              </button>
+            </div>
+            
           </div>
         </div>
       )}
