@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-revisar boton de 3 puntos en superadmin
+Product definition: autopilot core, ad spend pricing, immigration lawyer ICP
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
+- [general] feat: implement client deletion UI in superadmin with superadmin protection (2026-06-19T07:29:06.244Z)
 - [general] docs: close task and update context logs (2026-06-19T07:21:40.043Z)
 - [general] docs: close task and update context logs (2026-06-19T07:11:56.619Z)
-- [general] docs: close task and update context logs (2026-06-19T06:31:34.171Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

@@ -44,3 +44,4 @@
 - Rebranded the entire application from GoogleMaker to GMaker to avoid trademark infringement issues with Google.
 - Updated CORS backend policies to accept gmaker.thequantpartners.com.
 - Updated Landing Page SEO metadata (Title and Description) with a professional English slogan.
+- Strategically pivoted product definition: Defined "Autopilot" as the core value proposition, Immigration Lawyers (US Latinos) as the target ICP, and planned the migration to Ad-Spend based pricing tiers with a "Soft Pause" limit enforcement.

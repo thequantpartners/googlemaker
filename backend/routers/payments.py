@@ -19,9 +19,10 @@ LEMONSQUEEZY_WEBHOOK_SECRET = os.getenv("LEMONSQUEEZY_WEBHOOK_SECRET")
 # Example variant mapping (we can adjust these if needed or mock them for now)
 # We map the tiers to dummy variant IDs for the mock
 VARIANT_MAP = {
-    "basic": "1811311",
-    "scale": "1811312",
-    "growth": "1811313"
+    "starter": "dummy_starter_1",
+    "growth": "dummy_growth_1",
+    "pro": "dummy_pro_1",
+    "elite": "dummy_elite_1"
 }
 
 class CheckoutRequest(BaseModel):

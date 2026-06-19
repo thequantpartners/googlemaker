@@ -112,8 +112,7 @@ async def create_my_campaign(
         except:
             pass
 
-    if request.target_cpa and user.tier != UserTier.growth:
-        raise HTTPException(status_code=403, detail="Custom CPA strategies are only available on the Growth plan.")
+    # Custom CPA is now available to all users (Ad Spend gated)
 
     if not selected_cred:
         raise HTTPException(status_code=404, detail="Customer ID not found in your connected accounts")
@@ -380,7 +379,7 @@ async def reject_log(
 # ── Get own credential status ───────────────────────────────────────────────
 
 
-from models import GoogleAdsCredential, UserTier, get_plan_limit
+from models import GoogleAdsCredential, UserTier, get_plan_limit, get_ad_spend_limit
 from schemas import CredentialsStatus, ConnectedAccount
 from encryption import decrypt_value
 
@@ -394,6 +393,7 @@ async def get_my_credentials_status(
     )
     creds = result.scalars().all()
     limit = get_plan_limit(user.tier)
+    spend_limit = float(get_ad_spend_limit(user.tier))
     
     accounts = []
     for c in creds:
@@ -411,5 +411,6 @@ async def get_my_credentials_status(
         is_configured=len(accounts) > 0,
         connected_accounts=accounts,
         plan_limit=limit,
+        ad_spend_limit=spend_limit,
         user_status=user.status.value if hasattr(user.status, 'value') else user.status
     )

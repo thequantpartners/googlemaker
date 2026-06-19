@@ -58,9 +58,17 @@ async def lifespan(app: FastAPI):
             print(f"[WARN] DB Migration failed for tier column (might already exist): {e}")
 
         try:
-            await session.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='pro' OR tier='enterprise';"))
+            # First, fix legacy string enums if they exist
+            await session.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='enterprise';"))
+            
+            # Now migrate the previous feature tiers to the new Ad Spend tiers
+            await session.execute(text("UPDATE users SET tier='starter' WHERE tier='basic';"))
+            await session.execute(text("UPDATE users SET tier='growth' WHERE tier='scale';"))
+            # Old growth plan users get grandfathered into pro
+            await session.execute(text("UPDATE users SET tier='pro' WHERE tier='growth' AND email != 'superadmin@example.com';")) 
+            
             await session.commit()
-            print("[OK] DB Migration: Fixed legacy tier enums.")
+            print("[OK] DB Migration: Fixed legacy tier enums and migrated to Ad-Spend tiers.")
         except Exception as e:
             await session.rollback()
             print(f"[WARN] DB Migration failed for tier legacy fix: {e}")

@@ -73,13 +73,13 @@ def evaluate_campaign(metrics: dict, target_cpa: float = 20.0, tier: UserTier = 
                 "reason": f"APAGADO: CPA (${cpa:.2f}) supera el límite en un 50% (objetivo: ${target_cpa:.2f}).",
                 "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
             }
-        elif cpa < target_cpa * 0.5 and tier in [UserTier.scale, UserTier.growth]:
+        elif cpa < target_cpa * 0.5:
             return {
                 "action": "SCALE_HORIZONTAL",
                 "reason": f"ESCALADO HORIZONTAL: Mina de oro. CPA (${cpa:.2f}) es menor al 50% del objetivo. Sugerencia: Clonar estructura.",
                 "details": {"cost": cost, "conversions": conversions, "cpa": cpa, "target_cpa": target_cpa}
             }
-        elif cpa < target_cpa * 0.7 and tier in [UserTier.scale, UserTier.growth]:
+        elif cpa < target_cpa * 0.7:
             return {
                 "action": "SCALE_VERTICAL",
                 "reason": f"ESCALADO VERTICAL: Excelente performance. CPA (${cpa:.2f}) menor al 70% del objetivo. Sugerencia: Aumentar presupuesto un 25%.",
@@ -192,9 +192,29 @@ async def run(
                 fetch_campaign_metrics, client, target_id
             )
 
+            from models import get_ad_spend_limit
+            spend_limit = get_ad_spend_limit(client_user.tier)
+            total_spend = sum(c["cost"] for c in campaigns)
+            is_soft_paused = spend_limit > 0 and total_spend >= spend_limit
+
             cred_logs = []
             for campaign in campaigns:
                 try:
+                    if is_soft_paused:
+                        log = OrchestratorLog(
+                            user_id=client_id,
+                            campaign_id=campaign["campaign_id"],
+                            campaign_name=campaign["campaign_name"],
+                            action="SOFT_PAUSE",
+                            reason=f"Autopilot pausado: Gasto total (${total_spend:.2f}) excede el límite del plan (${spend_limit:.2f}).",
+                            details={"total_spend": total_spend, "spend_limit": spend_limit},
+                            is_dry_run=False,
+                            status="soft_paused",
+                        )
+                        db.add(log)
+                        cred_logs.append(log)
+                        continue
+
                     recommendation = evaluate_campaign(campaign, tier=client_user.tier)
                     if recommendation:
                         action_type = recommendation["action"]
@@ -283,9 +303,29 @@ async def cron_run(
                     client = await asyncio.to_thread(get_google_ads_client, refresh_token, login_id)
                     campaigns = await asyncio.to_thread(fetch_campaign_metrics, client, target_id)
 
+                    from models import get_ad_spend_limit
+                    spend_limit = get_ad_spend_limit(client_user.tier)
+                    total_spend = sum(c["cost"] for c in campaigns)
+                    is_soft_paused = spend_limit > 0 and total_spend >= spend_limit
+
                     cred_logs = []
                     for campaign in campaigns:
                         try:
+                            if is_soft_paused:
+                                log = OrchestratorLog(
+                                    user_id=client_user.id,
+                                    campaign_id=campaign["campaign_id"],
+                                    campaign_name=campaign["campaign_name"],
+                                    action="SOFT_PAUSE",
+                                    reason=f"Autopilot pausado: Gasto total (${total_spend:.2f}) excede el límite del plan (${spend_limit:.2f}).",
+                                    details={"total_spend": total_spend, "spend_limit": spend_limit},
+                                    is_dry_run=False,
+                                    status="soft_paused",
+                                )
+                                db.add(log)
+                                cred_logs.append(log)
+                                continue
+
                             recommendation = evaluate_campaign(campaign, tier=client_user.tier)
                             if recommendation:
                                 action_type = recommendation["action"]

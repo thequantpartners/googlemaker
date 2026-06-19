@@ -73,6 +73,7 @@ class CredentialsStatus(BaseModel):
     is_configured: bool
     connected_accounts: list[ConnectedAccount] = []
     plan_limit: int | None = None
+    ad_spend_limit: float = 0.0
     user_status: str | None = None
 
 

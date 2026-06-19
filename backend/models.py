@@ -35,18 +35,25 @@ class UserStatus(str, enum.Enum):
 
 class UserTier(str, enum.Enum):
     none = "none"
-    basic = "basic"
-    scale = "scale"
+    starter = "starter"
     growth = "growth"
-
+    pro = "pro"
+    elite = "elite"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-def get_plan_limit(tier: UserTier) -> int | None:
-    if tier == UserTier.basic: return 1
-    if tier == UserTier.scale: return 3
-    if tier == UserTier.growth: return None
+def get_ad_spend_limit(tier: UserTier) -> int:
+    if tier == UserTier.starter: return 2500
+    if tier == UserTier.growth: return 10000
+    if tier == UserTier.pro: return 25000
+    if tier == UserTier.elite: return 1000000 # Virtually unlimited or $1M
     return 0  # none
+
+def get_plan_limit(tier: UserTier) -> int | None:
+    # Under the new model, all tiers can connect unlimited accounts, 
+    # they are only gated by total ad spend.
+    if tier == UserTier.none: return 0
+    return None
 
 def _uuid() -> str:
     return str(uuid.uuid4())

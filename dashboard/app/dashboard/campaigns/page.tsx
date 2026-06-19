@@ -38,12 +38,19 @@ export default function ClientCampaigns() {
   
   // Form State
   const [formData, setFormData] = useState({
-    campaign_name: "",
+    campaign_name: "Immigration Law - Default",
     daily_budget: 50,
     final_url: "",
-    keywords_text: "",
-    headlines: ["", "", ""], // min 3
-    descriptions: ["", ""] // min 2
+    keywords_text: "abogado de inmigracion\nabogado de inmigracion cerca de mi\nabogado de inmigracion en español\nvisa de trabajo usa\nabogado para asilo politico\nabogado para residencia\nabogado para green card\nabogado de deportacion\nperdones de inmigracion\nabogado de inmigracion consulta gratis",
+    headlines: [
+      "Abogado de Inmigración",
+      "Consulta Tu Caso Hoy",
+      "Hablamos Español"
+    ],
+    descriptions: [
+      "Protege tu futuro en EE.UU. Abogados expertos en inmigración y asilo. Contáctanos hoy.",
+      "No enfrentes tu proceso solo. Te ayudamos a conseguir tu visa o green card rápidamente."
+    ]
   });
 
   const handleFormChange = (e: any) => {

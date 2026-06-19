@@ -1,0 +1,44 @@
+{
+  "template_name": "Immigration Law - US Latinos",
+  "default_daily_budget": 50,
+  "target_cpa": 40,
+  "keywords": [
+    "abogado de inmigracion",
+    "abogado de inmigracion cerca de mi",
+    "abogado de inmigracion en español",
+    "visa de trabajo usa",
+    "abogado para asilo politico",
+    "abogado para residencia",
+    "abogado para green card",
+    "abogado de deportacion",
+    "perdones de inmigracion",
+    "abogado de inmigracion consulta gratis"
+  ],
+  "negative_keywords": [
+    "gratis",
+    "pro bono",
+    "barato",
+    "estudiar en usa",
+    "estudiantes",
+    "turismo",
+    "ayuda del gobierno",
+    "foro",
+    "como hacer",
+    "diy",
+    "sin abogado"
+  ],
+  "headlines": [
+    "Abogado de Inmigración",
+    "Consulta Tu Caso Hoy",
+    "Hablamos Español",
+    "Defensa de Deportación",
+    "Obtén tu Residencia",
+    "Expertos en Asilo Político"
+  ],
+  "descriptions": [
+    "Protege tu futuro en EE.UU. Abogados expertos en inmigración y asilo. Contáctanos hoy.",
+    "No enfrentes tu proceso solo. Te ayudamos a conseguir tu visa o green card rápidamente.",
+    "Defensa agresiva contra la deportación. Primera consulta confidencial. Hablamos español.",
+    "Años de experiencia ganando casos complejos de inmigración. Llama ahora para ayuda legal."
+  ]
+}

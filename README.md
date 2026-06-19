@@ -18,9 +18,15 @@ pca query "project architecture"
 pca task "current task"
 ```
 
+## Target Audience (ICP)
+
+- **US Immigration Lawyers (Latino Market)**: Optimized pre-loaded templates for Spanish keywords, negative keywords, and ad copies designed specifically for immigration law firms.
+
 ## Features
 
-*   **Google Ads Orchestrator**: Uses a Hybrid Autopilot logic.
-    *   **Automated Protection**: Automatically pauses campaigns bleeding budget (Learning Phase heuristics implemented).
-    *   **Manual Scaling**: Generates scaling recommendations for high-performing campaigns, requiring manual approval via the dashboard.
+*   **Google Ads Autopilot (Core)**: A set-and-forget orchestrator.
+    *   **Automated Budget Protection**: Automatically pauses wasteful keywords and bleeding campaigns (Learning Phase heuristics implemented).
+    *   **Scaling Recommendations**: Generates horizontal and vertical scaling recommendations for high-performing campaigns.
+    *   **Ad-Spend Pricing Model**: Pricing is tied to the volume of ad spend managed, not feature gating. All users get the full Autopilot.
+    *   **Soft Pause Enforcement**: Limits are enforced safely by pausing the Autopilot optimization engine, without ever touching or pausing the client's live Google Ads campaigns.
     *   **Multi-Account Support**: Supports multiple Google Ads customer IDs mapped to subscription limits.

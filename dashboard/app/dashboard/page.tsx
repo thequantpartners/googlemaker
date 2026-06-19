@@ -227,60 +227,72 @@ function DashboardContent() {
   }
 
   // --- PAYWALL STATE ---
-  if (statusData?.plan_limit === 0) {
+  if (statusData?.plan_limit === 0 && statusData?.ad_spend_limit === 0) {
     return (
-      <div className="max-w-5xl mx-auto mt-10 text-center animate-fade-in-up">
-        <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
+      <div className="max-w-7xl mx-auto mt-10 text-center animate-fade-in-up pb-20">
+        <h1 className="text-4xl font-bold text-white mb-4">Choose Your Ad Spend Tier</h1>
         <p className="text-gray-400 text-lg mb-12">
-          Unlock the power of automatic optimization with GMaker.
+          Unlock the autopilot for your Immigration Law campaigns. All features included.
         </p>
 
-        <div className="grid md:grid-cols-3 gap-6 text-left">
-          {/* Basic Plan */}
+        <div className="grid md:grid-cols-4 gap-6 text-left">
+          {/* Starter Plan */}
           <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-neon-blue/50 transition-colors">
-            <h2 className="text-2xl font-bold text-white mb-2">Basic</h2>
-            <div className="text-4xl font-extrabold text-neon-blue mb-4">$5<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-            <p className="text-gray-400 mb-8 h-12">Ideal for entrepreneurs and local businesses.</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Starter</h2>
+            <div className="text-4xl font-extrabold text-neon-blue mb-4">$49<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+            <p className="text-gray-400 mb-8 h-12">Up to $2,500/mo in Ad Spend.</p>
             <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Connect 1 Ad Account</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Basic AI Optimization</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Weekly Reports</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Full Autopilot</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Immigration Templates</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Unlimited Accounts</li>
             </ul>
-            <button onClick={() => handleSelectPlan("basic")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
-              {selectingPlan ? "Activating..." : "Choose Basic"}
-            </button>
-          </div>
-
-          {/* Scale Plan */}
-          <div className="bg-dark-card backdrop-blur-xl border border-neon-purple p-8 rounded-[2rem] flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(168,85,247,0.15)]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">
-              MOST POPULAR
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Scale</h2>
-            <div className="text-4xl font-extrabold text-neon-purple mb-4">$20<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-            <p className="text-gray-400 mb-8 h-12">For small agencies and growing businesses.</p>
-            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Up to 3 Ad Accounts</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Real-time Optimization</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Priority Support</li>
-            </ul>
-            <button onClick={() => handleSelectPlan("scale")} disabled={selectingPlan} className="w-full py-4 rounded-full bg-gradient-to-r from-neon-purple to-neon-blue font-semibold text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-              {selectingPlan ? "Activating..." : "Choose Scale"}
+            <button onClick={() => handleSelectPlan("starter")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
+              {selectingPlan ? "Activating..." : "Choose Starter"}
             </button>
           </div>
 
           {/* Growth Plan */}
-          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-neon-green/50 transition-colors">
+          <div className="bg-dark-card backdrop-blur-xl border border-neon-purple p-8 rounded-[2rem] flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(168,85,247,0.15)]">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">
+              MOST POPULAR
+            </div>
             <h2 className="text-2xl font-bold text-white mb-2">Growth</h2>
-            <div className="text-4xl font-extrabold text-neon-green mb-4">$99<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-            <p className="text-gray-400 mb-8 h-12">For large agencies and robust operations.</p>
+            <div className="text-4xl font-extrabold text-neon-purple mb-4">$199<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+            <p className="text-gray-400 mb-8 h-12">Up to $10,000/mo in Ad Spend.</p>
             <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Unlimited Ad Accounts</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Custom AI Strategies</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> 24/7 Dedicated Support</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Full Autopilot</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Dedicated Support</li>
             </ul>
-            <button onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
+            <button onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} className="w-full py-4 rounded-full bg-gradient-to-r from-neon-purple to-neon-blue font-semibold text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(168,85,247,0.4)]">
               {selectingPlan ? "Activating..." : "Choose Growth"}
+            </button>
+          </div>
+
+          {/* Pro Plan */}
+          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-neon-green/50 transition-colors">
+            <h2 className="text-2xl font-bold text-white mb-2">Pro</h2>
+            <div className="text-4xl font-extrabold text-neon-green mb-4">$499<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+            <p className="text-gray-400 mb-8 h-12">Up to $25,000/mo in Ad Spend.</p>
+            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Full Autopilot</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Custom Automations</li>
+            </ul>
+            <button onClick={() => handleSelectPlan("pro")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
+              {selectingPlan ? "Activating..." : "Choose Pro"}
+            </button>
+          </div>
+
+          {/* Elite Plan */}
+          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-amber-500/50 transition-colors">
+            <h2 className="text-2xl font-bold text-white mb-2">Elite</h2>
+            <div className="text-4xl font-extrabold text-amber-500 mb-4">$700<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+            <p className="text-gray-400 mb-8 h-12">Unlimited Ad Spend ($1M limit).</p>
+            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Full Autopilot</li>
+              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Account Manager</li>
+            </ul>
+            <button onClick={() => handleSelectPlan("elite")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
+              {selectingPlan ? "Activating..." : "Choose Elite"}
             </button>
           </div>
         </div>
@@ -399,9 +411,7 @@ function DashboardContent() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
           <p className="text-gray-400 text-sm">
-            {isUnlimited 
-              ? `You have unlimited accounts. (${connectedCount} connected)`
-              : `You have connected ${connectedCount} out of ${statusData?.plan_limit} allowed accounts.`}
+            {connectedCount} accounts connected.
           </p>
         </div>
         
@@ -430,6 +440,25 @@ function DashboardContent() {
       {searchParams.get("connected") === "error" && (
         <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3">
           <AlertCircle size={20} /> {searchParams.get("message") || "Error connecting Google Ads account."}
+        </div>
+      )}
+
+      {statusData?.ad_spend_limit > 0 && globalMetrics.cost >= statusData.ad_spend_limit && (
+        <div className="mb-8 p-6 bg-amber-500/10 border border-amber-500/50 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(245,158,11,0.15)] animate-pulse">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-amber-500/20 rounded-full text-amber-500">
+              <AlertCircle size={28} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-amber-500">Ad Spend Limit Exceeded</h3>
+              <p className="text-amber-500/80 mt-1">
+                Your campaigns are still running, but the <strong className="text-white">Autopilot</strong> is currently paused. Upgrade your plan to resume automatic optimizations.
+              </p>
+            </div>
+          </div>
+          <button onClick={() => window.scrollTo(0, document.body.scrollHeight)} className="px-6 py-3 bg-amber-500 text-black font-bold rounded-full hover:bg-amber-400 transition-colors whitespace-nowrap">
+            Upgrade Plan
+          </button>
         </div>
       )}
 
@@ -538,12 +567,18 @@ function DashboardContent() {
 
       {/* 4 Metric Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Widget 1 */}
-        <div className="bg-dark-card backdrop-blur-xl border border-neon-green/30 p-6 rounded-2xl relative overflow-hidden shadow-[0_0_20px_rgba(16,185,129,0.05)]">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-neon-green/10 rounded-full blur-[40px] -mr-10 -mt-10" />
-          <p className="text-gray-400 text-sm mb-2">Total Spend</p>
-          <div className="flex items-end gap-3">
+        {/* Spend Widget with Progress Bar */}
+        <div className="bg-dark-card backdrop-blur-xl border border-neon-purple/30 p-6 rounded-2xl relative overflow-hidden shadow-[0_0_20px_rgba(168,85,247,0.05)]">
+          <p className="text-gray-400 text-sm mb-2">Total Spend / Limit</p>
+          <div className="flex items-end gap-3 mb-4">
             <h2 className="text-3xl font-bold text-white">${globalMetrics.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
+            <span className="text-gray-500 mb-1">/ ${statusData?.ad_spend_limit?.toLocaleString("en-US")}</span>
+          </div>
+          <div className="w-full bg-black/40 rounded-full h-2.5 mb-2 overflow-hidden">
+            <div 
+              className={`h-2.5 rounded-full ${globalMetrics.cost >= statusData?.ad_spend_limit ? 'bg-amber-500' : 'bg-neon-purple'}`}
+              style={{ width: `${Math.min(100, (globalMetrics.cost / (statusData?.ad_spend_limit || 1)) * 100)}%` }}
+            ></div>
           </div>
         </div>
 
@@ -564,10 +599,18 @@ function DashboardContent() {
         </div>
 
         {/* Widget 4 */}
-        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
-          <p className="text-gray-400 text-sm mb-2">ROAS</p>
-          <div className="flex items-end gap-3">
-            <h2 className="text-3xl font-bold text-white">N/A</h2>
+        <div className="bg-dark-card backdrop-blur-xl border border-neon-green/30 p-6 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.05)]">
+          <p className="text-gray-400 text-sm mb-2">Autopilot Status</p>
+          <div className="flex items-center gap-3 mt-2">
+            {globalMetrics.cost >= statusData?.ad_spend_limit ? (
+              <span className="flex items-center gap-2 text-amber-500 font-bold bg-amber-500/10 px-4 py-2 rounded-xl">
+                <AlertCircle size={20} /> Paused (Limit Reached)
+              </span>
+            ) : (
+              <span className="flex items-center gap-2 text-neon-green font-bold bg-neon-green/10 px-4 py-2 rounded-xl">
+                <CheckCircle2 size={20} /> Active & Optimizing
+              </span>
+            )}
           </div>
         </div>
       </div>

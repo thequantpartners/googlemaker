@@ -2,7 +2,7 @@
 
 ## In Process
 
-- [No task in process]
+- [ ] Execute Autopilot Pivot Implementation Plan (Ad Spend pricing, Soft Pause logic, Immigration Lawyer Templates).
 
 ## Pending
 
@@ -10,6 +10,7 @@
 
 ## Done
 
+- [x] Conceptual Alignment on Autopilot Pivot (Immigration Lawyer ICP, Ad Spend pricing).
 - [x] Set up PCA, GitHub Monorepo, and configure Railway backend deployment.
 - [x] Migrate to PostgreSQL on Railway for persistent storage.
 - [x] Implement 3 pricing tiers (Basic, Scale, Growth) and Paywall UI.
