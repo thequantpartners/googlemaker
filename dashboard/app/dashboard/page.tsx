@@ -4,7 +4,8 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, AlertCircle, Plus, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { ArrowRight, Plus, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, PlayCircle, PauseCircle, Activity, TrendingUp, TrendingDown, XCircle, Trash2 } from "lucide-react";
+import PricingCards from "../components/PricingCards";
 
 function DashboardContent() {
   const { data: session } = useSession();
@@ -235,67 +236,10 @@ function DashboardContent() {
           Unlock the autopilot for your Immigration Law campaigns. All features included.
         </p>
 
-        <div className="grid md:grid-cols-4 gap-6 text-left">
-          {/* Starter Plan */}
-          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-neon-blue/50 transition-colors">
-            <h2 className="text-2xl font-bold text-white mb-2">Starter</h2>
-            <div className="text-4xl font-extrabold text-neon-blue mb-4">$49<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-            <p className="text-gray-400 mb-8 h-12">Up to $2,500/mo in Ad Spend.</p>
-            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Full Autopilot</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Immigration Templates</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Unlimited Accounts</li>
-            </ul>
-            <button onClick={() => handleSelectPlan("starter")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
-              {selectingPlan ? "Activating..." : "Choose Starter"}
-            </button>
-          </div>
-
-          {/* Growth Plan */}
-          <div className="bg-dark-card backdrop-blur-xl border border-neon-purple p-8 rounded-[2rem] flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(168,85,247,0.15)]">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">
-              MOST POPULAR
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Growth</h2>
-            <div className="text-4xl font-extrabold text-neon-purple mb-4">$199<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-            <p className="text-gray-400 mb-8 h-12">Up to $10,000/mo in Ad Spend.</p>
-            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Full Autopilot</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Dedicated Support</li>
-            </ul>
-            <button onClick={() => handleSelectPlan("growth")} disabled={selectingPlan} className="w-full py-4 rounded-full bg-gradient-to-r from-neon-purple to-neon-blue font-semibold text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-              {selectingPlan ? "Activating..." : "Choose Growth"}
-            </button>
-          </div>
-
-          {/* Pro Plan */}
-          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-neon-green/50 transition-colors">
-            <h2 className="text-2xl font-bold text-white mb-2">Pro</h2>
-            <div className="text-4xl font-extrabold text-neon-green mb-4">$499<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-            <p className="text-gray-400 mb-8 h-12">Up to $25,000/mo in Ad Spend.</p>
-            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Full Autopilot</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Custom Automations</li>
-            </ul>
-            <button onClick={() => handleSelectPlan("pro")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
-              {selectingPlan ? "Activating..." : "Choose Pro"}
-            </button>
-          </div>
-
-          {/* Elite Plan */}
-          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col hover:border-amber-500/50 transition-colors">
-            <h2 className="text-2xl font-bold text-white mb-2">Elite</h2>
-            <div className="text-4xl font-extrabold text-amber-500 mb-4">$700<span className="text-lg text-gray-500 font-normal">/mo</span></div>
-            <p className="text-gray-400 mb-8 h-12">Unlimited Ad Spend ($1M limit).</p>
-            <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Full Autopilot</li>
-              <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Account Manager</li>
-            </ul>
-            <button onClick={() => handleSelectPlan("elite")} disabled={selectingPlan} className="w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">
-              {selectingPlan ? "Activating..." : "Choose Elite"}
-            </button>
-          </div>
-        </div>
+        <PricingCards 
+          selectingPlan={selectingPlan} 
+          onSelectPlan={handleSelectPlan} 
+        />
       </div>
     );
   }

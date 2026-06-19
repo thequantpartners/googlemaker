@@ -43,8 +43,8 @@ class UserTier(str, enum.Enum):
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def get_ad_spend_limit(tier: UserTier) -> int:
-    if tier == UserTier.starter: return 2500
-    if tier == UserTier.growth: return 10000
+    if tier == UserTier.starter: return 1000
+    if tier == UserTier.growth: return 5000
     if tier == UserTier.pro: return 25000
     if tier == UserTier.elite: return 1000000 # Virtually unlimited or $1M
     return 0  # none

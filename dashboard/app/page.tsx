@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Search, Play, TrendingUp, ShieldCheck, Copy, ArrowRight, PlayCircle, Globe, CheckCircle2, ChevronDown, Zap, BarChart3, Clock, Menu, X } from "lucide-react";
+import PricingCards from "./components/PricingCards";
 
 const translations = {
   en: {
@@ -504,44 +505,7 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-5xl font-bold mb-4">{t.price_title}</h2>
           <p className="text-gray-400 text-lg mb-16">{t.price_desc}</p>
           
-          <div className="grid md:grid-cols-3 gap-6 text-left">
-            <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-2">{t.p_basic}</h3>
-              <div className="text-4xl font-extrabold text-white mb-6">$5<span className="text-lg text-gray-500 font-normal">{t.p_mo}</span></div>
-              <p className="text-gray-400 mb-8 h-12">{t.pb_desc}</p>
-              <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_1}</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_2}</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_3}</li>
-              </ul>
-              <Link href="/login" className="text-center w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">{t.btn_basic}</Link>
-            </div>
-
-            <div className="bg-dark-card backdrop-blur-xl border border-neon-purple p-8 rounded-[2rem] flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(168,85,247,0.15)]">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">{t.popular}</div>
-              <h3 className="text-2xl font-bold text-white mb-2">{t.p_scale}</h3>
-              <div className="text-4xl font-extrabold text-neon-purple mb-6">$20<span className="text-lg text-gray-500 font-normal">{t.p_mo}</span></div>
-              <p className="text-gray-400 mb-8 h-12">{t.ps_desc}</p>
-              <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> {t.ps_1}</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> {t.ps_2}</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> {t.ps_3}</li>
-              </ul>
-              <Link href="/login" className="text-center w-full py-4 rounded-full bg-gradient-to-r from-neon-purple to-neon-blue font-semibold text-white hover:opacity-90 transition-opacity">{t.btn_scale}</Link>
-            </div>
-
-            <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-2">{t.p_growth}</h3>
-              <div className="text-4xl font-extrabold text-white mb-6">$99<span className="text-lg text-gray-500 font-normal">{t.p_mo}</span></div>
-              <p className="text-gray-400 mb-8 h-12">{t.pg_desc}</p>
-              <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> {t.pg_1}</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> {t.pg_2}</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> {t.pg_3}</li>
-              </ul>
-              <Link href="/login" className="text-center w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">{t.btn_growth}</Link>
-            </div>
-          </div>
+          <PricingCards isLandingPage={true} />
         </div>
       </section>
 
