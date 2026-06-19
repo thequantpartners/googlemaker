@@ -32,7 +32,8 @@ function DashboardContent() {
         const snippet = `<!-- Google tag (gtag.js) -->\n${data.global_site_tag}\n\n<!-- Event snippet -->\n${data.event_snippet}`;
         setPixelSnippet(snippet);
       } else {
-        alert("Error generating pixel");
+        const errData = await res.text();
+        alert(`Error generating pixel: ${errData}`);
       }
     } catch (err) {
       console.error(err);

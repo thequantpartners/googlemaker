@@ -14,9 +14,11 @@ def get_google_ads_client(refresh_token: str, login_customer_id: str) -> GoogleA
         "client_id": os.getenv("GOOGLE_ADS_CLIENT_ID", ""),
         "client_secret": os.getenv("GOOGLE_ADS_CLIENT_SECRET", ""),
         "refresh_token": refresh_token,
-        "login_customer_id": login_customer_id.replace("-", ""),
         "use_proto_plus": True
     }
+    if login_customer_id:
+        credentials["login_customer_id"] = login_customer_id.replace("-", "")
+        
     return GoogleAdsClient.load_from_dict(credentials)
 
 def fetch_accessible_customers(refresh_token: str) -> list[str]:
