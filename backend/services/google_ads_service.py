@@ -322,7 +322,7 @@ def create_conversion_action(client: GoogleAdsClient, customer_id: str, name: st
     conversion_action.name = f"{name} ({uuid.uuid4().hex[:4]})"
     conversion_action.type_ = client.enums.ConversionActionTypeEnum.WEBPAGE
     conversion_action.status = client.enums.ConversionActionStatusEnum.ENABLED
-    conversion_action.category = client.enums.ConversionActionCategoryEnum.LEAD
+    conversion_action.category = client.enums.ConversionActionCategoryEnum.DEFAULT
     
     conversion_action.value_settings.default_value = 1.0
     conversion_action.value_settings.always_use_default_value = True
