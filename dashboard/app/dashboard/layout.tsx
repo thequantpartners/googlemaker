@@ -61,7 +61,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple font-bold text-white text-lg">
             G
           </div>
-          <span className="font-semibold text-lg text-white">GoogleMaker</span>
+          <span className="font-semibold text-lg text-white">GMaker</span>
         </div>
 
         {/* Navigation */}

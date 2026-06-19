@@ -1,7 +1,7 @@
-# PCA Index — GoogleMaker
+# PCA Index — GMaker
 
 ## Project Metadata
-- Name: GoogleMaker
+- Name: GMaker
 - Type: [unknown]
 - Stage: greenfield
 - Active Objective: [Define active objective]

@@ -207,7 +207,7 @@ async def generate_tracking_pixel(
             create_conversion_action,
             client,
             target,
-            "GoogleMaker Lead Conversion"
+            "GMaker Lead Conversion"
         )
         return pixel_data
     except Exception as e:

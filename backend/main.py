@@ -25,13 +25,13 @@ from schemas import GoogleLoginRequest, TokenResponse, UserOut
 SUPERADMIN_EMAIL: str = os.getenv("SUPERADMIN_EMAIL", "thequantpartners@gmail.com")
 FRONTEND_ORIGINS: list[str] = [
     o.strip()
-    for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,https://googlemaker.thequantpartners.com,https://googlemaker-pdf.vercel.app,https://googlemaker-psi.vercel.app").split(",")
+    for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,https://gmaker.thequantpartners.com,https://googlemaker-pdf.vercel.app,https://googlemaker-psi.vercel.app").split(",")
     if o.strip()
 ]
 
 # Unconditionally add the main domain just in case FRONTEND_ORIGINS is overridden in Railway
-if "https://googlemaker.thequantpartners.com" not in FRONTEND_ORIGINS:
-    FRONTEND_ORIGINS.append("https://googlemaker.thequantpartners.com")
+if "https://gmaker.thequantpartners.com" not in FRONTEND_ORIGINS:
+    FRONTEND_ORIGINS.append("https://gmaker.thequantpartners.com")
 
 
 # ── Lifespan (startup / shutdown) ────────────────────────────────────────────

@@ -308,7 +308,7 @@ def create_full_search_campaign(client: GoogleAdsClient, customer_id: str,
 
 # ── Conversion Tracking ──────────────────────────────────────────────────────
 
-def create_conversion_action(client: GoogleAdsClient, customer_id: str, name: str = "GoogleMaker Conversion") -> dict:
+def create_conversion_action(client: GoogleAdsClient, customer_id: str, name: str = "GMaker Conversion") -> dict:
     """
     Creates a WEBPAGE conversion action and fetches the global tag and event snippet.
     Returns a dict with 'snippet' and 'event_snippet'.

@@ -232,7 +232,7 @@ function DashboardContent() {
       <div className="max-w-5xl mx-auto mt-10 text-center animate-fade-in-up">
         <h1 className="text-4xl font-bold text-white mb-4">Choose Your Plan</h1>
         <p className="text-gray-400 text-lg mb-12">
-          Unlock the power of automatic optimization with GoogleMaker.
+          Unlock the power of automatic optimization with GMaker.
         </p>
 
         <div className="grid md:grid-cols-3 gap-6 text-left">

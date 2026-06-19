@@ -1,7 +1,7 @@
 > [!IMPORTANT]
 > **AI AGENT NOTICE**: If you are an AI agent, you **MUST** read AGENTS.md first to understand the workspace operating rules and context requirements.
 
-# GoogleMaker
+# GMaker
 
 This repository uses PCA (Persistent Context Architecture).
 

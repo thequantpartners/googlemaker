@@ -25,7 +25,7 @@ const translations = {
     prob_title: "Manual Bidding is Killing Your Margins.",
     prob_desc: "Agencies and business owners spend hours analyzing spreadsheets, only to realize they've wasted thousands of dollars on weekends or overnight when nobody was watching the campaigns.",
     prob_1_t: "Weekend Waste",
-    prob_1_d: "Campaigns often spiral out of control during weekends or holidays when your team is offline. GoogleMaker never sleeps.",
+    prob_1_d: "Campaigns often spiral out of control during weekends or holidays when your team is offline. GMaker never sleeps.",
     prob_2_t: "Missed Opportunities",
     prob_2_d: "When a campaign hits a winning streak, human reaction time is too slow to scale it before the trend dies down.",
     prob_3_t: "Emotional Decisions",
@@ -47,7 +47,7 @@ const translations = {
     feat_3_t: "Horizontal Cloning",
     feat_3_d: "(Coming Soon) Automatically extract search terms that converted exceptionally well and create parallel exact-match expansion campaigns to dominate specific high-intent keywords.",
     test_title: "Built for Agencies That Demand Results",
-    test_1: '"We manage over 20 clients in LatAm. Since hooking them up to GoogleMaker, our team saves around 15 hours a week in manual bid adjustments. The Capital Protection alone paid for the software in day two."',
+    test_1: '"We manage over 20 clients in LatAm. Since hooking them up to GMaker, our team saves around 15 hours a week in manual bid adjustments. The Capital Protection alone paid for the software in day two."',
     test_2: '"Scaling winners was always scary because CPA usually shoots up. This hybrid autopilot scales budgets incrementally. We increased our client\'s revenue by 40% without ruining profitability."',
     price_title: "Simple, Transparent Pricing",
     price_desc: "No percentage of ad spend. Just a flat monthly fee to protect your margins.",
@@ -73,7 +73,7 @@ const translations = {
     popular: "MOST POPULAR",
     faq_title: "Frequently Asked Questions",
     faq_1_q: "Does it alter my existing campaigns?",
-    faq_1_a: "No. GoogleMaker reads your data and only makes specific adjustments (like pausing a bad ad group or increasing a budget by 15%) based on your explicit CPA limits. It never deletes your campaigns or rewrites your ad copy.",
+    faq_1_a: "No. GMaker reads your data and only makes specific adjustments (like pausing a bad ad group or increasing a budget by 15%) based on your explicit CPA limits. It never deletes your campaigns or rewrites your ad copy.",
     faq_2_q: "How fast does it react to bad spend?",
     faq_2_a: "Our CRON job scans your connected accounts multiple times a day. If a campaign suddenly spikes and spends over 1.5x your target CPA without a conversion, the system pauses it immediately to protect your capital.",
     faq_3_q: "Do I need to be a developer to use this?",
@@ -102,7 +102,7 @@ const translations = {
     prob_title: "Las Pujas Manuales Están Matando tus Márgenes.",
     prob_desc: "Las agencias y dueños de negocios pasan horas analizando hojas de cálculo, solo para darse cuenta de que han desperdiciado miles de dólares el fin de semana cuando nadie revisaba las campañas.",
     prob_1_t: "Desperdicio en Fines de Semana",
-    prob_1_d: "Las campañas suelen salirse de control durante los fines de semana cuando tu equipo no está en línea. GoogleMaker nunca duerme.",
+    prob_1_d: "Las campañas suelen salirse de control durante los fines de semana cuando tu equipo no está en línea. GMaker nunca duerme.",
     prob_2_t: "Oportunidades Perdidas",
     prob_2_d: "Cuando una campaña tiene una racha ganadora, el tiempo de reacción humana es demasiado lento para escalarla antes de que muera la tendencia.",
     prob_3_t: "Decisiones Emocionales",
@@ -124,7 +124,7 @@ const translations = {
     feat_3_t: "Clonación Horizontal",
     feat_3_d: "(Próximamente) Extraeremos automáticamente los términos de búsqueda que mejor convierten para crear campañas exactas y dominar palabras clave de alta intención.",
     test_title: "Construido para Agencias que Exigen Resultados",
-    test_1: '"Manejamos más de 20 clientes en LatAm. Desde que los conectamos a GoogleMaker, nuestro equipo ahorra 15 horas a la semana. La Protección de Capital pagó el software en el día dos."',
+    test_1: '"Manejamos más de 20 clientes en LatAm. Desde que los conectamos a GMaker, nuestro equipo ahorra 15 horas a la semana. La Protección de Capital pagó el software en el día dos."',
     test_2: '"Escalar siempre fue aterrador porque el CPA suele dispararse. Este piloto automático escala gradualmente. Aumentamos los ingresos de nuestro cliente un 40% sin perder rentabilidad."',
     price_title: "Precios Simples y Transparentes",
     price_desc: "Sin porcentajes por inversión. Solo una tarifa plana mensual para proteger tus márgenes.",
@@ -150,7 +150,7 @@ const translations = {
     popular: "MÁS POPULAR",
     faq_title: "Preguntas Frecuentes",
     faq_1_q: "¿Altera mis campañas existentes?",
-    faq_1_a: "No. GoogleMaker solo lee tus datos y hace ajustes específicos (como pausar un mal anuncio o subir presupuesto) basado en tus límites de CPA. Nunca borra campañas ni reescribe textos.",
+    faq_1_a: "No. GMaker solo lee tus datos y hace ajustes específicos (como pausar un mal anuncio o subir presupuesto) basado en tus límites de CPA. Nunca borra campañas ni reescribe textos.",
     faq_2_q: "¿Qué tan rápido reacciona al mal gasto?",
     faq_2_a: "Nuestro sistema escanea tus cuentas varias veces al día. Si una campaña se dispara y gasta 1.5x de tu objetivo sin convertir, el sistema la pausa inmediatamente para proteger tu capital.",
     faq_3_q: "¿Necesito ser desarrollador para usarlo?",
@@ -183,7 +183,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple font-bold text-lg">
             G
           </div>
-          <span className="font-semibold text-xl tracking-tight">GoogleMaker</span>
+          <span className="font-semibold text-xl tracking-tight">GMaker</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
@@ -594,7 +594,7 @@ export default function LandingPage() {
             {t.foot_btn}
           </Link>
           <div className="mt-16 text-gray-500 text-sm">
-            © 2026 GoogleMaker. Built by TheQuantPartners.
+            © 2026 GMaker. Built by TheQuantPartners.
           </div>
         </div>
       </footer>
