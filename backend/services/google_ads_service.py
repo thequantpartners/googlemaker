@@ -4,6 +4,7 @@ services/google_ads_service.py
 import os
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
+from google.api_core import protobuf_helpers
 
 def get_google_ads_client(refresh_token: str, login_customer_id: str) -> GoogleAdsClient:
     """
@@ -361,3 +362,70 @@ def create_conversion_action(client: GoogleAdsClient, customer_id: str, name: st
     except GoogleAdsException as ex:
         errors = [error.message for error in ex.failure.errors]
         raise ValueError(f"Error obteniendo snippet: {'; '.join(errors)}")
+
+def fetch_conversion_actions(client: GoogleAdsClient, customer_id: str) -> list[dict]:
+    """Fetches all enabled or hidden conversion actions."""
+    customer_id_clean = customer_id.replace("-", "")
+    ga_service = client.get_service("GoogleAdsService")
+    query = """
+        SELECT
+            conversion_action.id,
+            conversion_action.name,
+            conversion_action.status,
+            conversion_action.category,
+            conversion_action.type,
+            conversion_action.tag_snippets
+        FROM conversion_action
+        WHERE conversion_action.status IN ('ENABLED', 'HIDDEN')
+    """
+    
+    results = []
+    try:
+        search_response = ga_service.search(customer_id=customer_id_clean, query=query)
+        for row in search_response:
+            ca = row.conversion_action
+            snippet = None
+            if ca.tag_snippets:
+                # Store the full HTML block
+                snippet = f"<!-- Google tag (gtag.js) -->\n{ca.tag_snippets[0].global_site_tag}\n\n<!-- Event snippet -->\n{ca.tag_snippets[0].event_snippet}"
+                
+            results.append({
+                "id": ca.id,
+                "name": ca.name,
+                "status": ca.status.name,
+                "category": ca.category.name,
+                "type": ca.type_.name,
+                "snippet": snippet
+            })
+        return results
+    except GoogleAdsException as ex:
+        errors = [error.message for error in ex.failure.errors]
+        raise ValueError(f"Error fetching conversions: {'; '.join(errors)}")
+
+def remove_conversion_action(client: GoogleAdsClient, customer_id: str, conversion_action_id: str) -> bool:
+    """Sets a conversion action status to REMOVED."""
+    customer_id_clean = customer_id.replace("-", "")
+    conversion_action_service = client.get_service("ConversionActionService")
+    conversion_action_operation = client.get_type("ConversionActionOperation")
+    
+    conversion_action = conversion_action_operation.update
+    conversion_action.resource_name = conversion_action_service.conversion_action_path(
+        customer_id_clean, conversion_action_id
+    )
+    conversion_action.status = client.enums.ConversionActionStatusEnum.REMOVED
+    
+    # We must construct a field mask so the API knows what to update
+    client.copy_from(
+        conversion_action_operation.update_mask,
+        protobuf_helpers.field_mask(None, conversion_action._pb),
+    )
+    
+    try:
+        conversion_action_service.mutate_conversion_actions(
+            customer_id=customer_id_clean, operations=[conversion_action_operation]
+        )
+        return True
+    except GoogleAdsException as ex:
+        errors = [error.message for error in ex.failure.errors]
+        raise ValueError(f"Error removing conversion: {'; '.join(errors)}")
+

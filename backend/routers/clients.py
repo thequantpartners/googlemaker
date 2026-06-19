@@ -213,6 +213,78 @@ async def generate_tracking_pixel(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.get("/me/credentials/{credential_id}/pixels")
+async def list_tracking_pixels(
+    credential_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Lists all active and hidden conversion actions (pixels) for a specific credential."""
+    result = await db.execute(
+        select(GoogleAdsCredential).where(
+            GoogleAdsCredential.id == credential_id,
+            GoogleAdsCredential.user_id == user.id
+        )
+    )
+    cred = result.scalar_one_or_none()
+    if not cred:
+        raise HTTPException(status_code=404, detail="Credential not found")
+        
+    try:
+        refresh_token = decrypt_value(cred.refresh_token)
+        target = decrypt_value(cred.target_customer_id)
+        login = decrypt_value(cred.login_customer_id)
+        
+        from services.google_ads_service import get_google_ads_client, fetch_conversion_actions
+        client = get_google_ads_client(refresh_token, login)
+        
+        import asyncio
+        pixels = await asyncio.to_thread(
+            fetch_conversion_actions,
+            client,
+            target
+        )
+        return pixels
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.delete("/me/credentials/{credential_id}/pixels/{pixel_id}")
+async def delete_tracking_pixel(
+    credential_id: str,
+    pixel_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Removes a tracking pixel by setting its status to REMOVED."""
+    result = await db.execute(
+        select(GoogleAdsCredential).where(
+            GoogleAdsCredential.id == credential_id,
+            GoogleAdsCredential.user_id == user.id
+        )
+    )
+    cred = result.scalar_one_or_none()
+    if not cred:
+        raise HTTPException(status_code=404, detail="Credential not found")
+        
+    try:
+        refresh_token = decrypt_value(cred.refresh_token)
+        target = decrypt_value(cred.target_customer_id)
+        login = decrypt_value(cred.login_customer_id)
+        
+        from services.google_ads_service import get_google_ads_client, remove_conversion_action
+        client = get_google_ads_client(refresh_token, login)
+        
+        import asyncio
+        success = await asyncio.to_thread(
+            remove_conversion_action,
+            client,
+            target,
+            pixel_id
+        )
+        return {"success": success}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 
 # ── Get own orchestrator logs ────────────────────────────────────────────────

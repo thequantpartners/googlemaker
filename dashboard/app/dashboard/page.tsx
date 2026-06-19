@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, AlertCircle, Plus, CheckCircle2, XCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, Activity, AlertCircle, Plus, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 
 function DashboardContent() {
   const { data: session } = useSession();
@@ -18,6 +18,47 @@ function DashboardContent() {
 
   const [pixelSnippet, setPixelSnippet] = useState<string | null>(null);
   const [generatingPixel, setGeneratingPixel] = useState<string | null>(null);
+
+  const [managingPixelsFor, setManagingPixelsFor] = useState<string | null>(null);
+  const [pixelsList, setPixelsList] = useState<any[]>([]);
+  const [pixelsLoading, setPixelsLoading] = useState(false);
+  const [deletingPixelId, setDeletingPixelId] = useState<string | null>(null);
+
+  const handleManagePixels = async (credentialId: string) => {
+    setManagingPixelsFor(credentialId);
+    setPixelsLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${credentialId}/pixels`, {
+        headers: { Authorization: `Bearer ${session?.backendToken}` }
+      });
+      if (res.ok) {
+        setPixelsList(await res.json());
+      }
+    } catch (e) {
+      console.error("Error fetching pixels", e);
+    }
+    setPixelsLoading(false);
+  };
+
+  const handleDeletePixel = async (credentialId: string, pixelId: string) => {
+    if (!confirm("Are you sure you want to remove this pixel? It will no longer track conversions.")) return;
+    setDeletingPixelId(pixelId);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${credentialId}/pixels/${pixelId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session?.backendToken}` }
+      });
+      if (res.ok) {
+        setPixelsList(prev => prev.filter(p => p.id !== pixelId));
+      } else {
+        const err = await res.text();
+        alert(`Error deleting pixel: ${err}`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setDeletingPixelId(null);
+  };
 
   const handleGeneratePixel = async (credentialId: string) => {
     if (!session?.backendToken) return;
@@ -284,6 +325,61 @@ function DashboardContent() {
         </div>
       )}
 
+      {managingPixelsFor && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl max-w-3xl w-full max-h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-white">Manage Pixels</h3>
+              <button onClick={() => setManagingPixelsFor(null)} className="text-gray-400 hover:text-white">
+                <XCircle size={24} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto pr-2">
+              {pixelsLoading ? (
+                <div className="text-center py-8 text-gray-400">Loading pixels...</div>
+              ) : pixelsList.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">No pixels found. Generate one first!</div>
+              ) : (
+                <div className="space-y-4">
+                  {pixelsList.map((pixel) => (
+                    <div key={pixel.id} className="bg-white/5 border border-white/10 p-4 rounded-lg flex items-center justify-between group hover:bg-white/10 transition">
+                      <div>
+                        <div className="text-white font-medium mb-1">{pixel.name}</div>
+                        <div className="text-xs text-gray-400 flex gap-3">
+                          <span>Status: <span className="text-neon-green">{pixel.status}</span></span>
+                          <span>Category: {pixel.category}</span>
+                          <span>ID: {pixel.id}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {pixel.snippet && (
+                          <button 
+                            onClick={() => { navigator.clipboard.writeText(pixel.snippet); alert('Snippet copied to clipboard!'); }}
+                            className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-gray-300 hover:text-white transition"
+                            title="Copy Code"
+                          >
+                            Copy Code
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => handleDeletePixel(managingPixelsFor, pixel.id)}
+                          disabled={deletingPixelId === pixel.id}
+                          className="p-2 bg-red-500/20 hover:bg-red-500/40 border border-red-500/30 rounded-lg text-red-400 hover:text-red-300 transition"
+                          title="Delete Pixel"
+                        >
+                          {deletingPixelId === pixel.id ? "..." : <Trash2 size={18} />}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top action bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
@@ -381,13 +477,21 @@ function DashboardContent() {
                         </td>
                         <td className="py-4 px-6 text-right space-x-4">
                           {!isInvalid && (
-                            <button
-                              onClick={() => handleGeneratePixel(acc.id)}
-                              disabled={generatingPixel === acc.id}
-                              className="text-neon-purple hover:text-white transition-colors text-sm font-medium"
-                            >
-                              {generatingPixel === acc.id ? "Generating..." : "Generate Pixel"}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleManagePixels(acc.id)}
+                                className="text-gray-300 hover:text-white transition-colors text-sm font-medium mr-4"
+                              >
+                                Manage Pixels
+                              </button>
+                              <button
+                                onClick={() => handleGeneratePixel(acc.id)}
+                                disabled={generatingPixel === acc.id}
+                                className="text-neon-purple hover:text-white transition-colors text-sm font-medium"
+                              >
+                                {generatingPixel === acc.id ? "Generating..." : "Generate Pixel"}
+                              </button>
+                            </>
                           )}
                           <button 
                             onClick={async () => {
