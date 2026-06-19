@@ -28,3 +28,4 @@
 - [x] Implemented real global metrics calculation on the main dashboard and dynamically rendered the AreaChart based on aggregated campaign data.
 - [x] Implemented logic to strictly enforce plan limits in backend and updated the landing page UI accordingly.
 - [x] Integrated Google Ads Conversion Pixel generation with Backend GAQL logic and Frontend Modal UI.
+- [x] Rebranding to GMaker, CORS domain updates, and SEO metadata update.

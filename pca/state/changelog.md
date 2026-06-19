@@ -34,3 +34,10 @@
 - Added dynamic language translation toggle (EN/ES) and UI avatars to the Landing Page.
 - Integrated Google Ads Conversion Pixel generation with Backend GAQL logic (`google_ads_service.py` & `/clients.py`) and Frontend Modal UI.
 - Fixed 500 API login error caused by missing `tier` column in production database by injecting explicit ALTER TABLE migration in `main.py` lifespan and pushing to Railway.
+- Fixed Google Ads API 400 Validation Error on pixel generation by safely omitting `login_customer_id` from GoogleAdsClient config when the user connects directly to a client account instead of an MCC.
+- Changed default pixel creation category from `LEAD` (which threw KeyError in some API versions) to `DEFAULT`.
+- Built the "Pixel Manager" UI inside the Dashboard, allowing users to view, copy, and delete (status = REMOVED) all conversion actions linked to their Google Ads account.
+- Upgraded the Pixel Manager to automatically map and display "Active Campaigns" for each pixel by cross-referencing conversion metrics segmented by conversion action over the last 30 days.
+- Rebranded the entire application from GoogleMaker to GMaker to avoid trademark infringement issues with Google.
+- Updated CORS backend policies to accept gmaker.thequantpartners.com.
+- Updated Landing Page SEO metadata (Title and Description) with a professional English slogan.
