@@ -436,7 +436,7 @@ function DashboardContent() {
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500 flex-col gap-2">
               <Activity size={32} className="opacity-50" />
-              <p>Generando gráfico...</p>
+              <p>Generating chart...</p>
             </div>
           )}
         </div>

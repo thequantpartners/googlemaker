@@ -80,17 +80,17 @@ export default function ClientCampaigns() {
     const validDescriptions = formData.descriptions.map(d => d.trim()).filter(d => d.length > 0);
     
     if (validHeadlines.length < 3) {
-      setCreateError("Debes ingresar al menos 3 títulos.");
+      setCreateError("You must enter at least 3 headlines.");
       setCreateLoading(false);
       return;
     }
     if (validDescriptions.length < 2) {
-      setCreateError("Debes ingresar al menos 2 descripciones.");
+      setCreateError("You must enter at least 2 descriptions.");
       setCreateLoading(false);
       return;
     }
     if (keywords.length === 0) {
-      setCreateError("Debes ingresar al menos 1 palabra clave.");
+      setCreateError("You must enter at least 1 keyword.");
       setCreateLoading(false);
       return;
     }
@@ -113,7 +113,7 @@ export default function ClientCampaigns() {
       });
       
       if (res.ok) {
-        setCreateSuccess("Campaña creada exitosamente. Aparecerá en la tabla pronto.");
+        setCreateSuccess("Campaign successfully created. It will appear in the table shortly.");
         setTimeout(() => {
           setIsModalOpen(false);
           setCreateSuccess("");
@@ -130,10 +130,10 @@ export default function ClientCampaigns() {
         }, 2000);
       } else {
         const errData = await res.json();
-        setCreateError(errData.detail || "Error al crear la campaña.");
+        setCreateError(errData.detail || "Error creating campaign.");
       }
     } catch (err) {
-      setCreateError("Fallo de red al crear la campaña.");
+      setCreateError("Network error when creating campaign.");
     } finally {
       setCreateLoading(false);
     }
@@ -174,11 +174,11 @@ export default function ClientCampaigns() {
           setCampaigns(data);
         } else {
           const errData = await res.json();
-          setErrorMsg(errData.detail || "Error al obtener campañas.");
+          setErrorMsg(errData.detail || "Error fetching campaigns.");
         }
       } catch (err) {
         console.error("Failed to fetch campaigns", err);
-        setErrorMsg("Fallo en la conexión.");
+        setErrorMsg("Connection failure.");
       } finally {
         setLoading(false);
       }
@@ -198,8 +198,8 @@ export default function ClientCampaigns() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Mis Campañas</h1>
-          <p className="text-gray-400">Métricas agregadas de los últimos 30 días para la cuenta seleccionada.</p>
+          <h1 className="text-3xl font-bold text-white mb-2">My Campaigns</h1>
+          <p className="text-gray-400">Aggregated metrics from the last 30 days for the selected account.</p>
         </div>
         
         {accounts.length > 0 && (
@@ -219,7 +219,7 @@ export default function ClientCampaigns() {
               onClick={() => setIsModalOpen(true)}
               className="bg-neon-purple text-white px-5 py-3 rounded-lg font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2"
             >
-              <Plus size={18} /> Crear Campaña
+              <Plus size={18} /> Create Campaign
             </button>
           </div>
         )}
@@ -235,25 +235,25 @@ export default function ClientCampaigns() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl flex flex-col">
           <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
-            <DollarSign size={16} className="text-gray-500" /> Inversión Total
+            <DollarSign size={16} className="text-gray-500" /> Total Spend
           </p>
           <h2 className="text-3xl font-bold text-white">${totalCost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
         </div>
         <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl flex flex-col">
           <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
-            <Activity size={16} className="text-gray-500" /> Clics
+            <Activity size={16} className="text-gray-500" /> Clicks
           </p>
           <h2 className="text-3xl font-bold text-white">{totalClicks.toLocaleString("en-US")}</h2>
         </div>
         <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl flex flex-col">
           <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
-            <TrendingUp size={16} className="text-gray-500" /> CPA Promedio
+            <TrendingUp size={16} className="text-gray-500" /> Avg. CPA
           </p>
           <h2 className="text-3xl font-bold text-white">${avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
         </div>
         <div className="bg-dark-card backdrop-blur-xl border border-neon-purple/30 p-6 rounded-2xl flex flex-col shadow-[0_0_20px_rgba(168,85,247,0.05)]">
           <p className="text-gray-400 text-sm mb-2 flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-neon-purple" /> Conversiones
+            <CheckCircle2 size={16} className="text-neon-purple" /> Conversions
           </p>
           <h2 className="text-3xl font-bold text-neon-purple">{totalConversions.toLocaleString("en-US")}</h2>
         </div>
@@ -265,12 +265,12 @@ export default function ClientCampaigns() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-dark-card-border bg-black/20 text-gray-400 text-sm uppercase tracking-wider font-semibold">
-                <th className="px-6 py-4">Campaña</th>
-                <th className="px-6 py-4">Estado</th>
-                <th className="px-6 py-4 text-right">Impresiones</th>
-                <th className="px-6 py-4 text-right">Clics</th>
-                <th className="px-6 py-4 text-right">Costo</th>
-                <th className="px-6 py-4 text-right">Conversiones</th>
+                <th className="px-6 py-4">Campaign</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Impressions</th>
+                <th className="px-6 py-4 text-right">Clicks</th>
+                <th className="px-6 py-4 text-right">Cost</th>
+                <th className="px-6 py-4 text-right">Conversions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-dark-card-border">
@@ -278,14 +278,14 @@ export default function ClientCampaigns() {
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                     <Activity className="animate-spin mx-auto mb-4" size={24} />
-                    Cargando métricas desde Google Ads...
+                    Loading metrics from Google Ads...
                   </td>
                 </tr>
               ) : campaigns.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     <AlertCircle className="mx-auto mb-4 opacity-50" size={32} />
-                    {accounts.length === 0 ? "No tienes cuentas de Google Ads conectadas." : "No se encontraron campañas activas en los últimos 30 días."}
+                    {accounts.length === 0 ? "You have no Google Ads accounts connected." : "No active campaigns found in the last 30 days."}
                   </td>
                 </tr>
               ) : (
@@ -298,11 +298,11 @@ export default function ClientCampaigns() {
                     <td className="px-6 py-4">
                       {c.status === "ENABLED" ? (
                         <span className="px-3 py-1 bg-neon-green/10 border border-neon-green/30 text-neon-green rounded-full text-xs font-semibold flex items-center gap-1 w-max">
-                          <Play size={12} fill="currentColor" /> Activa
+                          <Play size={12} fill="currentColor" /> Active
                         </span>
                       ) : (
                         <span className="px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 rounded-full text-xs font-semibold flex items-center gap-1 w-max">
-                          <Pause size={12} fill="currentColor" /> Pausada
+                          <Pause size={12} fill="currentColor" /> Paused
                         </span>
                       )}
                     </td>
@@ -324,7 +324,7 @@ export default function ClientCampaigns() {
           <div className="bg-dark-card border border-dark-card-border rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
             
             <div className="px-6 py-4 border-b border-dark-card-border flex items-center justify-between bg-[#0B0E14]">
-              <h2 className="text-xl font-bold text-white">Crear Campaña de Búsqueda</h2>
+              <h2 className="text-xl font-bold text-white">Create Search Campaign</h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
                 className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -347,7 +347,7 @@ export default function ClientCampaigns() {
 
               <form id="createCampaignForm" onSubmit={submitCampaign} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Nombre de la Campaña</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Campaign Name</label>
                   <input 
                     required 
                     type="text" 
@@ -360,7 +360,7 @@ export default function ClientCampaigns() {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1.5">Presupuesto Diario (USD)</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1.5">Daily Budget (USD)</label>
                     <input 
                       required 
                       type="number" 
@@ -373,7 +373,7 @@ export default function ClientCampaigns() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1.5">URL Final de Destino</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1.5">Final Landing URL</label>
                     <input 
                       required 
                       type="url" 
@@ -387,20 +387,20 @@ export default function ClientCampaigns() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Palabras Clave (una por línea)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Keywords (one per line)</label>
                   <textarea 
                     required 
                     name="keywords_text" 
                     value={formData.keywords_text} 
                     onChange={handleFormChange} 
-                    placeholder={"ej: comprar zapatos\nzapatos de moda"} 
+                    placeholder={"e.g.: buy shoes\nfashion shoes"} 
                     className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors min-h-[100px] resize-y" 
                   />
                 </div>
 
                 <div className="bg-white/[0.02] border border-dark-card-border p-4 rounded-xl">
-                  <label className="block text-sm font-medium text-white mb-1">Títulos del Anuncio</label>
-                  <p className="text-gray-500 text-xs mb-4">Mínimo 3, Max 15. Máximo 30 caracteres cada uno.</p>
+                  <label className="block text-sm font-medium text-white mb-1">Ad Headlines</label>
+                  <p className="text-gray-500 text-xs mb-4">Min 3, Max 15. Maximum 30 characters each.</p>
                   <div className="space-y-3">
                     {formData.headlines.map((hl, i) => (
                       <div key={`hl-${i}`} className="flex gap-2 items-center">
@@ -410,7 +410,7 @@ export default function ClientCampaigns() {
                           maxLength={30} 
                           value={hl} 
                           onChange={(e) => handleArrayChange('headlines', i, e.target.value)} 
-                          placeholder={`Título ${i + 1}`} 
+                          placeholder={`Headline ${i + 1}`} 
                           className="flex-1 bg-black/20 border border-dark-card-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-purple transition-colors text-sm" 
                         />
                         {i >= 3 && (
@@ -423,14 +423,14 @@ export default function ClientCampaigns() {
                   </div>
                   {formData.headlines.length < 15 && (
                     <button type="button" onClick={() => addArrayItem('headlines')} className="mt-4 text-neon-purple text-sm font-medium hover:underline flex items-center gap-1">
-                      <Plus size={16} /> Añadir Título
+                      <Plus size={16} /> Add Headline
                     </button>
                   )}
                 </div>
 
                 <div className="bg-white/[0.02] border border-dark-card-border p-4 rounded-xl">
-                  <label className="block text-sm font-medium text-white mb-1">Descripciones del Anuncio</label>
-                  <p className="text-gray-500 text-xs mb-4">Mínimo 2, Max 4. Máximo 90 caracteres cada una.</p>
+                  <label className="block text-sm font-medium text-white mb-1">Ad Descriptions</label>
+                  <p className="text-gray-500 text-xs mb-4">Min 2, Max 4. Maximum 90 characters each.</p>
                   <div className="space-y-3">
                     {formData.descriptions.map((desc, i) => (
                       <div key={`desc-${i}`} className="flex gap-2 items-center">
@@ -440,7 +440,7 @@ export default function ClientCampaigns() {
                           maxLength={90} 
                           value={desc} 
                           onChange={(e) => handleArrayChange('descriptions', i, e.target.value)} 
-                          placeholder={`Descripción ${i + 1}`} 
+                          placeholder={`Description ${i + 1}`} 
                           className="flex-1 bg-black/20 border border-dark-card-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-purple transition-colors text-sm" 
                         />
                         {i >= 2 && (
@@ -453,7 +453,7 @@ export default function ClientCampaigns() {
                   </div>
                   {formData.descriptions.length < 4 && (
                     <button type="button" onClick={() => addArrayItem('descriptions')} className="mt-4 text-neon-purple text-sm font-medium hover:underline flex items-center gap-1">
-                      <Plus size={16} /> Añadir Descripción
+                      <Plus size={16} /> Add Description
                     </button>
                   )}
                 </div>
@@ -466,7 +466,7 @@ export default function ClientCampaigns() {
                 onClick={() => setIsModalOpen(false)} 
                 className="px-6 py-2.5 border border-dark-card-border rounded-xl text-gray-300 font-medium hover:bg-white/5 transition-colors w-full sm:w-auto"
               >
-                Cancelar
+                Cancel
               </button>
               <button 
                 type="submit" 
@@ -474,7 +474,7 @@ export default function ClientCampaigns() {
                 disabled={createLoading} 
                 className="px-6 py-2.5 bg-neon-purple text-white rounded-xl font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 w-full sm:w-auto flex items-center justify-center"
               >
-                {createLoading ? "Creando..." : "Crear (Iniciará Pausada)"}
+                {createLoading ? "Creating..." : "Create (Starts Paused)"}
               </button>
             </div>
             

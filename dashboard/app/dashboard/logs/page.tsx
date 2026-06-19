@@ -60,7 +60,7 @@ export default function ClientLogs() {
       }
     } catch (err) {
       console.error(err);
-      alert("Hubo un error al procesar la acción.");
+      alert("There was an error processing the action.");
     } finally {
       setActionLoading(null);
     }
@@ -69,9 +69,9 @@ export default function ClientLogs() {
   return (
     <div className="space-y-8 animate-fade-in-up pb-20">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Historial de Decisiones</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Analytics Logs</h1>
         <p className="text-gray-400">
-          Registro de todas las acciones tomadas por la IA sobre tus campañas.
+          Record of all actions taken by the AI on your campaigns.
         </p>
       </div>
 
@@ -80,11 +80,11 @@ export default function ClientLogs() {
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
               <tr className="border-b border-dark-card-border bg-black/20 text-gray-400 text-sm uppercase tracking-wider font-semibold">
-                <th className="px-6 py-4">Fecha</th>
-                <th className="px-6 py-4">Campaña</th>
-                <th className="px-6 py-4">Acción</th>
-                <th className="px-6 py-4">Motivo</th>
-                <th className="px-6 py-4">Estado</th>
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">Campaign</th>
+                <th className="px-6 py-4">Action</th>
+                <th className="px-6 py-4">Reason</th>
+                <th className="px-6 py-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-dark-card-border">
@@ -92,14 +92,14 @@ export default function ClientLogs() {
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
                     <Activity className="animate-spin mx-auto mb-4" size={24} />
-                    Cargando historial de decisiones...
+                    Loading analytics logs...
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                     <Clock className="mx-auto mb-4 opacity-50" size={32} />
-                    No hay decisiones recientes registradas.
+                    No recent actions recorded.
                   </td>
                 </tr>
               ) : (
@@ -109,12 +109,12 @@ export default function ClientLogs() {
                       <div className="text-gray-300 font-medium">{new Date(log.executed_at).toLocaleString()}</div>
                       {log.is_dry_run && (
                         <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
-                          Simulación
+                          Simulation
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-white font-medium">{log.campaign_name || "Desconocida"}</div>
+                      <div className="text-white font-medium">{log.campaign_name || "Unknown"}</div>
                       <div className="text-gray-500 text-xs mt-1">ID: {log.campaign_id || "N/A"}</div>
                     </td>
                     <td className="px-6 py-4">
@@ -124,23 +124,23 @@ export default function ClientLogs() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-400 max-w-xs leading-relaxed">
-                        {log.reason || "Sin detalles"}
+                        {log.reason || "No details provided"}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       {log.status === "auto_applied" && (
                         <span className="flex items-center gap-1.5 text-neon-green text-sm font-medium">
-                          <Check size={16} /> Auto-Ejecutado
+                          <Check size={16} /> Auto-Applied
                         </span>
                       )}
                       {log.status === "approved" && (
                         <span className="flex items-center gap-1.5 text-neon-blue text-sm font-medium">
-                          <Check size={16} /> Aprobado por ti
+                          <Check size={16} /> Approved by you
                         </span>
                       )}
                       {log.status === "rejected" && (
                         <span className="flex items-center gap-1.5 text-gray-500 text-sm font-medium">
-                          <X size={16} /> Rechazado
+                          <X size={16} /> Rejected
                         </span>
                       )}
                       {log.status === "pending" && (
@@ -150,14 +150,14 @@ export default function ClientLogs() {
                             disabled={actionLoading === log.id}
                             className="flex items-center gap-1 px-3 py-1.5 bg-neon-green/10 hover:bg-neon-green/20 text-neon-green border border-neon-green/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                           >
-                            <Check size={14} /> Aprobar
+                            <Check size={14} /> Approve
                           </button>
                           <button 
                             onClick={() => handleAction(log.id, "reject")}
                             disabled={actionLoading === log.id}
                             className="flex items-center gap-1 px-3 py-1.5 hover:bg-white/5 text-gray-400 border border-dark-card-border rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                           >
-                            <X size={14} /> Rechazar
+                            <X size={14} /> Reject
                           </button>
                         </div>
                       )}

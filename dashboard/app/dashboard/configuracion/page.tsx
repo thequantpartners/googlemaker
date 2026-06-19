@@ -33,7 +33,7 @@ export default function ConfiguracionPage() {
   }, [session]);
 
   const handleDisconnect = async () => {
-    if (!confirm("¿Estás seguro de que deseas desconectar todas tus cuentas de Google Ads? Tendrás que volver a iniciar sesión en Google para reconectarlas.")) return;
+    if (!confirm("Are you sure you want to disconnect all your Google Ads accounts? You will need to sign in again to reconnect them.")) return;
     
     if (!session?.backendToken) return;
     setDisconnecting(true);
@@ -44,13 +44,13 @@ export default function ConfiguracionPage() {
         headers: { Authorization: `Bearer ${session.backendToken}` },
       });
       if (res.ok) {
-        setMsg({ text: "Cuentas de Google Ads desconectadas exitosamente.", type: "success" });
+        setMsg({ text: "Google Ads accounts disconnected successfully.", type: "success" });
         setTimeout(() => window.location.reload(), 2000);
       } else {
-        setMsg({ text: "Error al desconectar las cuentas.", type: "error" });
+        setMsg({ text: "Error disconnecting accounts.", type: "error" });
       }
     } catch (err) {
-      setMsg({ text: "Error de conexión.", type: "error" });
+      setMsg({ text: "Network connection error.", type: "error" });
     } finally {
       setDisconnecting(false);
     }
@@ -60,7 +60,7 @@ export default function ConfiguracionPage() {
     return (
       <div className="flex flex-col items-center justify-center h-[50vh]">
         <Activity className="animate-spin text-neon-purple mb-4" size={32} />
-        <p className="text-gray-400">Cargando configuración...</p>
+        <p className="text-gray-400">Loading settings...</p>
       </div>
     );
   }
@@ -68,9 +68,9 @@ export default function ConfiguracionPage() {
   return (
     <div className="max-w-4xl mx-auto pb-20 animate-fade-in-up">
       <div className="mb-10 text-center md:text-left">
-        <h1 className="text-3xl font-bold text-white mb-2">Configuración</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
         <p className="text-gray-400 text-lg">
-          Administra tu perfil personal y las conexiones de tu cuenta.
+          Manage your personal profile and account connections.
         </p>
       </div>
 
@@ -87,13 +87,13 @@ export default function ConfiguracionPage() {
       {/* PERFIL */}
       <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 mb-8">
         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2 border-b border-dark-card-border pb-4">
-          <User className="text-neon-purple" size={24} /> Perfil del Usuario
+          <User className="text-neon-purple" size={24} /> User Profile
         </h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
-              <User size={16} /> Nombre
+              <User size={16} /> Name
             </label>
             <input 
               type="text" 
@@ -104,7 +104,7 @@ export default function ConfiguracionPage() {
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
-              <Mail size={16} /> Correo Electrónico
+              <Mail size={16} /> Email Address
             </label>
             <input 
               type="email" 
@@ -115,11 +115,11 @@ export default function ConfiguracionPage() {
           </div>
           <div className="space-y-2 md:col-span-2 lg:col-span-1">
             <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
-              <CreditCard size={16} /> Plan Actual
+              <CreditCard size={16} /> Current Plan
             </label>
             <input 
               type="text" 
-              value={(profile?.tier || "ninguno").toUpperCase()} 
+              value={(profile?.tier || "none").toUpperCase()} 
               disabled 
               className="w-full bg-neon-purple/5 border border-neon-purple/20 rounded-xl px-4 py-3 text-neon-purple font-bold focus:outline-none cursor-not-allowed uppercase"
             />
@@ -130,10 +130,10 @@ export default function ConfiguracionPage() {
       {/* CONEXIONES */}
       <div className="bg-dark-card backdrop-blur-xl border border-red-500/30 rounded-[2rem] p-6 md:p-8">
         <h2 className="text-xl font-bold text-red-500 mb-4 flex items-center gap-2 border-b border-red-500/10 pb-4">
-          <Unplug size={24} /> Conexiones Activas
+          <Unplug size={24} /> Active Connections
         </h2>
         <p className="text-gray-400 mb-6 leading-relaxed">
-          Si tienes problemas de sincronización o quieres usar una cuenta de Google diferente, puedes desconectar tus credenciales actuales. Se revocarán los accesos y podrás volver a conectar desde el Panel Principal.
+          If you are experiencing sync issues or wish to use a different Google account, you can disconnect your current credentials. Access will be revoked, and you can reconnect from the main Dashboard.
         </p>
         <button 
           onClick={handleDisconnect} 
@@ -141,7 +141,7 @@ export default function ConfiguracionPage() {
           className="flex items-center justify-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/50 hover:border-red-500 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
         >
           <Unplug size={18} />
-          {disconnecting ? "Desconectando..." : "Desconectar Google Ads"}
+          {disconnecting ? "Disconnecting..." : "Disconnect Google Ads"}
         </button>
       </div>
     </div>
