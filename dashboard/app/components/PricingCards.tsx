@@ -102,7 +102,7 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12">Up to $5,000/mo in Ad Spend.</p>
           <ul className="space-y-4 mb-8 text-gray-300">
             <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Full Autopilot</li>
-            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Dedicated Support</li>
+            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Immigration Templates</li>
             <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Unlimited Accounts</li>
           </ul>
         </div>
@@ -122,7 +122,7 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12">Up to $25,000/mo in Ad Spend.</p>
           <ul className="space-y-4 mb-8 text-gray-300">
             <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Full Autopilot</li>
-            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Custom Automations</li>
+            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Immigration Templates</li>
             <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Unlimited Accounts</li>
           </ul>
         </div>
@@ -142,8 +142,8 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12">Personalized Ad Spend.</p>
           <ul className="space-y-4 mb-8 text-gray-300">
             <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Full Autopilot</li>
-            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Account Manager</li>
-            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Priority Execution</li>
+            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Immigration Templates</li>
+            <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-amber-500" /> Unlimited Accounts</li>
           </ul>
         </div>
         {renderButton("elite", `w-full py-4 rounded-full border transition-colors font-semibold ${currentTier === 'elite' ? 'bg-white/10 text-gray-400 border-white/10 cursor-not-allowed' : 'border-dark-card-border hover:bg-white/5 text-white'}`)}
