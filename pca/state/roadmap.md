@@ -20,6 +20,8 @@
 - [x] Fix 500 error on Google Ads connection for normal users (env vars, google-ads lib upgrade, graceful error handling).
 - [x] Implement Hybrid Autopilot (Learning Phase heuristic, automated PAUSE, pending UI for SCALE, backend CRON).
 - [x] Integrate real payment gateway (Lemon Squeezy) with checkout sessions and webhook for automatic tier assignment.
+- [x] Configure Lemon Squeezy Store ID, Variant IDs, and Webhook Secret in backend and verify end-to-end payment flow.
+- [x] Add mandatory legal pages (Terms, Privacy, Refunds) and update footer links for Lemon Squeezy store approval.
 - [x] Migrated Landing Page and Dashboard UI to a premium dark-mode aesthetic using Tailwind CSS and Recharts.
 - [x] Upgraded Landing Page to a High-Conversion B2B Funnel with marketing psychology, Social Proof, and exposed Pricing tiers.
 - [x] Adapted Landing Page, Client Dashboard, and Admin Dashboard for Mobile devices (hamburger menus, sliding sidebars, responsive tables).

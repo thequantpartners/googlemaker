@@ -27,6 +27,8 @@
 - Added individual Google Ads account deletion endpoint and updated Dashboard to support deleting accounts one by one.
 - Enforced pricing tier limits in backend: Restricted Google Ads accounts connection limits, limited custom CPA strategies to Growth tier, and restricted hybrid scaling actions to Scale and Growth tiers in the orchestrator.
 - Integrated Lemon Squeezy payment gateway with backend `/payments/create-checkout-session` and `/payments/webhook` for secure subscriptions. Removed old mock tier update endpoint.
+- Configured Lemon Squeezy Store ID, Variant IDs, and Webhook Secret in backend, and verified end-to-end payment flow using Test Mode.
+- Created and linked mandatory legal pages (Terms of Service, Privacy Policy, Refund Policy) required by Lemon Squeezy for live store activation.
 - Migrated Landing Page and Dashboard UI to a premium dark-mode aesthetic using Tailwind CSS v3 and Recharts, recreating the Nano Banana/v0.dev reference designs while preserving backend logic.
 - Upgraded the Landing Page into a high-conversion B2B marketing funnel targeted at US/LatAm agencies, adding Problem Agitation, How It Works, Social Proof, exposed Pricing, and FAQ sections.
 - Adapted the entire application (Landing Page, Client Dashboard, and SuperAdmin Dashboard) for mobile devices, introducing slide-in sidebars, hamburger menus, and responsive tables.

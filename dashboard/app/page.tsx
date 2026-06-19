@@ -593,8 +593,16 @@ export default function LandingPage() {
           >
             {t.foot_btn}
           </Link>
-          <div className="mt-16 text-gray-500 text-sm">
-            © 2026 GMaker. Built by TheQuantPartners.
+          <div className="mt-16 border-t border-dark-card-border/50 pt-8 flex flex-col md:flex-row items-center justify-between text-gray-500 text-sm">
+            <div className="mb-4 md:mb-0">
+              © 2026 GMaker. Built by TheQuantPartners.
+            </div>
+            <div className="flex items-center space-x-6">
+              <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/refunds" className="hover:text-white transition-colors">Refund Policy</Link>
+              <a href="mailto:partners@thequantpartners.com" className="hover:text-white transition-colors">Contact Support</a>
+            </div>
           </div>
         </div>
       </footer>
