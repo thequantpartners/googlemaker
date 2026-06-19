@@ -4,8 +4,168 @@ import Link from "next/link";
 import { useState } from "react";
 import { Search, Play, TrendingUp, ShieldCheck, Copy, ArrowRight, PlayCircle, Globe, CheckCircle2, ChevronDown, Zap, BarChart3, Clock, Menu, X } from "lucide-react";
 
+const translations = {
+  en: {
+    nav_features: "Features",
+    nav_how: "How it Works",
+    nav_pricing: "Pricing",
+    nav_faq: "FAQ",
+    nav_signin: "Sign In",
+    hero_title1: "Stop Burning Ad Spend.",
+    hero_title2: "Scale Your Winners.",
+    hero_desc: "The hybrid AI autopilot designed exclusively for marketing agencies and high-growth businesses. We protect your capital from bad clicks and automatically scale campaigns that hit your target CPA.",
+    hero_btn1: "Start Free Trial",
+    hero_btn2: "See How It Works",
+    trusted_by: "TRUSTED BY 50+ SCALING AGENCIES IN US & LATAM",
+    chart_title: "Ads Profit Graph",
+    chart_sub: "Autopilot Dashboard",
+    chart_last30: "Last 30 Days",
+    chart_rev: "Revenue Generated",
+    chart_saved: "Wasted Spend Saved",
+    prob_title: "Manual Bidding is Killing Your Margins.",
+    prob_desc: "Agencies and business owners spend hours analyzing spreadsheets, only to realize they've wasted thousands of dollars on weekends or overnight when nobody was watching the campaigns.",
+    prob_1_t: "Weekend Waste",
+    prob_1_d: "Campaigns often spiral out of control during weekends or holidays when your team is offline. GoogleMaker never sleeps.",
+    prob_2_t: "Missed Opportunities",
+    prob_2_d: "When a campaign hits a winning streak, human reaction time is too slow to scale it before the trend dies down.",
+    prob_3_t: "Emotional Decisions",
+    prob_3_d: "Humans pause campaigns too early or hold onto losers too long out of hope. Algorithms rely purely on hard mathematics.",
+    how_title: "Autopilot in 3 Simple Steps",
+    how_desc: "No complex setups. No code. Just connect and let the engine roar.",
+    how_1_t: "Connect Google Ads",
+    how_1_d: "Securely link your Google Ads account via standard OAuth. Read-only and edit permissions granted instantly.",
+    how_2_t: "Set Target Limits",
+    how_2_d: "Define your maximum acceptable CPA (Cost Per Acquisition) and let the engine understand your profit margins.",
+    how_3_t: "Autopilot Takes Over",
+    how_3_d: "The hybrid engine pauses losers instantly and scales winners aggressively. You review the logs.",
+    feat_title: "The Engine Under the Hood",
+    feat_desc: "Proprietary logic built by media buyers, for media buyers.",
+    feat_1_t: "Vertical Scaling",
+    feat_1_d: "When a campaign proves to be highly profitable and sits below your Target CPA, we automatically push daily budgets by 15-20% increments to capture maximum market share before the trend cools off.",
+    feat_2_t: "Capital Protection",
+    feat_2_d: "Our background CRON job analyzes your spend 24/7. If a campaign spends 1.5x your Target CPA without a single conversion (exiting the Learning Phase), we PAUSE it instantly. No more waking up to wasted budgets.",
+    feat_3_t: "Horizontal Cloning",
+    feat_3_d: "(Coming Soon) Automatically extract search terms that converted exceptionally well and create parallel exact-match expansion campaigns to dominate specific high-intent keywords.",
+    test_title: "Built for Agencies That Demand Results",
+    test_1: '"We manage over 20 clients in LatAm. Since hooking them up to GoogleMaker, our team saves around 15 hours a week in manual bid adjustments. The Capital Protection alone paid for the software in day two."',
+    test_2: '"Scaling winners was always scary because CPA usually shoots up. This hybrid autopilot scales budgets incrementally. We increased our client\'s revenue by 40% without ruining profitability."',
+    price_title: "Simple, Transparent Pricing",
+    price_desc: "No percentage of ad spend. Just a flat monthly fee to protect your margins.",
+    p_basic: "Basic",
+    p_scale: "Scale",
+    p_growth: "Growth",
+    p_mo: "/mo",
+    pb_desc: "Ideal for entrepreneurs and local businesses.",
+    ps_desc: "For small agencies and growing businesses.",
+    pg_desc: "For large agencies and robust operations.",
+    pb_1: "1 Google Ads Account",
+    pb_2: "Basic AI Optimization",
+    ps_1: "Up to 3 Ad Accounts",
+    ps_2: "Real-time Hybrid Scaling",
+    ps_3: "Priority Execution",
+    pg_1: "Unlimited Accounts",
+    pg_2: "Custom CPA Strategies",
+    pg_3: "Dedicated Support",
+    btn_basic: "Start Basic",
+    btn_scale: "Start Scale",
+    btn_growth: "Start Growth",
+    popular: "MOST POPULAR",
+    faq_title: "Frequently Asked Questions",
+    faq_1_q: "Does it alter my existing campaigns?",
+    faq_1_a: "No. GoogleMaker reads your data and only makes specific adjustments (like pausing a bad ad group or increasing a budget by 15%) based on your explicit CPA limits. It never deletes your campaigns or rewrites your ad copy.",
+    faq_2_q: "How fast does it react to bad spend?",
+    faq_2_a: "Our CRON job scans your connected accounts multiple times a day. If a campaign suddenly spikes and spends over 1.5x your target CPA without a conversion, the system pauses it immediately to protect your capital.",
+    faq_3_q: "Do I need to be a developer to use this?",
+    faq_3_a: "Absolutely not. You just click 'Connect Google Ads', log in with your Google account, and select your Target CPA on the dashboard. The engine does all the mathematical heavy lifting in the background.",
+    foot_title: "Ready to scale your agency?",
+    foot_desc: "Join the smartest media buyers automating their Google Ads success.",
+    foot_btn: "Create Your Account"
+  },
+  es: {
+    nav_features: "Funciones",
+    nav_how: "Cómo Funciona",
+    nav_pricing: "Precios",
+    nav_faq: "Preguntas Frecuentes",
+    nav_signin: "Iniciar Sesión",
+    hero_title1: "Deja de Quemar tu Presupuesto.",
+    hero_title2: "Escala tus Ganadores.",
+    hero_desc: "El piloto automático híbrido de IA diseñado exclusivamente para agencias y negocios de alto crecimiento. Protegemos tu capital de los malos clics y escalamos automáticamente las campañas rentables.",
+    hero_btn1: "Prueba Gratuita",
+    hero_btn2: "Ver Cómo Funciona",
+    trusted_by: "CONFIAN MÁS DE 50 AGENCIAS EN USA Y LATAM",
+    chart_title: "Gráfico de Beneficios",
+    chart_sub: "Panel de Piloto",
+    chart_last30: "Últimos 30 Días",
+    chart_rev: "Ingresos Generados",
+    chart_saved: "Presupuesto Salvado",
+    prob_title: "Las Pujas Manuales Están Matando tus Márgenes.",
+    prob_desc: "Las agencias y dueños de negocios pasan horas analizando hojas de cálculo, solo para darse cuenta de que han desperdiciado miles de dólares el fin de semana cuando nadie revisaba las campañas.",
+    prob_1_t: "Desperdicio en Fines de Semana",
+    prob_1_d: "Las campañas suelen salirse de control durante los fines de semana cuando tu equipo no está en línea. GoogleMaker nunca duerme.",
+    prob_2_t: "Oportunidades Perdidas",
+    prob_2_d: "Cuando una campaña tiene una racha ganadora, el tiempo de reacción humana es demasiado lento para escalarla antes de que muera la tendencia.",
+    prob_3_t: "Decisiones Emocionales",
+    prob_3_d: "Los humanos pausan campañas muy pronto o mantienen perdedoras por esperanza. Los algoritmos se basan puramente en matemáticas exactas.",
+    how_title: "Piloto Automático en 3 Pasos Simples",
+    how_desc: "Sin configuraciones complejas ni código. Solo conecta y deja que el motor ruja.",
+    how_1_t: "Conecta Google Ads",
+    how_1_d: "Vincula tu cuenta de Google Ads de forma segura mediante OAuth. Los permisos de lectura y edición se otorgan al instante.",
+    how_2_t: "Define tus Límites",
+    how_2_d: "Establece tu CPA (Costo Por Adquisición) máximo aceptable para que el motor comprenda tus márgenes de ganancia.",
+    how_3_t: "El Piloto Automático Toma el Control",
+    how_3_d: "El motor híbrido pausa las campañas perdedoras y escala las ganadoras agresivamente. Tú solo revisas los registros.",
+    feat_title: "El Motor Bajo el Capó",
+    feat_desc: "Lógica propietaria construida por media buyers, para media buyers.",
+    feat_1_t: "Escalado Vertical",
+    feat_1_d: "Cuando una campaña resulta altamente rentable (por debajo del CPA), aumentamos automáticamente los presupuestos diarios en incrementos del 15-20% para capturar al máximo el mercado.",
+    feat_2_t: "Protección de Capital",
+    feat_2_d: "Nuestro sistema en segundo plano analiza tu inversión 24/7. Si una campaña gasta 1.5x tu CPA sin una sola conversión, se PAUSA al instante. Se acabaron los sustos de presupuesto.",
+    feat_3_t: "Clonación Horizontal",
+    feat_3_d: "(Próximamente) Extraeremos automáticamente los términos de búsqueda que mejor convierten para crear campañas exactas y dominar palabras clave de alta intención.",
+    test_title: "Construido para Agencias que Exigen Resultados",
+    test_1: '"Manejamos más de 20 clientes en LatAm. Desde que los conectamos a GoogleMaker, nuestro equipo ahorra 15 horas a la semana. La Protección de Capital pagó el software en el día dos."',
+    test_2: '"Escalar siempre fue aterrador porque el CPA suele dispararse. Este piloto automático escala gradualmente. Aumentamos los ingresos de nuestro cliente un 40% sin perder rentabilidad."',
+    price_title: "Precios Simples y Transparentes",
+    price_desc: "Sin porcentajes por inversión. Solo una tarifa plana mensual para proteger tus márgenes.",
+    p_basic: "Básico",
+    p_scale: "Escala",
+    p_growth: "Crecimiento",
+    p_mo: "/mes",
+    pb_desc: "Ideal para emprendedores y negocios locales.",
+    ps_desc: "Para pequeñas agencias y negocios en crecimiento.",
+    pg_desc: "Para grandes agencias y operaciones robustas.",
+    pb_1: "1 Cuenta de Google Ads",
+    pb_2: "Optimización Base con IA",
+    ps_1: "Hasta 3 Cuentas de Ads",
+    ps_2: "Escalado Híbrido en Tiempo Real",
+    ps_3: "Ejecución Prioritaria",
+    pg_1: "Cuentas Ilimitadas",
+    pg_2: "Estrategias CPA Personalizadas",
+    pg_3: "Soporte Dedicado",
+    btn_basic: "Empezar Básico",
+    btn_scale: "Empezar Escala",
+    btn_growth: "Empezar Crecimiento",
+    popular: "MÁS POPULAR",
+    faq_title: "Preguntas Frecuentes",
+    faq_1_q: "¿Altera mis campañas existentes?",
+    faq_1_a: "No. GoogleMaker solo lee tus datos y hace ajustes específicos (como pausar un mal anuncio o subir presupuesto) basado en tus límites de CPA. Nunca borra campañas ni reescribe textos.",
+    faq_2_q: "¿Qué tan rápido reacciona al mal gasto?",
+    faq_2_a: "Nuestro sistema escanea tus cuentas varias veces al día. Si una campaña se dispara y gasta 1.5x de tu objetivo sin convertir, el sistema la pausa inmediatamente para proteger tu capital.",
+    faq_3_q: "¿Necesito ser desarrollador para usarlo?",
+    faq_3_a: "Absolutamente no. Solo haces clic en 'Conectar Google Ads', inicias sesión en Google y defines tu objetivo de CPA en el panel. El motor hace todo el trabajo matemático duro.",
+    foot_title: "¿Listo para escalar tu agencia?",
+    foot_desc: "Únete a los media buyers más inteligentes que ya automatizan su éxito en Google Ads.",
+    foot_btn: "Crear mi Cuenta"
+  }
+};
+
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [lang, setLang] = useState<"en" | "es">("en");
+
+  const toggleLang = () => setLang(prev => prev === "en" ? "es" : "en");
+  const t = translations[lang];
+
   return (
     <div className="min-h-screen bg-background text-white overflow-hidden relative selection:bg-neon-purple selection:text-white font-sans">
       {/* Ambient background glows */}
@@ -25,21 +185,24 @@ export default function LandingPage() {
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-          <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-          <Link href="#how-it-works" className="hover:text-white transition-colors">How it Works</Link>
-          <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
-          <Link href="#faq" className="hover:text-white transition-colors">FAQ</Link>
+          <Link href="#features" className="hover:text-white transition-colors">{t.nav_features}</Link>
+          <Link href="#how-it-works" className="hover:text-white transition-colors">{t.nav_how}</Link>
+          <Link href="#pricing" className="hover:text-white transition-colors">{t.nav_pricing}</Link>
+          <Link href="#faq" className="hover:text-white transition-colors">{t.nav_faq}</Link>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-1 text-gray-400 hover:text-white transition-colors cursor-pointer text-sm font-medium px-2 py-1 rounded-md hover:bg-white/5">
-            <Globe size={16} /> EN <ChevronDown size={14} />
+          <div 
+            onClick={toggleLang}
+            className="hidden sm:flex items-center gap-1 text-gray-400 hover:text-white transition-colors cursor-pointer text-sm font-medium px-2 py-1 rounded-md hover:bg-white/5"
+          >
+            <Globe size={16} /> {lang === "en" ? "EN" : "ES"}
           </div>
           <Link 
             href="/login" 
             className="hidden md:inline-flex px-5 py-2.5 rounded-full bg-dark-card border border-dark-card-border text-sm font-medium hover:bg-white/10 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
           >
-            Sign In
+            {t.nav_signin}
           </Link>
           <button 
             className="md:hidden p-2 text-gray-300 hover:text-white"
@@ -53,20 +216,20 @@ export default function LandingPage() {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-20 left-6 right-6 bg-dark-card border border-dark-card-border rounded-2xl p-6 shadow-2xl z-50 flex flex-col gap-6 backdrop-blur-xl">
-          <Link href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Features</Link>
-          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">How it Works</Link>
-          <Link href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Pricing</Link>
-          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">FAQ</Link>
+          <Link href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">{t.nav_features}</Link>
+          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">{t.nav_how}</Link>
+          <Link href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">{t.nav_pricing}</Link>
+          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">{t.nav_faq}</Link>
           <hr className="border-dark-card-border" />
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-gray-400 text-sm font-medium">
-              <Globe size={16} /> EN
-            </div>
+            <button onClick={() => {toggleLang(); setIsMobileMenuOpen(false);}} className="flex items-center gap-1 text-gray-400 text-sm font-medium">
+              <Globe size={16} /> {lang === "en" ? "Switch to ES" : "Switch to EN"}
+            </button>
             <Link 
               href="/login" 
               className="px-5 py-2.5 rounded-full bg-gradient-to-r from-neon-blue to-neon-purple text-sm font-medium text-white text-center shadow-[0_0_15px_rgba(168,85,247,0.4)]"
             >
-              Sign In
+              {t.nav_signin}
             </Link>
           </div>
         </div>
@@ -87,15 +250,15 @@ export default function LandingPage() {
             </div>
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
-                Stop Burning Ad Spend. <br />
+                {t.hero_title1} <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue via-neon-purple to-pink-500">
-                  Scale Your Winners.
+                  {t.hero_title2}
                 </span>
               </h1>
             </div>
             
             <p className="text-lg text-gray-400 leading-relaxed max-w-xl">
-              The hybrid AI autopilot designed exclusively for marketing agencies and high-growth businesses. We protect your capital from bad clicks and automatically scale campaigns that hit your target CPA.
+              {t.hero_desc}
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
@@ -104,18 +267,18 @@ export default function LandingPage() {
                 className="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-full font-semibold text-white overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] transition-all flex items-center justify-center gap-2"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Start Free Trial
+                  {t.hero_btn1}
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
               <button className="px-6 py-4 rounded-full font-medium text-gray-300 hover:text-white flex items-center justify-center gap-2 transition-colors border border-white/10 sm:border-transparent">
                 <PlayCircle size={20} className="text-neon-purple" />
-                See How It Works
+                {t.hero_btn2}
               </button>
             </div>
             
             <div className="pt-8 border-t border-dark-card-border mt-4">
-              <p className="text-sm text-gray-500 font-medium mb-4 text-center lg:text-left">TRUSTED BY 50+ SCALING AGENCIES IN US & LATAM</p>
+              <p className="text-sm text-gray-500 font-medium mb-4 text-center lg:text-left">{t.trusted_by}</p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-6 md:gap-8 opacity-50 grayscale">
                 <div className="font-bold text-lg md:text-xl tracking-tighter">AGENCY<span className="text-neon-blue">PRO</span></div>
                 <div className="font-bold text-lg md:text-xl tracking-tighter">LATAM<span className="text-neon-purple">MARKETING</span></div>
@@ -134,23 +297,23 @@ export default function LandingPage() {
             <div className="relative h-full w-full bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-8 shadow-2xl flex flex-col">
               <div className="flex justify-between items-start mb-12">
                 <div>
-                  <h3 className="font-semibold text-lg text-white">Ads Profit Graph</h3>
-                  <p className="text-sm text-gray-400">Autopilot Dashboard</p>
+                  <h3 className="font-semibold text-lg text-white">{t.chart_title}</h3>
+                  <p className="text-sm text-gray-400">{t.chart_sub}</p>
                 </div>
                 <div className="px-3 py-1.5 rounded-md bg-white/5 border border-white/10 text-xs text-gray-300 flex items-center gap-1">
-                  Last 30 Days <ChevronDown size={12} />
+                  {t.chart_last30} <ChevronDown size={12} />
                 </div>
               </div>
 
               {/* Badges Floating */}
               <div className="absolute left-[-20px] top-[40%] bg-dark-card backdrop-blur-md border border-dark-card-border px-4 py-3 rounded-xl shadow-lg transform -rotate-3 z-20">
                 <div className="text-2xl font-bold text-white">$1.2M+</div>
-                <div className="text-xs text-gray-400">Revenue Generated</div>
+                <div className="text-xs text-gray-400">{t.chart_rev}</div>
               </div>
 
               <div className="absolute right-[-10px] bottom-[20%] bg-dark-card backdrop-blur-md border border-dark-card-border px-4 py-3 rounded-xl shadow-lg transform rotate-6 z-20">
                 <div className="text-2xl font-bold text-white text-red-400">$12k</div>
-                <div className="text-xs text-gray-400">Wasted Spend Saved</div>
+                <div className="text-xs text-gray-400">{t.chart_saved}</div>
               </div>
 
               {/* The Chart lines (simulated with SVG) */}
@@ -200,26 +363,26 @@ export default function LandingPage() {
       {/* The Problem Section */}
       <section className="relative z-10 py-24 bg-black/40 border-y border-dark-card-border">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Manual Bidding is Killing Your Margins.</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">{t.prob_title}</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-16 text-lg">
-            Agencies and business owners spend hours analyzing spreadsheets, only to realize they've wasted thousands of dollars on weekends or overnight when nobody was watching the campaigns.
+            {t.prob_desc}
           </p>
 
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-red-500 mb-4 bg-red-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Clock size={24} /></div>
-              <h3 className="text-xl font-bold mb-2">Weekend Waste</h3>
-              <p className="text-gray-400">Campaigns often spiral out of control during weekends or holidays when your team is offline. GoogleMaker never sleeps.</p>
+              <h3 className="text-xl font-bold mb-2">{t.prob_1_t}</h3>
+              <p className="text-gray-400">{t.prob_1_d}</p>
             </div>
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-orange-500 mb-4 bg-orange-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><BarChart3 size={24} /></div>
-              <h3 className="text-xl font-bold mb-2">Missed Opportunities</h3>
-              <p className="text-gray-400">When a campaign hits a winning streak, human reaction time is too slow to scale it before the trend dies down.</p>
+              <h3 className="text-xl font-bold mb-2">{t.prob_2_t}</h3>
+              <p className="text-gray-400">{t.prob_2_d}</p>
             </div>
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-yellow-500 mb-4 bg-yellow-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Zap size={24} /></div>
-              <h3 className="text-xl font-bold mb-2">Emotional Decisions</h3>
-              <p className="text-gray-400">Humans pause campaigns too early or hold onto losers too long out of hope. Algorithms rely purely on hard mathematics.</p>
+              <h3 className="text-xl font-bold mb-2">{t.prob_3_t}</h3>
+              <p className="text-gray-400">{t.prob_3_d}</p>
             </div>
           </div>
         </div>
@@ -229,8 +392,8 @@ export default function LandingPage() {
       <section id="how-it-works" className="relative z-10 py-32">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Autopilot in 3 Simple Steps</h2>
-            <p className="text-gray-400 text-lg">No complex setups. No code. Just connect and let the engine roar.</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">{t.how_title}</h2>
+            <p className="text-gray-400 text-lg">{t.how_desc}</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12 relative">
@@ -239,20 +402,20 @@ export default function LandingPage() {
             
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-blue flex items-center justify-center text-2xl font-bold text-neon-blue mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)]">1</div>
-              <h3 className="text-xl font-bold mb-3">Connect Google Ads</h3>
-              <p className="text-gray-400">Securely link your Google Ads account via standard OAuth. Read-only and edit permissions granted instantly.</p>
+              <h3 className="text-xl font-bold mb-3">{t.how_1_t}</h3>
+              <p className="text-gray-400">{t.how_1_d}</p>
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-purple flex items-center justify-center text-2xl font-bold text-neon-purple mb-6 shadow-[0_0_20px_rgba(168,85,247,0.3)]">2</div>
-              <h3 className="text-xl font-bold mb-3">Set Target Limits</h3>
-              <p className="text-gray-400">Define your maximum acceptable CPA (Cost Per Acquisition) and let the engine understand your profit margins.</p>
+              <h3 className="text-xl font-bold mb-3">{t.how_2_t}</h3>
+              <p className="text-gray-400">{t.how_2_d}</p>
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-green flex items-center justify-center text-2xl font-bold text-neon-green mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">3</div>
-              <h3 className="text-xl font-bold mb-3">Autopilot Takes Over</h3>
-              <p className="text-gray-400">The hybrid engine pauses losers instantly and scales winners aggressively. You review the logs.</p>
+              <h3 className="text-xl font-bold mb-3">{t.how_3_t}</h3>
+              <p className="text-gray-400">{t.how_3_d}</p>
             </div>
           </div>
         </div>
@@ -261,8 +424,8 @@ export default function LandingPage() {
       {/* Features Section */}
       <section id="features" className="relative z-10 px-6 lg:px-12 max-w-7xl mx-auto pb-32">
         <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">The Engine Under the Hood</h2>
-          <p className="text-gray-400 text-lg">Proprietary logic built by media buyers, for media buyers.</p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">{t.feat_title}</h2>
+          <p className="text-gray-400 text-lg">{t.feat_desc}</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -270,9 +433,9 @@ export default function LandingPage() {
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-purple/20 to-transparent flex items-center justify-center mb-6 border border-neon-purple/20 group-hover:scale-110 transition-transform">
               <TrendingUp className="text-neon-purple" size={28} />
             </div>
-            <h3 className="text-xl font-semibold mb-3">Vertical Scaling</h3>
+            <h3 className="text-xl font-semibold mb-3">{t.feat_1_t}</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              When a campaign proves to be highly profitable and sits below your Target CPA, we automatically push daily budgets by 15-20% increments to capture maximum market share before the trend cools off.
+              {t.feat_1_d}
             </p>
           </div>
 
@@ -280,9 +443,9 @@ export default function LandingPage() {
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-blue/20 to-transparent flex items-center justify-center mb-6 border border-neon-blue/20 group-hover:scale-110 transition-transform">
               <ShieldCheck className="text-neon-blue" size={28} />
             </div>
-            <h3 className="text-xl font-semibold mb-3">Capital Protection</h3>
+            <h3 className="text-xl font-semibold mb-3">{t.feat_2_t}</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Our background CRON job analyzes your spend 24/7. If a campaign spends 1.5x your Target CPA without a single conversion (exiting the Learning Phase), we PAUSE it instantly. No more waking up to wasted budgets.
+              {t.feat_2_d}
             </p>
           </div>
 
@@ -290,9 +453,9 @@ export default function LandingPage() {
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-green/20 to-transparent flex items-center justify-center mb-6 border border-neon-green/20 group-hover:scale-110 transition-transform">
               <Copy className="text-neon-green" size={28} />
             </div>
-            <h3 className="text-xl font-semibold mb-3">Horizontal Cloning</h3>
+            <h3 className="text-xl font-semibold mb-3">{t.feat_3_t}</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              (Coming Soon) Automatically extract search terms that converted exceptionally well and create parallel exact-match expansion campaigns to dominate specific high-intent keywords.
+              {t.feat_3_d}
             </p>
           </div>
         </div>
@@ -301,15 +464,15 @@ export default function LandingPage() {
       {/* Testimonials (Social Proof) */}
       <section className="relative z-10 py-24 bg-[#0B0E14] border-y border-dark-card-border">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <h2 className="text-3xl font-bold mb-12 text-center">Built for Agencies That Demand Results</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t.test_title}</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="flex text-yellow-400 mb-4">{"★★★★★"}</div>
               <p className="text-lg text-gray-300 italic mb-6">
-                "We manage over 20 clients in LatAm. Since hooking them up to GoogleMaker, our team saves around 15 hours a week in manual bid adjustments. The Capital Protection alone paid for the software in day two."
+                {t.test_1}
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-700"></div>
+                <img src="https://ui-avatars.com/api/?name=Carlos+R&background=3b82f6&color=fff&rounded=true" alt="Carlos R." className="w-12 h-12 rounded-full border border-dark-card-border" />
                 <div>
                   <div className="font-bold">Carlos R.</div>
                   <div className="text-sm text-gray-500">Founder, GrowthX Agency</div>
@@ -319,10 +482,10 @@ export default function LandingPage() {
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="flex text-yellow-400 mb-4">{"★★★★★"}</div>
               <p className="text-lg text-gray-300 italic mb-6">
-                "Scaling winners was always scary because CPA usually shoots up. This hybrid autopilot scales budgets incrementally. We increased our client's revenue by 40% without ruining profitability."
+                {t.test_2}
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-700"></div>
+                <img src="https://ui-avatars.com/api/?name=Sarah+T&background=a855f7&color=fff&rounded=true" alt="Sarah T." className="w-12 h-12 rounded-full border border-dark-card-border" />
                 <div>
                   <div className="font-bold">Sarah T.</div>
                   <div className="text-sm text-gray-500">Senior Media Buyer, US Ads</div>
@@ -336,41 +499,44 @@ export default function LandingPage() {
       {/* Pricing Section */}
       <section id="pricing" className="relative z-10 py-32">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">Simple, Transparent Pricing</h2>
-          <p className="text-gray-400 text-lg mb-16">No percentage of ad spend. Just a flat monthly fee to protect your margins.</p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">{t.price_title}</h2>
+          <p className="text-gray-400 text-lg mb-16">{t.price_desc}</p>
           
           <div className="grid md:grid-cols-3 gap-6 text-left">
             <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-2">Basic</h3>
-              <div className="text-4xl font-extrabold text-white mb-6">$5<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+              <h3 className="text-2xl font-bold text-white mb-2">{t.p_basic}</h3>
+              <div className="text-4xl font-extrabold text-white mb-6">$5<span className="text-lg text-gray-500 font-normal">{t.p_mo}</span></div>
+              <p className="text-gray-400 mb-8 h-12">{t.pb_desc}</p>
               <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> 1 Google Ads Account</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> Basic AI Optimization</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_1}</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-blue" /> {t.pb_2}</li>
               </ul>
-              <Link href="/login" className="text-center w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">Start Basic</Link>
+              <Link href="/login" className="text-center w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">{t.btn_basic}</Link>
             </div>
 
             <div className="bg-dark-card backdrop-blur-xl border border-neon-purple p-8 rounded-[2rem] flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(168,85,247,0.15)]">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">MOST POPULAR</div>
-              <h3 className="text-2xl font-bold text-white mb-2">Scale</h3>
-              <div className="text-4xl font-extrabold text-neon-purple mb-6">$20<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider">{t.popular}</div>
+              <h3 className="text-2xl font-bold text-white mb-2">{t.p_scale}</h3>
+              <div className="text-4xl font-extrabold text-neon-purple mb-6">$20<span className="text-lg text-gray-500 font-normal">{t.p_mo}</span></div>
+              <p className="text-gray-400 mb-8 h-12">{t.ps_desc}</p>
               <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Up to 3 Ad Accounts</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Real-time Hybrid Scaling</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> Priority Execution</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> {t.ps_1}</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> {t.ps_2}</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-purple" /> {t.ps_3}</li>
               </ul>
-              <Link href="/login" className="text-center w-full py-4 rounded-full bg-gradient-to-r from-neon-purple to-neon-blue font-semibold text-white hover:opacity-90 transition-opacity">Start Scale</Link>
+              <Link href="/login" className="text-center w-full py-4 rounded-full bg-gradient-to-r from-neon-purple to-neon-blue font-semibold text-white hover:opacity-90 transition-opacity">{t.btn_scale}</Link>
             </div>
 
             <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-8 rounded-[2rem] flex flex-col">
-              <h3 className="text-2xl font-bold text-white mb-2">Growth</h3>
-              <div className="text-4xl font-extrabold text-white mb-6">$99<span className="text-lg text-gray-500 font-normal">/mo</span></div>
+              <h3 className="text-2xl font-bold text-white mb-2">{t.p_growth}</h3>
+              <div className="text-4xl font-extrabold text-white mb-6">$99<span className="text-lg text-gray-500 font-normal">{t.p_mo}</span></div>
+              <p className="text-gray-400 mb-8 h-12">{t.pg_desc}</p>
               <ul className="space-y-4 mb-8 flex-1 text-gray-300">
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Unlimited Accounts</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Custom CPA Strategies</li>
-                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> Dedicated Support</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> {t.pg_1}</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> {t.pg_2}</li>
+                <li className="flex items-center gap-2"><CheckCircle2 size={18} className="text-neon-green" /> {t.pg_3}</li>
               </ul>
-              <Link href="/login" className="text-center w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">Start Growth</Link>
+              <Link href="/login" className="text-center w-full py-4 rounded-full border border-dark-card-border hover:bg-white/5 transition-colors font-semibold text-white">{t.btn_growth}</Link>
             </div>
           </div>
         </div>
@@ -379,33 +545,33 @@ export default function LandingPage() {
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 py-24 bg-black/40 border-t border-dark-card-border">
         <div className="max-w-3xl mx-auto px-6 lg:px-12">
-          <h2 className="text-3xl font-bold mb-12 text-center">Frequently Asked Questions</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t.faq_title}</h2>
           <div className="space-y-4">
             <details className="group bg-dark-card border border-dark-card-border rounded-2xl p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
               <summary className="flex items-center justify-between font-semibold text-lg text-white">
-                Does it alter my existing campaigns?
+                {t.faq_1_q}
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                No. GoogleMaker reads your data and only makes specific adjustments (like pausing a bad ad group or increasing a budget by 15%) based on your explicit CPA limits. It never deletes your campaigns or rewrites your ad copy.
+                {t.faq_1_a}
               </p>
             </details>
             <details className="group bg-dark-card border border-dark-card-border rounded-2xl p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
               <summary className="flex items-center justify-between font-semibold text-lg text-white">
-                How fast does it react to bad spend?
+                {t.faq_2_q}
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                Our CRON job scans your connected accounts multiple times a day. If a campaign suddenly spikes and spends over 1.5x your target CPA without a conversion, the system pauses it immediately to protect your capital.
+                {t.faq_2_a}
               </p>
             </details>
             <details className="group bg-dark-card border border-dark-card-border rounded-2xl p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
               <summary className="flex items-center justify-between font-semibold text-lg text-white">
-                Do I need to be a developer to use this?
+                {t.faq_3_q}
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                Absolutely not. You just click "Connect Google Ads", log in with your Google account, and select your Target CPA on the dashboard. The engine does all the mathematical heavy lifting in the background.
+                {t.faq_3_a}
               </p>
             </details>
           </div>
@@ -416,13 +582,13 @@ export default function LandingPage() {
       <footer className="relative z-10 py-24 text-center border-t border-dark-card-border overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-neon-blue/20 blur-[150px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-6">Ready to scale your agency?</h2>
-          <p className="text-xl text-gray-400 mb-10">Join the smartest media buyers automating their Google Ads success.</p>
+          <h2 className="text-4xl font-bold mb-6">{t.foot_title}</h2>
+          <p className="text-xl text-gray-400 mb-10">{t.foot_desc}</p>
           <Link 
             href="/login" 
             className="inline-flex px-10 py-5 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
           >
-            Create Your Account
+            {t.foot_btn}
           </Link>
           <div className="mt-16 text-gray-500 text-sm">
             © 2026 GoogleMaker. Built by TheQuantPartners.
