@@ -21,3 +21,4 @@
 - [x] Implement Hybrid Autopilot (Learning Phase heuristic, automated PAUSE, pending UI for SCALE, backend CRON).
 - [x] Integrate real payment gateway (Lemon Squeezy) with checkout sessions and webhook for automatic tier assignment.
 - [x] Migrated Landing Page and Dashboard UI to a premium dark-mode aesthetic using Tailwind CSS and Recharts.
+- [x] Upgraded Landing Page to a High-Conversion B2B Funnel with marketing psychology, Social Proof, and exposed Pricing tiers.

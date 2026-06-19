@@ -26,3 +26,4 @@
  -   A d d e d   i n d i v i d u a l   G o o g l e   A d s   a c c o u n t   d e l e t i o n   e n d p o i n t   a n d   u p d a t e d   D a s h b o a r d   t o   s u p p o r t   d e l e t i n g   a c c o u n t s   o n e   b y   o n e .  
 - Integrated Lemon Squeezy payment gateway with backend `/payments/create-checkout-session` and `/payments/webhook` for secure subscriptions. Removed old mock tier update endpoint.
 - Migrated Landing Page and Dashboard UI to a premium dark-mode aesthetic using Tailwind CSS v3 and Recharts, recreating the Nano Banana/v0.dev reference designs while preserving backend logic.
+- Upgraded the Landing Page into a high-conversion B2B marketing funnel targeted at US/LatAm agencies, adding Problem Agitation, How It Works, Social Proof, exposed Pricing, and FAQ sections.
