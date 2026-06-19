@@ -48,13 +48,22 @@ async def lifespan(app: FastAPI):
     from sqlalchemy import text
 
     async with async_session() as session:
-        # DB MIGRATION: Fix 'free' enum that breaks SQLAlchemy ORM mapping
+        # DB MIGRATION: Fix missing tier column and enum
+        try:
+            await session.execute(text("ALTER TABLE users ADD COLUMN tier VARCHAR(50) DEFAULT 'none';"))
+            await session.commit()
+            print("[OK] DB Migration: Added tier column.")
+        except Exception as e:
+            await session.rollback()
+            print(f"[WARN] DB Migration failed for tier column (might already exist): {e}")
+
         try:
             await session.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='pro' OR tier='enterprise';"))
             await session.commit()
             print("[OK] DB Migration: Fixed legacy tier enums.")
         except Exception as e:
-            print(f"[WARN] DB Migration failed (might be ok): {e}")
+            await session.rollback()
+            print(f"[WARN] DB Migration failed for tier legacy fix: {e}")
 
         # DB MIGRATION: Fix missing columns for Hybrid Autopilot in orchestrator_logs
         try:
