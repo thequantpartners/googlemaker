@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Search, Play, TrendingUp, ShieldCheck, Copy, ArrowRight, PlayCircle, Globe, CheckCircle2, ChevronDown, Zap, BarChart3, Clock, Menu, X } from "lucide-react";
 import PricingCards from "./components/PricingCards";
+import { AnimatedTestimonials } from "./components/ui/animated-testimonials";
 
 const translations = {
   en: {
@@ -161,6 +162,72 @@ const translations = {
     foot_btn: "Activar mi Piloto Automático"
   }
 };
+
+const enTestimonials = [
+  {
+    quote: "We manage over 20 clients in LatAm. Since hooking them up to GMaker, our team saves around 15 hours a week in manual bid adjustments. The Capital Protection alone paid for the software in day two.",
+    name: "Carlos Rodriguez",
+    designation: "Founder at GrowthX Agency",
+    src: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop"
+  },
+  {
+    quote: "Scaling winners was always scary because CPA usually shoots up. This hybrid autopilot scales budgets incrementally. We increased our client's revenue by 40% without ruining profitability.",
+    name: "Sarah Thompson",
+    designation: "Senior Media Buyer, US Ads",
+    src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1888&auto=format&fit=crop"
+  },
+  {
+    quote: "I used to wake up to thousands of dollars wasted overnight on bad clicks. GMaker's 24/7 monitoring catches spikes before they become disasters. It's like having a senior media buyer that never sleeps.",
+    name: "Elena Martinez",
+    designation: "Managing Partner, Martinez Law Group",
+    src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto=format&fit=crop"
+  },
+  {
+    quote: "The interface is incredibly intuitive. I connected our Google Ads account in 2 minutes, set our target CPA for family petitions, and the engine just took over. My caseload has doubled.",
+    name: "David Chen",
+    designation: "Immigration Attorney, Chen & Associates",
+    src: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1887&auto=format&fit=crop"
+  },
+  {
+    quote: "We fired our expensive ad agency and switched entirely to GMaker. Not only did we save $3,000/mo in retainer fees, but our actual cost-per-lead dropped by 35%. Best investment we've made.",
+    name: "Fatima Al-Jamil",
+    designation: "Marketing Director, Apex Legal",
+    src: "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?q=80&w=1887&auto=format&fit=crop"
+  }
+];
+
+const esTestimonials = [
+  {
+    quote: "Antes gastábamos $10,000 al mes en Google y la mitad eran llamadas buscando ayuda gratis. Desde que activamos el Piloto Automático de GMaker, nuestro costo por caso bajó un 40%.",
+    name: "Carlos Rodriguez",
+    designation: "Socio Fundador, GrowthX Law",
+    src: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop"
+  },
+  {
+    quote: "No tengo tiempo para entrar a Google Ads. Este software es como tener a un especialista trabajando 24/7. El escudo protegió nuestro presupuesto un fin de semana que hubo un pico de clics irrelevantes.",
+    name: "Sarah Thompson",
+    designation: "Directora de Marketing, US Ads",
+    src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1888&auto=format&fit=crop"
+  },
+  {
+    quote: "Solía despertarme viendo miles de dólares desperdiciados en la madrugada. El monitoreo 24/7 de GMaker detecta estas anomalías antes de que sean un desastre. Me devolvió la tranquilidad.",
+    name: "Elena Martinez",
+    designation: "Socia Directora, Martinez Abogados",
+    src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto=format&fit=crop"
+  },
+  {
+    quote: "La plataforma es increíblemente intuitiva. Conecté nuestra cuenta de Google Ads en 2 minutos, definí el CPA para casos de asilo y el motor hizo el resto. Nuestros casos se han duplicado.",
+    name: "David Chen",
+    designation: "Abogado de Inmigración, Chen & Asociados",
+    src: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1887&auto=format&fit=crop"
+  },
+  {
+    quote: "Despedimos a nuestra costosa agencia y pasamos todo a GMaker. No solo ahorramos $3,000/mes, sino que nuestro costo por cliente bajó 35%. La mejor inversión tecnológica del año.",
+    name: "Fatima Al-Jamil",
+    designation: "Directora Operativa, Apex Legal",
+    src: "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?q=80&w=1887&auto=format&fit=crop"
+  }
+];
 
 export default function LandingPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -465,37 +532,10 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials (Social Proof) */}
-      <section className="relative z-10 py-24 bg-[#0B0E14] border-y border-dark-card-border">
+      <section className="relative z-10 py-24 bg-[#0B0E14] border-y border-dark-card-border overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <h2 className="text-3xl font-bold mb-12 text-center">{t.test_title}</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
-              <div className="flex text-yellow-400 mb-4">{"★★★★★"}</div>
-              <p className="text-lg text-gray-300 italic mb-6">
-                {t.test_1}
-              </p>
-              <div className="flex items-center gap-3">
-                <img src="https://ui-avatars.com/api/?name=Carlos+R&background=3b82f6&color=fff&rounded=true" alt="Carlos R." className="w-12 h-12 rounded-full border border-dark-card-border" />
-                <div>
-                  <div className="font-bold">Carlos R.</div>
-                  <div className="text-sm text-gray-500">Founder, GrowthX Agency</div>
-                </div>
-              </div>
-            </div>
-            <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
-              <div className="flex text-yellow-400 mb-4">{"★★★★★"}</div>
-              <p className="text-lg text-gray-300 italic mb-6">
-                {t.test_2}
-              </p>
-              <div className="flex items-center gap-3">
-                <img src="https://ui-avatars.com/api/?name=Sarah+T&background=a855f7&color=fff&rounded=true" alt="Sarah T." className="w-12 h-12 rounded-full border border-dark-card-border" />
-                <div>
-                  <div className="font-bold">Sarah T.</div>
-                  <div className="text-sm text-gray-500">Senior Media Buyer, US Ads</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AnimatedTestimonials testimonials={lang === 'en' ? enTestimonials : esTestimonials} />
         </div>
       </section>
 
