@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks } from "lucide-react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -32,6 +32,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Setup Guide", href: "/onboarding", icon: ListChecks },
     { name: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone },
     { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity },
     { name: "My Plan", href: "/dashboard/planes", icon: CreditCard },
