@@ -14,10 +14,10 @@ export default function OnboardingPage() {
     },
     {
       id: 2,
-      title: 'Create your campaign',
-      description: 'Set up your first advertising campaign in minutes',
+      title: 'Generate AI Strategy',
+      description: 'Use our AI Marketing Strategist to create high-converting ad copy',
       status: 'current' as StepStatus,
-      actionText: 'Create campaign',
+      actionText: 'Generate Strategy',
       actionHref: '/dashboard/campaigns',
     },
     {
