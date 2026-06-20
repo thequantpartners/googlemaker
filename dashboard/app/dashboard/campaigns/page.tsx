@@ -391,7 +391,7 @@ export default function ClientCampaigns() {
                         className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors min-h-[100px] resize-y"
                       />
                       <p className="text-xs text-gray-500 mt-2">
-                        💡 Growth Hack: We will use your competitors' names as keywords to show your ads when people search for them.
+                        💡 <strong>Smart Targeting:</strong> We will analyze your competitors' market positioning to discover high-value keywords and uncover hidden traffic opportunities for your business.
                       </p>
                     </div>
                   </div>
