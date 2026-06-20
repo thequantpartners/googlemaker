@@ -8,32 +8,32 @@ export default function OnboardingPage() {
   const steps = [
     {
       id: 1,
-      title: 'Conectar cuenta de Google Ads',
-      description: 'Vincula tu cuenta para comenzar a gestionar tus campañas',
+      title: 'Connect Google Ads Account',
+      description: 'Link your account to start managing your campaigns',
       status: 'completed' as StepStatus,
     },
     {
       id: 2,
-      title: 'Crea tu campaña',
-      description: 'Configura tu primera campaña publicitaria en minutos',
+      title: 'Create your campaign',
+      description: 'Set up your first advertising campaign in minutes',
       status: 'current' as StepStatus,
-      actionText: 'Crear campaña',
+      actionText: 'Create campaign',
       actionHref: '/campaigns/new',
     },
     {
       id: 3,
-      title: 'Configura tu bot de Telegram',
-      description: 'Recibe notificaciones y gestiona leads directamente desde Telegram',
+      title: 'Configure Telegram bot',
+      description: 'Receive notifications and manage leads directly from Telegram',
       status: 'pending' as StepStatus,
-      actionText: 'Configurar',
+      actionText: 'Configure',
       actionHref: '/settings/telegram',
     },
     {
       id: 4,
-      title: 'Verifica tus datos de facturación',
-      description: 'Añade un método de pago para activar los anuncios',
+      title: 'Verify billing details',
+      description: 'Add a payment method to activate ads',
       status: 'pending' as StepStatus,
-      actionText: 'Añadir método',
+      actionText: 'Add method',
       actionHref: '/settings/billing',
     }
   ];
@@ -43,10 +43,10 @@ export default function OnboardingPage() {
       <div className="w-full max-w-3xl">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight sm:text-4xl mb-3">
-            ¡Bienvenido a GMaker!
+            Welcome to GMaker!
           </h1>
           <p className="text-lg text-gray-500">
-            Completa estos sencillos pasos para dejar tu sistema operativo y comenzar a crecer.
+            Complete these simple steps to get your system up and running.
           </p>
         </div>
 
@@ -67,13 +67,13 @@ export default function OnboardingPage() {
 
           <div className="mt-12 text-center">
             <p className="text-sm text-gray-500 mb-4">
-              Lleva tu negocio al siguiente nivel configurando todas las integraciones
+              Take your business to the next level by configuring all integrations
             </p>
             <Link
               href="/dashboard"
               className="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
             >
-              Saltar configuración por ahora
+              Skip setup for now
             </Link>
           </div>
         </div>
