@@ -302,9 +302,6 @@ function DashboardContent() {
                           )}
                         </td>
                         <td className="py-4 px-6 text-right space-x-4">
-                          {!isInvalid && (
-
-                          )}
                           <button 
                             onClick={async () => {
                               if (confirm(`Are you sure you want to disconnect account ${acc.target_customer_id}?`)) {
