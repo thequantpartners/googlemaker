@@ -247,15 +247,24 @@ async def run(
                         
                         if client_user.telegram_chat_id and log_status == "pending":
                             if action_type == "PAUSE":
-                                text = f"🚨 <b>¡Alerta de Sangrado!</b>\n\nHola {client_user.name},\nSe detectó que la campaña <b>{campaign['campaign_name']}</b> empieza a gastar mucho dinero (${total_spend:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara.\n\nTe sugerimos pausar para evitar pérdidas."
+                                text = (
+                                    f"👋 Hola {client_user.name}\n"
+                                    f"📢 Campaña {campaign['campaign_name']}\n"
+                                    f"🚨 Se detecto que la campaña {campaign['campaign_id']} empieza a gastar mucho dinero (${total_spend:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara por encima de tu límite.\n"
+                                    f"💡 Te sugerimos pausar para evitar perdida."
+                                )
                                 buttons = [[
-                                    {"text": "🛑 PAUSAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                    {"text": "🛑 PAUSAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
                                     {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
                                 ]]
                             else:
-                                text = f"🚀 <b>¡Oportunidad de Escalamiento!</b>\n\nHola {client_user.name},\nTu campaña <b>{campaign['campaign_name']}</b> está avanzando súper bien.\n\nSegún la data analizada, te sugerimos un {action_type.replace('_', ' ')}."
+                                text = (
+                                    f"👋 Hola {client_user.name}\n"
+                                    f"📢 Campaña {campaign['campaign_name']}\n"
+                                    f"🚀 Tu campaña esta avanzando bien. Segun la data analizada, te sugerimos un {action_type.replace('_', ' ')}."
+                                )
                                 buttons = [[
-                                    {"text": "📈 ESCALAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                    {"text": "📈 ESCALAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
                                     {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
                                 ]]
                             await send_telegram_message(client_user.telegram_chat_id, text, buttons)
@@ -371,15 +380,24 @@ async def cron_run(
                                 
                                 if client_user.telegram_chat_id and log_status == "pending":
                                     if action_type == "PAUSE":
-                                        text = f"🚨 <b>¡Alerta de Sangrado!</b>\n\nHola {client_user.name},\nSe detectó que la campaña <b>{campaign['campaign_name']}</b> empieza a gastar mucho dinero (${campaign['cost']:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara.\n\nTe sugerimos pausar para evitar pérdidas."
+                                        text = (
+                                            f"👋 Hola {client_user.name}\n"
+                                            f"📢 Campaña {campaign['campaign_name']}\n"
+                                            f"🚨 Se detecto que la campaña {campaign['campaign_id']} empieza a gastar mucho dinero (${campaign['cost']:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara por encima de tu límite.\n"
+                                            f"💡 Te sugerimos pausar para evitar perdida."
+                                        )
                                         buttons = [[
-                                            {"text": "🛑 PAUSAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                            {"text": "🛑 PAUSAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
                                             {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
                                         ]]
                                     else:
-                                        text = f"🚀 <b>¡Oportunidad de Escalamiento!</b>\n\nHola {client_user.name},\nTu campaña <b>{campaign['campaign_name']}</b> está avanzando súper bien.\n\nSegún la data analizada, te sugerimos un {action_type.replace('_', ' ')} porque el CPA es excelente."
+                                        text = (
+                                            f"👋 Hola {client_user.name}\n"
+                                            f"📢 Campaña {campaign['campaign_name']}\n"
+                                            f"🚀 Tu campaña esta avanzando bien. Segun la data analizada, te sugerimos un {action_type.replace('_', ' ')}."
+                                        )
                                         buttons = [[
-                                            {"text": "📈 ESCALAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                            {"text": "📈 ESCALAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
                                             {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
                                         ]]
                                     await send_telegram_message(client_user.telegram_chat_id, text, buttons)
