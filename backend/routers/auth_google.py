@@ -60,7 +60,7 @@ async def google_ads_login(token: str, request: Request, db: AsyncSession = Depe
         )
         current_count = count_result.scalar_one()
         if current_count >= limit:
-            frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
+            frontend_url = os.getenv("FRONTEND_ORIGINS", "https://gmaker.thequantpartners.com").split(",")[0]
             error_msg = f"Has alcanzado el límite de {limit} cuenta(s) para tu plan {user.tier.value.capitalize()}."
             return RedirectResponse(f"{frontend_url}/dashboard?connected=error&message={urllib.parse.quote(error_msg)}")
 
@@ -70,7 +70,7 @@ async def google_ads_login(token: str, request: Request, db: AsyncSession = Depe
         parsed = urllib.parse.urlparse(origin)
         frontend_url = f"{parsed.scheme}://{parsed.netloc}"
     else:
-        frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
+        frontend_url = os.getenv("FRONTEND_ORIGINS", "https://gmaker.thequantpartners.com").split(",")[0]
 
     # Encrypt user_id and frontend_url to use as state to prevent CSRF and identify the user in the callback
     state_payload = f"{user_id}::{frontend_url}"
@@ -105,7 +105,7 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
         decrypted_state = decrypt_value(state)
         parts = decrypted_state.split("::")
         user_id = parts[0]
-        frontend_url = parts[1] if len(parts) > 1 else os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
+        frontend_url = parts[1] if len(parts) > 1 else os.getenv("FRONTEND_ORIGINS", "https://gmaker.thequantpartners.com").split(",")[0]
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid state parameter")
 
