@@ -18,7 +18,7 @@ export default function OnboardingPage() {
       description: 'Set up your first advertising campaign in minutes',
       status: 'current' as StepStatus,
       actionText: 'Create campaign',
-      actionHref: '/campaigns/new',
+      actionHref: '/dashboard/campaigns',
     },
     {
       id: 3,
@@ -26,7 +26,7 @@ export default function OnboardingPage() {
       description: 'Receive notifications and manage leads directly from Telegram',
       status: 'pending' as StepStatus,
       actionText: 'Configure',
-      actionHref: '/settings/telegram',
+      actionHref: '/dashboard/configuracion',
     },
     {
       id: 4,
@@ -34,7 +34,7 @@ export default function OnboardingPage() {
       description: 'Add a payment method to activate ads',
       status: 'pending' as StepStatus,
       actionText: 'Add method',
-      actionHref: '/settings/billing',
+      actionHref: '/dashboard/planes',
     }
   ];
 
