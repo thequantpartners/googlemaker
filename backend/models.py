@@ -88,6 +88,8 @@ class User(Base):
         nullable=False,
         default=UserTier.none,
     )
+    telegram_chat_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    telegram_link_token: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     # Relationships

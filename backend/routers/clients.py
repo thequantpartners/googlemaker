@@ -24,6 +24,30 @@ async def get_my_profile(
 ):
     return user
 
+import uuid
+
+@router.post("/me/telegram-link-token")
+async def generate_telegram_link_token(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Generates a temporary token to link a Telegram account."""
+    token = str(uuid.uuid4()).split('-')[0] # Short token
+    user.telegram_link_token = token
+    await db.commit()
+    return {"token": token}
+
+@router.delete("/me/telegram")
+async def disconnect_telegram(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Disconnects the user's Telegram account."""
+    user.telegram_chat_id = None
+    user.telegram_link_token = None
+    await db.commit()
+    return {"status": "success"}
+
 
 # ── Get own campaigns from Google Ads API ─────────────────────────────────────
 

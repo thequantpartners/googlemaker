@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug } from "lucide-react";
+import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug, Send } from "lucide-react";
 
 export default function ConfiguracionPage() {
   const { data: session } = useSession();
@@ -10,6 +10,8 @@ export default function ConfiguracionPage() {
   const [loading, setLoading] = useState(true);
   const [disconnecting, setDisconnecting] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
+  const [connectingTelegram, setConnectingTelegram] = useState(false);
+  const [disconnectingTelegram, setDisconnectingTelegram] = useState(false);
 
   const fetchProfile = async () => {
     if (!session?.backendToken) return;
@@ -53,6 +55,56 @@ export default function ConfiguracionPage() {
       setMsg({ text: "Network connection error.", type: "error" });
     } finally {
       setDisconnecting(false);
+    }
+  };
+
+  const handleConnectTelegram = async () => {
+    if (!session?.backendToken) return;
+    setConnectingTelegram(true);
+    setMsg({ text: "", type: "" });
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/telegram-link-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.backendToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Replace 'gmaker_autopilot_bot' with the actual bot username provided by the user
+        const botUsername = "gmaker_autopilot_bot"; 
+        const telegramUrl = `https://t.me/${botUsername}?start=${data.token}`;
+        window.open(telegramUrl, "_blank");
+        setMsg({ text: "Opening Telegram... Please click 'Start' in the bot. Refresh this page once connected.", type: "success" });
+      } else {
+        setMsg({ text: "Error generating Telegram link.", type: "error" });
+      }
+    } catch (err) {
+      setMsg({ text: "Network connection error.", type: "error" });
+    } finally {
+      setConnectingTelegram(false);
+    }
+  };
+
+  const handleDisconnectTelegram = async () => {
+    if (!confirm("Are you sure you want to disconnect Telegram? Autopilot will no longer be able to send you notifications.")) return;
+    
+    if (!session?.backendToken) return;
+    setDisconnectingTelegram(true);
+    setMsg({ text: "", type: "" });
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/telegram`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session.backendToken}` },
+      });
+      if (res.ok) {
+        setMsg({ text: "Telegram disconnected successfully.", type: "success" });
+        fetchProfile();
+      } else {
+        setMsg({ text: "Error disconnecting Telegram.", type: "error" });
+      }
+    } catch (err) {
+      setMsg({ text: "Network connection error.", type: "error" });
+    } finally {
+      setDisconnectingTelegram(false);
     }
   };
 
@@ -143,6 +195,40 @@ export default function ConfiguracionPage() {
           <Unplug size={18} />
           {disconnecting ? "Disconnecting..." : "Disconnect Google Ads"}
         </button>
+      </div>
+
+      {/* TELEGRAM */}
+      <div className="bg-dark-card backdrop-blur-xl border border-[#0088cc]/30 rounded-[2rem] p-6 md:p-8 mt-8">
+        <h2 className="text-xl font-bold text-[#0088cc] mb-4 flex items-center gap-2 border-b border-[#0088cc]/10 pb-4">
+          <Send size={24} /> Telegram Autopilot Integration
+        </h2>
+        <p className="text-gray-400 mb-6 leading-relaxed">
+          Connect your Telegram account to receive real-time notifications from the Autopilot. You will be able to pause bleeding campaigns or scale winning ones directly from your chat with a single click.
+        </p>
+        
+        {profile?.telegram_chat_id ? (
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex-1 bg-[#0088cc]/10 border border-[#0088cc]/30 rounded-xl px-4 py-3 text-[#0088cc] font-medium flex items-center gap-2 w-full">
+              <Send size={18} /> Connected to Telegram
+            </div>
+            <button 
+              onClick={handleDisconnectTelegram} 
+              disabled={disconnectingTelegram}
+              className="px-6 py-3 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/50 hover:border-red-500 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            >
+              {disconnectingTelegram ? "Disconnecting..." : "Disconnect"}
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={handleConnectTelegram} 
+            disabled={connectingTelegram}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-[#0088cc]/20 hover:bg-[#0088cc] text-[#0088cc] hover:text-white border border-[#0088cc]/50 hover:border-[#0088cc] rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          >
+            <Send size={18} />
+            {connectingTelegram ? "Connecting..." : "Connect Telegram"}
+          </button>
+        )}
       </div>
     </div>
   );

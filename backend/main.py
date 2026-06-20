@@ -19,7 +19,7 @@ load_dotenv()
 from auth import create_jwt, get_current_user, verify_google_token
 from database import Base, engine, get_db
 from models import User, UserRole, UserStatus
-from routers import admin, clients, orchestrator, auth_google, payments
+from routers import admin, clients, orchestrator, auth_google, payments, telegram
 from schemas import GoogleLoginRequest, TokenResponse, UserOut
 
 SUPERADMIN_EMAIL: str = os.getenv("SUPERADMIN_EMAIL", "thequantpartners@gmail.com")
@@ -83,6 +83,16 @@ async def lifespan(app: FastAPI):
             await session.rollback()
             print(f"[WARN] DB Migration failed for new columns: {e}")
 
+        # DB MIGRATION: Add Telegram columns to users
+        try:
+            await session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_chat_id VARCHAR(100);"))
+            await session.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_link_token VARCHAR(100);"))
+            await session.commit()
+            print("[OK] DB Migration: Added Telegram columns to users.")
+        except Exception as e:
+            await session.rollback()
+            print(f"[WARN] DB Migration failed for Telegram columns: {e}")
+
         result = await session.execute(
             select(User).where(User.email == SUPERADMIN_EMAIL)
         )
@@ -131,6 +141,7 @@ app.include_router(clients.router)
 app.include_router(orchestrator.router)
 app.include_router(auth_google.router)
 app.include_router(payments.router)
+app.include_router(telegram.router)
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

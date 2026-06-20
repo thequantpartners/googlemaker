@@ -20,6 +20,7 @@ from services.google_ads_service import (
     fetch_campaign_metrics,
     apply_campaign_action,
 )
+from services.telegram_service import send_telegram_message
 
 router = APIRouter(prefix="/orchestrator", tags=["Orchestrator"])
 
@@ -242,6 +243,23 @@ async def run(
                             status=log_status,
                         )
                         db.add(log)
+                        await db.flush() # flush to get log.id
+                        
+                        if client_user.telegram_chat_id and log_status == "pending":
+                            if action_type == "PAUSE":
+                                text = f"🚨 <b>¡Alerta de Sangrado!</b>\n\nHola {client_user.name},\nSe detectó que la campaña <b>{campaign['campaign_name']}</b> empieza a gastar mucho dinero (${total_spend:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara.\n\nTe sugerimos pausar para evitar pérdidas."
+                                buttons = [[
+                                    {"text": "🛑 PAUSAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                    {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
+                                ]]
+                            else:
+                                text = f"🚀 <b>¡Oportunidad de Escalamiento!</b>\n\nHola {client_user.name},\nTu campaña <b>{campaign['campaign_name']}</b> está avanzando súper bien.\n\nSegún la data analizada, te sugerimos un {action_type.replace('_', ' ')}."
+                                buttons = [[
+                                    {"text": "📈 ESCALAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                    {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
+                                ]]
+                            await send_telegram_message(client_user.telegram_chat_id, text, buttons)
+
                         cred_logs.append(log)
                 except Exception as inner_e:
                     print(f"Error mutating campaign {campaign['campaign_id']}: {inner_e}")
@@ -349,6 +367,23 @@ async def cron_run(
                                     status=log_status,
                                 )
                                 db.add(log)
+                                await db.flush() # get log.id
+                                
+                                if client_user.telegram_chat_id and log_status == "pending":
+                                    if action_type == "PAUSE":
+                                        text = f"🚨 <b>¡Alerta de Sangrado!</b>\n\nHola {client_user.name},\nSe detectó que la campaña <b>{campaign['campaign_name']}</b> empieza a gastar mucho dinero (${campaign['cost']:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara.\n\nTe sugerimos pausar para evitar pérdidas."
+                                        buttons = [[
+                                            {"text": "🛑 PAUSAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                            {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
+                                        ]]
+                                    else:
+                                        text = f"🚀 <b>¡Oportunidad de Escalamiento!</b>\n\nHola {client_user.name},\nTu campaña <b>{campaign['campaign_name']}</b> está avanzando súper bien.\n\nSegún la data analizada, te sugerimos un {action_type.replace('_', ' ')} porque el CPA es excelente."
+                                        buttons = [[
+                                            {"text": "📈 ESCALAR AUTOMÁTICAMENTE", "callback_data": f"approve_{log.id}"},
+                                            {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
+                                        ]]
+                                    await send_telegram_message(client_user.telegram_chat_id, text, buttons)
+
                                 cred_logs.append(log)
                         except Exception as inner_e:
                             print(f"Error mutating campaign {campaign['campaign_id']}: {inner_e}")
