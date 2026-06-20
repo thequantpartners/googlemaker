@@ -8,17 +8,19 @@ export default function OnboardingPage() {
   const steps = [
     {
       id: 1,
-      title: 'Connect Google Ads Account',
-      description: 'Link your account to start managing your campaigns',
-      status: 'completed' as StepStatus,
+      title: 'Choose your plan',
+      description: 'Select a subscription plan to unlock all features',
+      status: 'current' as StepStatus,
+      actionText: 'Select Plan',
+      actionHref: '/dashboard/planes',
     },
     {
       id: 2,
-      title: 'Generate AI Strategy',
-      description: 'Use our AI Marketing Strategist to create high-converting ad copy',
-      status: 'current' as StepStatus,
-      actionText: 'Generate Strategy',
-      actionHref: '/dashboard/campaigns',
+      title: 'Connect Google Ads Account',
+      description: 'Link your account to start managing your campaigns',
+      status: 'pending' as StepStatus,
+      actionText: 'Connect Account',
+      actionHref: '/dashboard',
     },
     {
       id: 3,
@@ -30,11 +32,11 @@ export default function OnboardingPage() {
     },
     {
       id: 4,
-      title: 'Verify billing details',
-      description: 'Add a payment method to activate ads',
+      title: 'Generate AI Strategy',
+      description: 'Use our AI Marketing Strategist to create high-converting ad copy',
       status: 'pending' as StepStatus,
-      actionText: 'Add method',
-      actionHref: '/dashboard/planes',
+      actionText: 'Generate Strategy',
+      actionHref: '/dashboard/campaigns',
     }
   ];
 
