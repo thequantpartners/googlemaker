@@ -97,6 +97,9 @@ class User(Base):
     logs: Mapped[list["OrchestratorLog"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    saved_strategies: Mapped[list["SavedStrategy"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.email} role={self.role}>"
@@ -154,3 +157,23 @@ class OrchestratorLog(Base):
 
     def __repr__(self) -> str:
         return f"<OrchestratorLog action={self.action} campaign={self.campaign_name}>"
+
+
+class SavedStrategy(Base):
+    __tablename__ = "saved_strategies"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    campaign_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    keywords: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    headlines: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    descriptions: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    # Relationships
+    user: Mapped["User"] = relationship(back_populates="saved_strategies")
+
+    def __repr__(self) -> str:
+        return f"<SavedStrategy campaign={self.campaign_name}>"

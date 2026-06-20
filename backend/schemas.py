@@ -128,3 +128,19 @@ class GenerateCampaignCopyResponse(BaseModel):
     keywords: list[str]
     headlines: list[str]
     descriptions: list[str]
+
+class SavedStrategyCreate(BaseModel):
+    campaign_name: str
+    keywords: list[str]
+    headlines: list[str]
+    descriptions: list[str]
+
+class SavedStrategyOut(BaseModel):
+    id: str
+    campaign_name: str
+    keywords: list[str]
+    headlines: list[str]
+    descriptions: list[str]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

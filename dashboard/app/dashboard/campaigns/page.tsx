@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles, Target, Globe, ChevronRight, ChevronLeft, Lightbulb } from "lucide-react";
+import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles, Target, Globe, ChevronRight, ChevronLeft, Lightbulb, Save } from "lucide-react";
 
 interface ConnectedAccount {
   id: string;
@@ -27,6 +27,15 @@ interface GeneratedCopy {
   descriptions: string[];
 }
 
+interface SavedStrategy {
+  id: string;
+  campaign_name: string;
+  keywords: string[];
+  headlines: string[];
+  descriptions: string[];
+  created_at: string;
+}
+
 export default function ClientCampaigns() {
   const { data: session } = useSession();
   
@@ -39,15 +48,19 @@ export default function ClientCampaigns() {
 
   // AI Wizard State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [wizardStep, setWizardStep] = useState(1);
+  const [wizardStep, setWizardStep] = useState(2); // Starts directly at URL input
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState("");
   
   // Wizard Inputs
-  const [campaignType, setCampaignType] = useState("Search");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [competitors, setCompetitors] = useState("");
   const [generatedResult, setGeneratedResult] = useState<GeneratedCopy | null>(null);
+
+  // Saved Strategies State
+  const [savedStrategies, setSavedStrategies] = useState<SavedStrategy[]>([]);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -60,6 +73,7 @@ export default function ClientCampaigns() {
     setGenerateLoading(true);
     setGenerateError("");
     setGeneratedResult(null);
+    setSaveSuccess(false);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/generate`, {
@@ -89,6 +103,31 @@ export default function ClientCampaigns() {
       setWizardStep(2); // Go back on error
     } finally {
       setGenerateLoading(false);
+    }
+  };
+
+  const handleSaveStrategy = async () => {
+    if (!session?.backendToken || !generatedResult) return;
+    setSaveLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(generatedResult)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSavedStrategies([data, ...savedStrategies]);
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error("Failed to save strategy", err);
+    } finally {
+      setSaveLoading(false);
     }
   };
 
@@ -138,6 +177,24 @@ export default function ClientCampaigns() {
     }
     fetchCampaigns();
   }, [session, selectedAccount]);
+
+  useEffect(() => {
+    async function fetchSavedStrategies() {
+      if (!session?.backendToken) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved`, {
+          headers: { Authorization: `Bearer ${session.backendToken}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSavedStrategies(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch saved strategies", err);
+      }
+    }
+    fetchSavedStrategies();
+  }, [session]);
 
   // KPIs
   const totalCost = campaigns.reduce((acc, c) => acc + c.cost, 0);
@@ -293,6 +350,50 @@ export default function ClientCampaigns() {
         </div>
       )}
 
+      {/* Saved Strategies Vault */}
+      {savedStrategies.length > 0 && (
+        <div className="bg-[#0B0E14] border border-white/5 rounded-[2rem] p-8 overflow-hidden relative shadow-[0_0_50px_rgba(168,85,247,0.03)]">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <Sparkles size={100} />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2 relative z-10">
+            <Save className="text-neon-purple" size={24} /> Saved Strategies Vault
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+            {savedStrategies.map(strategy => (
+              <div key={strategy.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-neon-purple/50 hover:bg-white/10 transition-all group flex flex-col justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1 line-clamp-2" title={strategy.campaign_name}>{strategy.campaign_name}</h3>
+                  <p className="text-xs text-gray-400 mb-4">{new Date(strategy.created_at).toLocaleDateString()}</p>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <div className="flex gap-2">
+                    <span className="px-2 py-1 bg-black/40 text-[10px] uppercase font-bold text-gray-300 rounded-md border border-white/5">{strategy.keywords.length} KW</span>
+                    <span className="px-2 py-1 bg-black/40 text-[10px] uppercase font-bold text-gray-300 rounded-md border border-white/5">{strategy.headlines.length} HL</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      setGeneratedResult({
+                        campaign_name: strategy.campaign_name,
+                        keywords: strategy.keywords,
+                        headlines: strategy.headlines,
+                        descriptions: strategy.descriptions
+                      });
+                      setWizardStep(4);
+                      setIsModalOpen(true);
+                      setSaveSuccess(true); // Don't allow re-saving instantly
+                    }}
+                    className="text-neon-purple hover:text-white transition-colors text-sm font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100"
+                  >
+                    View <ChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* CREATE CAMPAIGN AI WIZARD MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -383,7 +484,7 @@ export default function ClientCampaigns() {
                 <div className="space-y-6 animate-fade-in-up">
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-2xl font-bold text-white">Your Search Strategy is ready</h3>
-                    <button onClick={() => setWizardStep(2)} className="text-sm text-neon-purple hover:underline">Start Over</button>
+                    <button onClick={() => { setWizardStep(2); setSaveSuccess(false); }} className="text-sm text-neon-purple hover:underline">Start Over</button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -477,6 +578,13 @@ export default function ClientCampaigns() {
                   <CheckCircle2 size={16} className="text-neon-green" /> Copy generated successfully
                 </p>
                 <div className="flex gap-3 w-full sm:w-auto">
+                  <button 
+                    onClick={handleSaveStrategy} 
+                    disabled={saveLoading || saveSuccess}
+                    className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white font-bold hover:bg-white/10 transition-colors w-full sm:w-auto flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {saveSuccess ? <><CheckCircle2 size={16} className="text-neon-green" /> Saved</> : saveLoading ? "Saving..." : <><Save size={16} /> Save Strategy</>}
+                  </button>
                   <button 
                     onClick={() => setIsModalOpen(false)} 
                     className="px-6 py-2.5 border border-white/10 rounded-xl text-gray-300 font-medium hover:bg-white/5 transition-colors w-full sm:w-auto"

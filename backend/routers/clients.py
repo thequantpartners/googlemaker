@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth import require_client
 from database import get_db
-from models import OrchestratorLog, User
+from models import OrchestratorLog, User, SavedStrategy
 from schemas import LogOut, UserOut
 from services.google_ads_service import apply_campaign_action
 
@@ -82,7 +82,7 @@ async def get_my_campaigns(
             return []
         raise HTTPException(status_code=500, detail=f"Google Ads error: {type(e).__name__} - {str(e)}")
 
-from schemas import GenerateCampaignCopyRequest, GenerateCampaignCopyResponse
+from schemas import GenerateCampaignCopyRequest, GenerateCampaignCopyResponse, SavedStrategyCreate, SavedStrategyOut
 from services.ai_service import generate_campaign_copy
 
 @router.post("/me/campaigns/generate", response_model=GenerateCampaignCopyResponse)
@@ -103,6 +103,38 @@ async def generate_my_campaign_copy(
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/me/campaigns/saved", response_model=SavedStrategyOut)
+async def save_campaign_strategy(
+    strategy: SavedStrategyCreate,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Saves a generated strategy to the user's account."""
+    new_strategy = SavedStrategy(
+        user_id=user.id,
+        campaign_name=strategy.campaign_name,
+        keywords=strategy.keywords,
+        headlines=strategy.headlines,
+        descriptions=strategy.descriptions
+    )
+    db.add(new_strategy)
+    await db.commit()
+    await db.refresh(new_strategy)
+    return new_strategy
+
+@router.get("/me/campaigns/saved", response_model=list[SavedStrategyOut])
+async def get_saved_strategies(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Retrieves all saved strategies for the authenticated user."""
+    result = await db.execute(
+        select(SavedStrategy)
+        .where(SavedStrategy.user_id == user.id)
+        .order_by(SavedStrategy.created_at.desc())
+    )
+    return result.scalars().all()
 
 @router.delete("/me/credentials", status_code=204)
 async def delete_my_credentials(
