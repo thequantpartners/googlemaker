@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-cambiar pagos de test a real en lemon squeezy
+create onboarding page like lemon squeezy
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
-- [general] docs: close task and update context logs (2026-06-19T23:16:31.349Z)
-- [general] docs: close task and update context logs (2026-06-19T22:28:25.471Z)
-- [general] feat: implement client deletion UI in superadmin with superadmin protection (2026-06-19T07:29:06.244Z)
+- [general] docs: close task and update context logs (2026-06-20T00:28:45.582Z)
+- [general] docs: close task and update context logs (2026-06-19T23:48:28.562Z)
+- [general] docs: close task and update context logs (2026-06-19T23:29:08.994Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

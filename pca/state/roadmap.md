@@ -39,3 +39,4 @@
 - [x] Overhauled the AI Campaign Generator into an AI Marketing Strategist with web scraping capabilities.
 - [x] Implemented Saved Strategies Vault with manual save functionality to curate high-value AI generation results.
 - [x] Integrated Telegram Autopilot for real-time notifications and one-click manual approvals.
+- [x] Implemented Setup/Onboarding page (`/onboarding`) to guide users through GMaker configuration steps (Google Ads, Campaigns, Telegram).
