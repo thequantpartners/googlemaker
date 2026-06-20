@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles } from "lucide-react";
 
 interface ConnectedAccount {
   id: string;
@@ -20,6 +20,13 @@ interface CampaignMetric {
   conversions: number;
 }
 
+interface GeneratedCopy {
+  campaign_name: string;
+  keywords: string[];
+  headlines: string[];
+  descriptions: string[];
+}
+
 export default function ClientCampaigns() {
   const { data: session } = useSession();
   
@@ -32,117 +39,47 @@ export default function ClientCampaigns() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
-  const [createError, setCreateError] = useState("");
-  const [createSuccess, setCreateSuccess] = useState("");
-  
-  // Form State
-  const [formData, setFormData] = useState({
-    campaign_name: "Immigration Law - Default",
-    daily_budget: 50,
-    final_url: "",
-    keywords_text: "abogado de inmigracion\nabogado de inmigracion cerca de mi\nabogado de inmigracion en español\nvisa de trabajo usa\nabogado para asilo politico\nabogado para residencia\nabogado para green card\nabogado de deportacion\nperdones de inmigracion\nabogado de inmigracion consulta gratis",
-    headlines: [
-      "Abogado de Inmigración",
-      "Consulta Tu Caso Hoy",
-      "Hablamos Español"
-    ],
-    descriptions: [
-      "Protege tu futuro en EE.UU. Abogados expertos en inmigración y asilo. Contáctanos hoy.",
-      "No enfrentes tu proceso solo. Te ayudamos a conseguir tu visa o green card rápidamente."
-    ]
-  });
+  const [generateLoading, setGenerateLoading] = useState(false);
+  const [generateError, setGenerateError] = useState("");
+  const [businessDescription, setBusinessDescription] = useState("");
+  const [generatedResult, setGeneratedResult] = useState<GeneratedCopy | null>(null);
 
-  const handleFormChange = (e: any) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    // Could add a toast here in the future
   };
 
-  const handleArrayChange = (field: 'headlines' | 'descriptions', index: number, value: string) => {
-    setFormData(prev => {
-      const newArray = [...prev[field]];
-      newArray[index] = value;
-      return { ...prev, [field]: newArray };
-    });
-  };
-
-  const addArrayItem = (field: 'headlines' | 'descriptions') => {
-    setFormData(prev => ({ ...prev, [field]: [...prev[field], ""] }));
-  };
-
-  const removeArrayItem = (field: 'headlines' | 'descriptions', index: number) => {
-    setFormData(prev => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }));
-  };
-
-  const submitCampaign = async (e: React.FormEvent) => {
+  const submitGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.backendToken || !selectedAccount) return;
+    if (!session?.backendToken || !businessDescription.trim()) return;
     
-    setCreateLoading(true);
-    setCreateError("");
-    setCreateSuccess("");
-    
-    const keywords = formData.keywords_text.split('\n').map(k => k.trim()).filter(k => k.length > 0);
-    const validHeadlines = formData.headlines.map(h => h.trim()).filter(h => h.length > 0);
-    const validDescriptions = formData.descriptions.map(d => d.trim()).filter(d => d.length > 0);
-    
-    if (validHeadlines.length < 3) {
-      setCreateError("You must enter at least 3 headlines.");
-      setCreateLoading(false);
-      return;
-    }
-    if (validDescriptions.length < 2) {
-      setCreateError("You must enter at least 2 descriptions.");
-      setCreateLoading(false);
-      return;
-    }
-    if (keywords.length === 0) {
-      setCreateError("You must enter at least 1 keyword.");
-      setCreateLoading(false);
-      return;
-    }
+    setGenerateLoading(true);
+    setGenerateError("");
+    setGeneratedResult(null);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns?customer_id=${selectedAccount}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/generate`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${session.backendToken}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          campaign_name: formData.campaign_name,
-          daily_budget: formData.daily_budget,
-          final_url: formData.final_url,
-          keywords: keywords,
-          headlines: validHeadlines,
-          descriptions: validDescriptions
+          business_description: businessDescription
         })
       });
       
       if (res.ok) {
-        setCreateSuccess("Campaign successfully created. It will appear in the table shortly.");
-        setTimeout(() => {
-          setIsModalOpen(false);
-          setCreateSuccess("");
-          setFormData({
-            campaign_name: "",
-            daily_budget: 50,
-            final_url: "",
-            keywords_text: "",
-            headlines: ["", "", ""],
-            descriptions: ["", ""]
-          });
-          setLoading(true);
-          window.location.reload();
-        }, 2000);
+        const data = await res.json();
+        setGeneratedResult(data);
       } else {
         const errData = await res.json();
-        setCreateError(errData.detail || "Error creating campaign.");
+        setGenerateError(errData.detail || "Error generating campaign copy.");
       }
     } catch (err) {
-      setCreateError("Network error when creating campaign.");
+      setGenerateError("Network error when communicating with AI.");
     } finally {
-      setCreateLoading(false);
+      setGenerateLoading(false);
     }
   };
 
@@ -223,10 +160,14 @@ export default function ClientCampaigns() {
               ))}
             </select>
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setIsModalOpen(true);
+                setGeneratedResult(null);
+                setBusinessDescription("");
+              }}
               className="bg-neon-purple text-white px-5 py-3 rounded-lg font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2"
             >
-              <Plus size={18} /> Create Campaign
+              <Sparkles size={18} /> AI Campaign Generator
             </button>
           </div>
         )}
@@ -325,13 +266,15 @@ export default function ClientCampaigns() {
         </div>
       </div>
 
-      {/* CREATE CAMPAIGN MODAL */}
+      {/* CREATE CAMPAIGN AI MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-card border border-dark-card-border rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
+          <div className="bg-dark-card border border-dark-card-border rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
             
             <div className="px-6 py-4 border-b border-dark-card-border flex items-center justify-between bg-[#0B0E14]">
-              <h2 className="text-xl font-bold text-white">Create Search Campaign</h2>
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Sparkles className="text-neon-purple" size={24} /> AI Campaign Generator
+              </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
                 className="p-1.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -340,149 +283,157 @@ export default function ClientCampaigns() {
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto">
-              {createError && (
+            <div className="p-6 overflow-y-auto flex-1 bg-black/40">
+              {generateError && (
                 <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3">
-                  <AlertCircle size={20} /> {createError}
-                </div>
-              )}
-              {createSuccess && (
-                <div className="mb-6 p-4 bg-neon-green/10 border border-neon-green/30 text-neon-green rounded-xl flex items-center gap-3">
-                  <CheckCircle2 size={20} /> {createSuccess}
+                  <AlertCircle size={20} /> {generateError}
                 </div>
               )}
 
-              <form id="createCampaignForm" onSubmit={submitCampaign} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Campaign Name</label>
-                  <input 
-                    required 
-                    type="text" 
-                    name="campaign_name" 
-                    value={formData.campaign_name} 
-                    onChange={handleFormChange} 
-                    className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors" 
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1.5">Daily Budget (USD)</label>
-                    <input 
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Side: Prompt */}
+                <div className="space-y-4">
+                  <p className="text-gray-300 text-sm">
+                    Describe what you are selling or offering. Our AI will craft the perfect keywords, headlines, and descriptions tailored for Google Ads.
+                  </p>
+                  <form onSubmit={submitGenerate} className="space-y-4">
+                    <textarea 
                       required 
-                      type="number" 
-                      min="1" 
-                      step="0.01" 
-                      name="daily_budget" 
-                      value={formData.daily_budget} 
-                      onChange={handleFormChange} 
-                      className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors" 
+                      value={businessDescription}
+                      onChange={(e) => setBusinessDescription(e.target.value)}
+                      placeholder="Ej: Somos un despacho de abogados en Miami especializados en inmigración, asilos, visas de trabajo y residencias. Ofrecemos la primera consulta gratis..." 
+                      className="w-full bg-black/50 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors min-h-[160px] resize-y"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1.5">Final Landing URL</label>
-                    <input 
-                      required 
-                      type="url" 
-                      name="final_url" 
-                      placeholder="https://..." 
-                      value={formData.final_url} 
-                      onChange={handleFormChange} 
-                      className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors" 
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1.5">Keywords (one per line)</label>
-                  <textarea 
-                    required 
-                    name="keywords_text" 
-                    value={formData.keywords_text} 
-                    onChange={handleFormChange} 
-                    placeholder={"e.g.: buy shoes\nfashion shoes"} 
-                    className="w-full bg-black/20 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors min-h-[100px] resize-y" 
-                  />
-                </div>
-
-                <div className="bg-white/[0.02] border border-dark-card-border p-4 rounded-xl">
-                  <label className="block text-sm font-medium text-white mb-1">Ad Headlines</label>
-                  <p className="text-gray-500 text-xs mb-4">Min 3, Max 15. Maximum 30 characters each.</p>
-                  <div className="space-y-3">
-                    {formData.headlines.map((hl, i) => (
-                      <div key={`hl-${i}`} className="flex gap-2 items-center">
-                        <input 
-                          required={i < 3} 
-                          type="text" 
-                          maxLength={30} 
-                          value={hl} 
-                          onChange={(e) => handleArrayChange('headlines', i, e.target.value)} 
-                          placeholder={`Headline ${i + 1}`} 
-                          className="flex-1 bg-black/20 border border-dark-card-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-purple transition-colors text-sm" 
-                        />
-                        {i >= 3 && (
-                          <button type="button" onClick={() => removeArrayItem('headlines', i)} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors">
-                            <X size={18} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {formData.headlines.length < 15 && (
-                    <button type="button" onClick={() => addArrayItem('headlines')} className="mt-4 text-neon-purple text-sm font-medium hover:underline flex items-center gap-1">
-                      <Plus size={16} /> Add Headline
+                    <button 
+                      type="submit" 
+                      disabled={generateLoading || !businessDescription.trim()} 
+                      className="w-full px-6 py-3 bg-neon-purple text-white rounded-xl font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {generateLoading ? (
+                        <><Activity size={18} className="animate-spin" /> Generating...</>
+                      ) : (
+                        <><Sparkles size={18} /> Generate Campaign Copy</>
+                      )}
                     </button>
+                  </form>
+                </div>
+
+                {/* Right Side: Results */}
+                <div className="bg-dark-card border border-dark-card-border rounded-xl p-5 overflow-y-auto max-h-[500px]">
+                  {!generatedResult && !generateLoading && (
+                    <div className="h-full flex flex-col items-center justify-center text-gray-500 min-h-[200px]">
+                      <Sparkles size={32} className="opacity-30 mb-3" />
+                      <p>Your generated copy will appear here.</p>
+                    </div>
+                  )}
+                  {generateLoading && (
+                    <div className="h-full flex flex-col items-center justify-center text-neon-purple min-h-[200px]">
+                      <Activity size={32} className="animate-spin mb-3" />
+                      <p>Crafting high-converting ad copy...</p>
+                    </div>
+                  )}
+                  {generatedResult && !generateLoading && (
+                    <div className="space-y-6 animate-fade-in-up">
+                      
+                      {/* Campaign Name */}
+                      <div>
+                        <div className="flex justify-between items-end mb-2">
+                          <label className="block text-sm font-semibold text-neon-purple">Campaign Name</label>
+                          <button onClick={() => copyToClipboard(generatedResult.campaign_name)} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
+                            <Copy size={14} /> Copy
+                          </button>
+                        </div>
+                        <div className="bg-black/30 p-3 rounded-lg border border-white/5 text-white font-medium">
+                          {generatedResult.campaign_name}
+                        </div>
+                      </div>
+
+                      {/* Keywords */}
+                      <div>
+                        <div className="flex justify-between items-end mb-2">
+                          <label className="block text-sm font-semibold text-neon-purple">Keywords ({generatedResult.keywords.length})</label>
+                          <button onClick={() => copyToClipboard(generatedResult.keywords.join("\n"))} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
+                            <Copy size={14} /> Copy All
+                          </button>
+                        </div>
+                        <div className="bg-black/30 p-4 rounded-lg border border-white/5 text-gray-300 text-sm max-h-40 overflow-y-auto whitespace-pre-wrap font-mono">
+                          {generatedResult.keywords.join("\n")}
+                        </div>
+                      </div>
+
+                      {/* Headlines */}
+                      <div>
+                        <div className="flex justify-between items-end mb-2">
+                          <label className="block text-sm font-semibold text-neon-purple">Headlines (Max 30 chars)</label>
+                          <button onClick={() => copyToClipboard(generatedResult.headlines.join("\n"))} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
+                            <Copy size={14} /> Copy All
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          {generatedResult.headlines.map((hl, i) => (
+                            <div key={i} className="flex justify-between items-center bg-black/30 p-2.5 rounded-lg border border-white/5 group">
+                              <span className="text-white text-sm">{hl}</span>
+                              <div className="flex items-center gap-3">
+                                <span className={`text-xs ${hl.length > 30 ? 'text-red-400' : 'text-gray-500'}`}>{hl.length}/30</span>
+                                <button onClick={() => copyToClipboard(hl)} className="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition-all">
+                                  <Copy size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Descriptions */}
+                      <div>
+                        <div className="flex justify-between items-end mb-2">
+                          <label className="block text-sm font-semibold text-neon-purple">Descriptions (Max 90 chars)</label>
+                          <button onClick={() => copyToClipboard(generatedResult.descriptions.join("\n"))} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
+                            <Copy size={14} /> Copy All
+                          </button>
+                        </div>
+                        <div className="space-y-2">
+                          {generatedResult.descriptions.map((desc, i) => (
+                            <div key={i} className="flex justify-between items-center bg-black/30 p-2.5 rounded-lg border border-white/5 group">
+                              <span className="text-white text-sm">{desc}</span>
+                              <div className="flex items-center gap-3 min-w-max ml-2">
+                                <span className={`text-xs ${desc.length > 90 ? 'text-red-400' : 'text-gray-500'}`}>{desc.length}/90</span>
+                                <button onClick={() => copyToClipboard(desc)} className="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition-all">
+                                  <Copy size={14} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                    </div>
                   )}
                 </div>
+              </div>
 
-                <div className="bg-white/[0.02] border border-dark-card-border p-4 rounded-xl">
-                  <label className="block text-sm font-medium text-white mb-1">Ad Descriptions</label>
-                  <p className="text-gray-500 text-xs mb-4">Min 2, Max 4. Maximum 90 characters each.</p>
-                  <div className="space-y-3">
-                    {formData.descriptions.map((desc, i) => (
-                      <div key={`desc-${i}`} className="flex gap-2 items-center">
-                        <input 
-                          required={i < 2} 
-                          type="text" 
-                          maxLength={90} 
-                          value={desc} 
-                          onChange={(e) => handleArrayChange('descriptions', i, e.target.value)} 
-                          placeholder={`Description ${i + 1}`} 
-                          className="flex-1 bg-black/20 border border-dark-card-border rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-neon-purple transition-colors text-sm" 
-                        />
-                        {i >= 2 && (
-                          <button type="button" onClick={() => removeArrayItem('descriptions', i)} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors">
-                            <X size={18} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {formData.descriptions.length < 4 && (
-                    <button type="button" onClick={() => addArrayItem('descriptions')} className="mt-4 text-neon-purple text-sm font-medium hover:underline flex items-center gap-1">
-                      <Plus size={16} /> Add Description
-                    </button>
-                  )}
-                </div>
-              </form>
             </div>
 
-            <div className="px-6 py-4 border-t border-dark-card-border flex flex-col sm:flex-row justify-end gap-3 bg-[#0B0E14]">
-              <button 
-                type="button" 
-                onClick={() => setIsModalOpen(false)} 
-                className="px-6 py-2.5 border border-dark-card-border rounded-xl text-gray-300 font-medium hover:bg-white/5 transition-colors w-full sm:w-auto"
-              >
-                Cancel
-              </button>
-              <button 
-                type="submit" 
-                form="createCampaignForm"
-                disabled={createLoading} 
-                className="px-6 py-2.5 bg-neon-purple text-white rounded-xl font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 w-full sm:w-auto flex items-center justify-center"
-              >
-                {createLoading ? "Creating..." : "Create (Starts Paused)"}
-              </button>
+            <div className="px-6 py-4 border-t border-dark-card-border flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#0B0E14]">
+              <p className="text-gray-400 text-sm">
+                Once generated, copy these into your Google Ads Manager.
+              </p>
+              <div className="flex gap-3 w-full sm:w-auto">
+                <button 
+                  onClick={() => setIsModalOpen(false)} 
+                  className="px-6 py-2.5 border border-dark-card-border rounded-xl text-gray-300 font-medium hover:bg-white/5 transition-colors w-full sm:w-auto"
+                >
+                  Close
+                </button>
+                <a 
+                  href="https://ads.google.com/aw/campaigns" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors shadow-[0_0_15px_rgba(37,99,235,0.3)] flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  Open Google Ads <ExternalLink size={16} />
+                </a>
+              </div>
             </div>
             
           </div>

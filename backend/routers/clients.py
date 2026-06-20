@@ -82,60 +82,21 @@ async def get_my_campaigns(
             return []
         raise HTTPException(status_code=500, detail=f"Google Ads error: {type(e).__name__} - {str(e)}")
 
-from schemas import CreateCampaignRequest
-from services.google_ads_service import create_full_search_campaign
+from schemas import GenerateCampaignCopyRequest, GenerateCampaignCopyResponse
+from services.ai_service import generate_campaign_copy
 
-@router.post("/me/campaigns")
-async def create_my_campaign(
-    request: CreateCampaignRequest,
-    customer_id: str,
+@router.post("/me/campaigns/generate", response_model=GenerateCampaignCopyResponse)
+async def generate_my_campaign_copy(
+    request: GenerateCampaignCopyRequest,
     user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
 ):
     """
-    Creates a new Search campaign for the given customer_id.
+    Generates optimized Google Ads campaign copy using Gemini AI.
+    Does not interact with Google Ads API.
     """
-    result = await db.execute(
-        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
-    )
-    creds = result.scalars().all()
-    if not creds:
-        raise HTTPException(status_code=400, detail="No tienes cuentas conectadas.")
-
-    selected_cred = None
-    for c in creds:
-        try:
-            target = decrypt_value(c.target_customer_id)
-            if target == customer_id or target.replace("-", "") == customer_id.replace("-", ""):
-                selected_cred = c
-                break
-        except:
-            pass
-
-    # Custom CPA is now available to all users (Ad Spend gated)
-
-    if not selected_cred:
-        raise HTTPException(status_code=404, detail="Customer ID not found in your connected accounts")
-
     try:
-        refresh_token = decrypt_value(selected_cred.refresh_token)
-        login = decrypt_value(selected_cred.login_customer_id)
-        
-        client = get_google_ads_client(refresh_token, login)
-        
-        # Build the config dict for the service
-        config = {
-            "campaign_name": request.campaign_name,
-            "daily_budget": request.daily_budget,
-            "keywords": request.keywords,
-            "headlines": request.headlines,
-            "descriptions": request.descriptions,
-            "final_url": request.final_url
-        }
-        if request.target_cpa:
-            config["target_cpa"] = request.target_cpa
-        
-        result = create_full_search_campaign(client, target, config)
+        import asyncio
+        result = await asyncio.to_thread(generate_campaign_copy, request.business_description)
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
