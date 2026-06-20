@@ -35,3 +35,4 @@
 - [x] Integrated Google Ads Conversion Pixel generation with Backend GAQL logic and Frontend Modal UI.
 - [x] Rebranding to GMaker, CORS domain updates, and SEO metadata update.
 - [x] Refined Landing Page copy for Immigration Lawyers ICP and reinforced Legal Pages (Terms, Privacy, Refunds) to mitigate liability.
+- [x] Translated and refined the English landing page copy to specifically target US Immigration Law Firms.
