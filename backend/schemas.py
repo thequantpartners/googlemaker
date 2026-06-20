@@ -114,3 +114,15 @@ class CreateCampaignRequest(BaseModel):
     descriptions: list[str] = Field(..., min_length=2, max_length=4, description="Descripciones (2-4, max 90 chars c/u)")
     final_url: str = Field(..., min_length=1, description="URL de destino del anuncio")
     target_cpa: float | None = Field(None, gt=0, description="CPA objetivo en USD (Requiere plan Growth)")
+
+class CampaignActionRequest(BaseModel):
+    action: str  # "PAUSAR" (and later "ACTIVAR", "AUMENTAR_PRESUPUESTO")
+
+class GenerateCampaignCopyRequest(BaseModel):
+    business_description: str
+    
+class GenerateCampaignCopyResponse(BaseModel):
+    campaign_name: str
+    keywords: list[str]
+    headlines: list[str]
+    descriptions: list[str]
