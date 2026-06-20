@@ -71,7 +71,7 @@ export default function ClientCampaigns() {
         body: JSON.stringify({
           url: websiteUrl,
           competitors: competitors || null,
-          campaign_type: campaignType
+          campaign_type: "Search"
         })
       });
       
@@ -170,7 +170,7 @@ export default function ClientCampaigns() {
             </select>
             <button 
               onClick={() => {
-                setWizardStep(1);
+                setWizardStep(2);
                 setWebsiteUrl("");
                 setCompetitors("");
                 setIsModalOpen(true);
@@ -317,51 +317,9 @@ export default function ClientCampaigns() {
                 </div>
               )}
 
-              {/* Step 1: Campaign Type */}
-              {wizardStep === 1 && (
-                <div className="space-y-6 animate-fade-in-up">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-white mb-2">What's your goal today?</h3>
-                    <p className="text-gray-400">Select the type of Google Ads campaign you want to run.</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button 
-                      onClick={() => setCampaignType("Search")}
-                      className={`p-6 rounded-2xl border text-left transition-all ${campaignType === 'Search' ? 'border-neon-purple bg-neon-purple/10 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}
-                    >
-                      <Search className={campaignType === 'Search' ? 'text-neon-purple mb-4' : 'text-gray-400 mb-4'} size={32} />
-                      <h4 className="text-lg font-bold text-white mb-1">Search Campaign</h4>
-                      <p className="text-sm text-gray-400">Appear on Google Search results when people look for your services.</p>
-                    </button>
-                    
-                    <button 
-                      onClick={() => setCampaignType("Performance Max")}
-                      className={`p-6 rounded-2xl border text-left transition-all ${campaignType === 'Performance Max' ? 'border-neon-purple bg-neon-purple/10 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}
-                    >
-                      <Target className={campaignType === 'Performance Max' ? 'text-neon-purple mb-4' : 'text-gray-400 mb-4'} size={32} />
-                      <h4 className="text-lg font-bold text-white mb-1">Performance Max</h4>
-                      <p className="text-sm text-gray-400">Reach audiences across all of Google's channels from a single campaign.</p>
-                    </button>
-                  </div>
-
-                  <div className="flex justify-end mt-8">
-                    <button 
-                      onClick={() => setWizardStep(2)}
-                      className="px-6 py-3 bg-white text-black rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
-                    >
-                      Next Step <ChevronRight size={18} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Step 2: Details */}
               {wizardStep === 2 && (
                 <div className="space-y-6 animate-fade-in-up">
-                  <div className="mb-6 flex items-center gap-4 cursor-pointer text-gray-400 hover:text-white transition-colors w-max" onClick={() => setWizardStep(1)}>
-                    <ChevronLeft size={20} /> Back
-                  </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Let the AI analyze your business</h3>
                   <p className="text-gray-400 mb-6">We will scrape your website to understand your unique selling propositions and analyze your competitors to steal their traffic.</p>
                   
@@ -424,8 +382,8 @@ export default function ClientCampaigns() {
               {wizardStep === 4 && generatedResult && (
                 <div className="space-y-6 animate-fade-in-up">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-2xl font-bold text-white">Your {campaignType} Strategy is ready</h3>
-                    <button onClick={() => setWizardStep(1)} className="text-sm text-neon-purple hover:underline">Start Over</button>
+                    <h3 className="text-2xl font-bold text-white">Your Search Strategy is ready</h3>
+                    <button onClick={() => setWizardStep(2)} className="text-sm text-neon-purple hover:underline">Start Over</button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
