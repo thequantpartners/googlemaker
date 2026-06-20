@@ -22,9 +22,11 @@ def get_google_ads_client(refresh_token: str, login_customer_id: str) -> GoogleA
         
     return GoogleAdsClient.load_from_dict(credentials)
 
-def fetch_accessible_customers(refresh_token: str) -> list[str]:
+def fetch_accessible_customers(refresh_token: str) -> list[dict]:
     """
     Fetch accessible customers for a given refresh token.
+    Returns a list of dicts containing login_customer_id and target_customer_id
+    to properly handle MCC (Manager) accounts.
     """
     credentials = {
         "developer_token": os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN", ""),
@@ -36,7 +38,48 @@ def fetch_accessible_customers(refresh_token: str) -> list[str]:
     client = GoogleAdsClient.load_from_dict(credentials)
     customer_service = client.get_service("CustomerService")
     response = customer_service.list_accessible_customers()
-    return [resource_name.split("/")[-1] for resource_name in response.resource_names]
+    accessible_ids = [resource_name.split("/")[-1] for resource_name in response.resource_names]
+    
+    valid_accounts = []
+    
+    for login_id in accessible_ids:
+        try:
+            creds_with_login = credentials.copy()
+            creds_with_login["login_customer_id"] = login_id
+            client_with_login = GoogleAdsClient.load_from_dict(creds_with_login)
+            ga_service = client_with_login.get_service("GoogleAdsService")
+            
+            # Query all linked clients (this includes the manager itself if it's in the hierarchy)
+            query = """
+                SELECT customer_client.id, customer_client.manager 
+                FROM customer_client 
+                WHERE customer_client.status = 'ENABLED'
+            """
+            search_response = ga_service.search(customer_id=login_id, query=query)
+            for row in search_response:
+                # We only want leaf accounts (non-managers) to fetch metrics
+                if not row.customer_client.manager:
+                    valid_accounts.append({
+                        "login_customer_id": login_id,
+                        "target_customer_id": str(row.customer_client.id)
+                    })
+        except Exception as e:
+            print(f"Failed to query hierarchy for {login_id}: {e}")
+            # Fallback: just add the accessible_id itself if we can't query hierarchy
+            valid_accounts.append({
+                "login_customer_id": login_id,
+                "target_customer_id": login_id
+            })
+            
+    # Remove duplicates based on target_customer_id to avoid creating duplicate credentials
+    seen_targets = set()
+    unique_accounts = []
+    for acc in valid_accounts:
+        if acc["target_customer_id"] not in seen_targets:
+            seen_targets.add(acc["target_customer_id"])
+            unique_accounts.append(acc)
+            
+    return unique_accounts
 
 def fetch_campaign_metrics(client: GoogleAdsClient, target_customer_id: str) -> list[dict]:
     """

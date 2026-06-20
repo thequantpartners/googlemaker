@@ -147,27 +147,48 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
         accessible_customers = fetch_accessible_customers(refresh_token)
         if not accessible_customers:
             raise ValueError("NO_ADS_ACCOUNTS")
-        initial_customer_id = accessible_customers[0]
     except Exception as ex:
         frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
         error_str = str(ex)
         if "NOT_ADS_USER" in error_str or "NO_ADS_ACCOUNTS" in error_str:
-            error_msg = "Esta cuenta de Google no tiene cuentas de Google Ads asociadas. Crea una cuenta en ads.google.com o usa otra cuenta."
+            error_msg = "Esta cuenta de Google no tiene cuentas de Google Ads asociadas o accesibles. Crea una cuenta en ads.google.com o usa otra cuenta."
         else:
             error_msg = f"Error al conectar Google Ads: {error_str[:200]}"
         return RedirectResponse(f"{frontend_url}/dashboard?connected=error&message={urllib.parse.quote(error_msg)}")
 
-    cred = GoogleAdsCredential(
-        user_id=user.id,
-        developer_token="",  # Handled by system env variables now
-        oauth_client_id="",
-        oauth_client_secret="",
-        refresh_token=encrypt_value(refresh_token),
-        login_customer_id=encrypt_value(initial_customer_id),
-        target_customer_id=encrypt_value(initial_customer_id),
-        is_verified=True,
+    # Get existing credentials for this user to avoid duplicates
+    existing_creds_result = await db.execute(
+        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
     )
-    db.add(cred)
+    existing_creds = existing_creds_result.scalars().all()
+    existing_targets = set()
+    for c in existing_creds:
+        try:
+            existing_targets.add(decrypt_value(c.target_customer_id))
+        except:
+            pass
+
+    # Insert new leaf accounts
+    added_count = 0
+    for acc in accessible_customers:
+        target_id = acc["target_customer_id"]
+        login_id = acc["login_customer_id"]
+        
+        if target_id not in existing_targets:
+            cred = GoogleAdsCredential(
+                user_id=user.id,
+                developer_token="",  # Handled by system env variables now
+                oauth_client_id="",
+                oauth_client_secret="",
+                refresh_token=encrypt_value(refresh_token),
+                login_customer_id=encrypt_value(login_id),
+                target_customer_id=encrypt_value(target_id),
+                is_verified=True,
+            )
+            db.add(cred)
+            existing_targets.add(target_id)
+            added_count += 1
+
     await db.commit()
 
     # Redirect back to the frontend dashboard
