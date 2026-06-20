@@ -206,10 +206,6 @@ def _create_search_campaign(client: GoogleAdsClient, customer_id: str,
     campaign.network_settings.target_content_network = False
     campaign.network_settings.target_partner_search_network = False
 
-    # Start tomorrow
-    start_date = datetime.date.today() + datetime.timedelta(days=1)
-    campaign.start_date = start_date.strftime("%Y-%m-%d")
-
     response = campaign_service.mutate_campaigns(
         customer_id=customer_id, operations=[campaign_operation]
     )
