@@ -79,7 +79,7 @@ export default function StepItem({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-        ) : isCurrent && actionText && actionHref ? (
+        ) : !isCompleted && actionText && actionHref ? (
           <Link
             href={actionHref}
             className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 bg-[#9F83F0] rounded-lg hover:bg-[#8B6CE0] hover:shadow-[0_4px_14px_rgba(159,131,240,0.39)] focus:outline-none focus:ring-2 focus:ring-[#9F83F0] focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0"
