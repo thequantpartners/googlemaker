@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Search, Play, TrendingUp, ShieldCheck, Copy, ArrowRight, PlayCircle, Globe, CheckCircle2, ChevronDown, Zap, BarChart3, Clock, Menu, X } from "lucide-react";
 import PricingCards from "./components/PricingCards";
-import { AnimatedTestimonials } from "./components/ui/animated-testimonials";
+import { AnimatedTestimonials } from "../components/ui/animated-testimonials";
 
 const translations = {
   en: {
