@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles } from "lucide-react";
+import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles, Target, Globe, ChevronRight, ChevronLeft, Lightbulb } from "lucide-react";
 
 interface ConnectedAccount {
   id: string;
@@ -37,22 +37,26 @@ export default function ClientCampaigns() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Modal State
+  // AI Wizard State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [wizardStep, setWizardStep] = useState(1);
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState("");
-  const [businessDescription, setBusinessDescription] = useState("");
+  
+  // Wizard Inputs
+  const [campaignType, setCampaignType] = useState("Search");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [competitors, setCompetitors] = useState("");
   const [generatedResult, setGeneratedResult] = useState<GeneratedCopy | null>(null);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    // Could add a toast here in the future
   };
 
-  const submitGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!session?.backendToken || !businessDescription.trim()) return;
+  const submitGenerate = async () => {
+    if (!session?.backendToken || !websiteUrl.trim()) return;
     
+    setWizardStep(3); // Loading step
     setGenerateLoading(true);
     setGenerateError("");
     setGeneratedResult(null);
@@ -65,19 +69,24 @@ export default function ClientCampaigns() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          business_description: businessDescription
+          url: websiteUrl,
+          competitors: competitors || null,
+          campaign_type: campaignType
         })
       });
       
       if (res.ok) {
         const data = await res.json();
         setGeneratedResult(data);
+        setWizardStep(4); // Results step
       } else {
         const errData = await res.json();
         setGenerateError(errData.detail || "Error generating campaign copy.");
+        setWizardStep(2); // Go back on error
       }
     } catch (err) {
       setGenerateError("Network error when communicating with AI.");
+      setWizardStep(2); // Go back on error
     } finally {
       setGenerateLoading(false);
     }
@@ -161,9 +170,12 @@ export default function ClientCampaigns() {
             </select>
             <button 
               onClick={() => {
+                setWizardStep(1);
+                setWebsiteUrl("");
+                setCompetitors("");
                 setIsModalOpen(true);
                 setGeneratedResult(null);
-                setBusinessDescription("");
+                setGenerateError("");
               }}
               className="bg-neon-purple text-white px-5 py-3 rounded-lg font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2"
             >
@@ -266,14 +278,29 @@ export default function ClientCampaigns() {
         </div>
       </div>
 
-      {/* CREATE CAMPAIGN AI MODAL */}
+      {/* Recommendations Block */}
+      {campaigns.length > 0 && (
+        <div className="bg-gradient-to-r from-neon-purple/10 to-blue-500/10 border border-neon-purple/20 p-6 rounded-2xl flex items-start gap-4">
+          <Lightbulb className="text-neon-purple shrink-0 mt-1" size={28} />
+          <div>
+            <h3 className="text-lg font-bold text-white mb-2">GMaker Recommendations</h3>
+            <ul className="list-disc list-inside text-gray-300 space-y-2 text-sm">
+              <li><strong>Track Conversions:</strong> Make sure you have installed the Google Tag (gtag.js) on your website to accurately track conversions. Without it, our autopilot cannot optimize effectively.</li>
+              <li><strong>Sitelink Extensions:</strong> Add at least 4 sitelink extensions to your campaigns in Google Ads to improve your ad's real estate on search results and increase CTR.</li>
+              <li><strong>Autopilot:</strong> Our orchestrator will automatically monitor your campaigns every hour and pause them if the CPA exceeds your limits. Sit back and relax!</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE CAMPAIGN AI WIZARD MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-dark-card border border-dark-card-border rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0B0E14] border border-dark-card-border rounded-2xl w-full max-w-3xl shadow-[0_0_50px_rgba(168,85,247,0.15)] overflow-hidden animate-fade-in-up flex flex-col max-h-[90vh]">
             
-            <div className="px-6 py-4 border-b border-dark-card-border flex items-center justify-between bg-[#0B0E14]">
+            <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Sparkles className="text-neon-purple" size={24} /> AI Campaign Generator
+                <Sparkles className="text-neon-purple" size={24} /> AI Marketing Strategist
               </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
@@ -283,62 +310,131 @@ export default function ClientCampaigns() {
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto flex-1 bg-black/40">
+            <div className="p-8 overflow-y-auto flex-1">
               {generateError && (
-                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3">
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3 animate-pulse">
                   <AlertCircle size={20} /> {generateError}
                 </div>
               )}
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Left Side: Prompt */}
-                <div className="space-y-4">
-                  <p className="text-gray-300 text-sm">
-                    Describe what you are selling or offering. Our AI will craft the perfect keywords, headlines, and descriptions tailored for Google Ads.
-                  </p>
-                  <form onSubmit={submitGenerate} className="space-y-4">
-                    <textarea 
-                      required 
-                      value={businessDescription}
-                      onChange={(e) => setBusinessDescription(e.target.value)}
-                      placeholder="Ej: Somos un despacho de abogados en Miami especializados en inmigración, asilos, visas de trabajo y residencias. Ofrecemos la primera consulta gratis..." 
-                      className="w-full bg-black/50 border border-dark-card-border rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors min-h-[160px] resize-y"
-                    />
+              {/* Step 1: Campaign Type */}
+              {wizardStep === 1 && (
+                <div className="space-y-6 animate-fade-in-up">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-white mb-2">What's your goal today?</h3>
+                    <p className="text-gray-400">Select the type of Google Ads campaign you want to run.</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <button 
-                      type="submit" 
-                      disabled={generateLoading || !businessDescription.trim()} 
-                      className="w-full px-6 py-3 bg-neon-purple text-white rounded-xl font-medium hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
+                      onClick={() => setCampaignType("Search")}
+                      className={`p-6 rounded-2xl border text-left transition-all ${campaignType === 'Search' ? 'border-neon-purple bg-neon-purple/10 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}
                     >
-                      {generateLoading ? (
-                        <><Activity size={18} className="animate-spin" /> Generating...</>
-                      ) : (
-                        <><Sparkles size={18} /> Generate Campaign Copy</>
-                      )}
+                      <Search className={campaignType === 'Search' ? 'text-neon-purple mb-4' : 'text-gray-400 mb-4'} size={32} />
+                      <h4 className="text-lg font-bold text-white mb-1">Search Campaign</h4>
+                      <p className="text-sm text-gray-400">Appear on Google Search results when people look for your services.</p>
                     </button>
-                  </form>
-                </div>
+                    
+                    <button 
+                      onClick={() => setCampaignType("Performance Max")}
+                      className={`p-6 rounded-2xl border text-left transition-all ${campaignType === 'Performance Max' ? 'border-neon-purple bg-neon-purple/10 shadow-[0_0_20px_rgba(168,85,247,0.2)]' : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'}`}
+                    >
+                      <Target className={campaignType === 'Performance Max' ? 'text-neon-purple mb-4' : 'text-gray-400 mb-4'} size={32} />
+                      <h4 className="text-lg font-bold text-white mb-1">Performance Max</h4>
+                      <p className="text-sm text-gray-400">Reach audiences across all of Google's channels from a single campaign.</p>
+                    </button>
+                  </div>
 
-                {/* Right Side: Results */}
-                <div className="bg-dark-card border border-dark-card-border rounded-xl p-5 overflow-y-auto max-h-[500px]">
-                  {!generatedResult && !generateLoading && (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-500 min-h-[200px]">
-                      <Sparkles size={32} className="opacity-30 mb-3" />
-                      <p>Your generated copy will appear here.</p>
+                  <div className="flex justify-end mt-8">
+                    <button 
+                      onClick={() => setWizardStep(2)}
+                      className="px-6 py-3 bg-white text-black rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
+                    >
+                      Next Step <ChevronRight size={18} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Details */}
+              {wizardStep === 2 && (
+                <div className="space-y-6 animate-fade-in-up">
+                  <div className="mb-6 flex items-center gap-4 cursor-pointer text-gray-400 hover:text-white transition-colors w-max" onClick={() => setWizardStep(1)}>
+                    <ChevronLeft size={20} /> Back
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Let the AI analyze your business</h3>
+                  <p className="text-gray-400 mb-6">We will scrape your website to understand your unique selling propositions and analyze your competitors to steal their traffic.</p>
+                  
+                  <div className="space-y-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                        <Globe size={16} className="text-neon-purple"/> Your Website URL <span className="text-red-500">*</span>
+                      </label>
+                      <input 
+                        type="url"
+                        required
+                        value={websiteUrl}
+                        onChange={(e) => setWebsiteUrl(e.target.value)}
+                        placeholder="https://mybusiness.com" 
+                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors"
+                      />
                     </div>
-                  )}
-                  {generateLoading && (
-                    <div className="h-full flex flex-col items-center justify-center text-neon-purple min-h-[200px]">
-                      <Activity size={32} className="animate-spin mb-3" />
-                      <p>Crafting high-converting ad copy...</p>
+                    
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                        <Target size={16} className="text-neon-purple"/> Competitors to target (Optional)
+                      </label>
+                      <textarea 
+                        value={competitors}
+                        onChange={(e) => setCompetitors(e.target.value)}
+                        placeholder="e.g., LegalZoom, local law firms, etc." 
+                        className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon-purple transition-colors min-h-[100px] resize-y"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        💡 Growth Hack: We will use your competitors' names as keywords to show your ads when people search for them.
+                      </p>
                     </div>
-                  )}
-                  {generatedResult && !generateLoading && (
-                    <div className="space-y-6 animate-fade-in-up">
-                      
+                  </div>
+
+                  <div className="flex justify-end mt-8">
+                    <button 
+                      onClick={submitGenerate}
+                      disabled={!websiteUrl.trim()}
+                      className="px-6 py-3 bg-neon-purple text-white rounded-xl font-bold hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <Sparkles size={18} /> Generate Strategy
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Loading */}
+              {wizardStep === 3 && (
+                <div className="flex flex-col items-center justify-center py-20 animate-fade-in-up">
+                  <div className="relative">
+                    <div className="w-20 h-20 border-4 border-neon-purple/20 border-t-neon-purple rounded-full animate-spin"></div>
+                    <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-neon-purple animate-pulse" size={24} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mt-8 mb-2">Scraping website & analyzing competitors...</h3>
+                  <p className="text-gray-400 text-center max-w-md">Our AI is reading your content, extracting your Unique Selling Propositions, and crafting high-converting ad copy.</p>
+                </div>
+              )}
+
+              {/* Step 4: Results */}
+              {wizardStep === 4 && generatedResult && (
+                <div className="space-y-6 animate-fade-in-up">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-2xl font-bold text-white">Your {campaignType} Strategy is ready</h3>
+                    <button onClick={() => setWizardStep(1)} className="text-sm text-neon-purple hover:underline">Start Over</button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div className="space-y-6">
                       {/* Campaign Name */}
                       <div>
                         <div className="flex justify-between items-end mb-2">
-                          <label className="block text-sm font-semibold text-neon-purple">Campaign Name</label>
+                          <label className="block text-sm font-semibold text-gray-300">Campaign Name</label>
                           <button onClick={() => copyToClipboard(generatedResult.campaign_name)} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
                             <Copy size={14} /> Copy
                           </button>
@@ -351,25 +447,28 @@ export default function ClientCampaigns() {
                       {/* Keywords */}
                       <div>
                         <div className="flex justify-between items-end mb-2">
-                          <label className="block text-sm font-semibold text-neon-purple">Keywords ({generatedResult.keywords.length})</label>
+                          <label className="block text-sm font-semibold text-gray-300">Keywords ({generatedResult.keywords.length})</label>
                           <button onClick={() => copyToClipboard(generatedResult.keywords.join("\n"))} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
                             <Copy size={14} /> Copy All
                           </button>
                         </div>
-                        <div className="bg-black/30 p-4 rounded-lg border border-white/5 text-gray-300 text-sm max-h-40 overflow-y-auto whitespace-pre-wrap font-mono">
+                        <div className="bg-black/30 p-4 rounded-lg border border-white/5 text-gray-300 text-sm h-[200px] overflow-y-auto whitespace-pre-wrap font-mono relative group">
                           {generatedResult.keywords.join("\n")}
                         </div>
                       </div>
+                    </div>
 
+                    {/* Right Column */}
+                    <div className="space-y-6">
                       {/* Headlines */}
                       <div>
                         <div className="flex justify-between items-end mb-2">
-                          <label className="block text-sm font-semibold text-neon-purple">Headlines (Max 30 chars)</label>
+                          <label className="block text-sm font-semibold text-gray-300">Headlines (Max 30 chars)</label>
                           <button onClick={() => copyToClipboard(generatedResult.headlines.join("\n"))} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
                             <Copy size={14} /> Copy All
                           </button>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-h-[120px] overflow-y-auto pr-2">
                           {generatedResult.headlines.map((hl, i) => (
                             <div key={i} className="flex justify-between items-center bg-black/30 p-2.5 rounded-lg border border-white/5 group">
                               <span className="text-white text-sm">{hl}</span>
@@ -387,12 +486,12 @@ export default function ClientCampaigns() {
                       {/* Descriptions */}
                       <div>
                         <div className="flex justify-between items-end mb-2">
-                          <label className="block text-sm font-semibold text-neon-purple">Descriptions (Max 90 chars)</label>
+                          <label className="block text-sm font-semibold text-gray-300">Descriptions (Max 90 chars)</label>
                           <button onClick={() => copyToClipboard(generatedResult.descriptions.join("\n"))} className="text-gray-400 hover:text-white transition-colors flex items-center gap-1 text-xs">
                             <Copy size={14} /> Copy All
                           </button>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-h-[140px] overflow-y-auto pr-2">
                           {generatedResult.descriptions.map((desc, i) => (
                             <div key={i} className="flex justify-between items-center bg-black/30 p-2.5 rounded-lg border border-white/5 group">
                               <span className="text-white text-sm">{desc}</span>
@@ -406,35 +505,37 @@ export default function ClientCampaigns() {
                           ))}
                         </div>
                       </div>
-
                     </div>
-                  )}
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Footer */}
+            {wizardStep === 4 && (
+              <div className="px-8 py-5 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 bg-black/30">
+                <p className="text-gray-400 text-sm flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-neon-green" /> Copy generated successfully
+                </p>
+                <div className="flex gap-3 w-full sm:w-auto">
+                  <button 
+                    onClick={() => setIsModalOpen(false)} 
+                    className="px-6 py-2.5 border border-white/10 rounded-xl text-gray-300 font-medium hover:bg-white/5 transition-colors w-full sm:w-auto"
+                  >
+                    Close
+                  </button>
+                  <a 
+                    href="https://ads.google.com/aw/campaigns" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2.5 bg-neon-purple text-white rounded-xl font-bold hover:bg-neon-purple/90 transition-colors shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2 w-full sm:w-auto"
+                  >
+                    Open Google Ads <ExternalLink size={16} />
+                  </a>
                 </div>
               </div>
-
-            </div>
-
-            <div className="px-6 py-4 border-t border-dark-card-border flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#0B0E14]">
-              <p className="text-gray-400 text-sm">
-                Once generated, copy these into your Google Ads Manager.
-              </p>
-              <div className="flex gap-3 w-full sm:w-auto">
-                <button 
-                  onClick={() => setIsModalOpen(false)} 
-                  className="px-6 py-2.5 border border-dark-card-border rounded-xl text-gray-300 font-medium hover:bg-white/5 transition-colors w-full sm:w-auto"
-                >
-                  Close
-                </button>
-                <a 
-                  href="https://ads.google.com/aw/campaigns" 
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors shadow-[0_0_15px_rgba(37,99,235,0.3)] flex items-center justify-center gap-2 w-full sm:w-auto"
-                >
-                  Open Google Ads <ExternalLink size={16} />
-                </a>
-              </div>
-            </div>
+            )}
             
           </div>
         </div>

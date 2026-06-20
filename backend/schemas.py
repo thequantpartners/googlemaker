@@ -119,7 +119,9 @@ class CampaignActionRequest(BaseModel):
     action: str  # "PAUSAR" (and later "ACTIVAR", "AUMENTAR_PRESUPUESTO")
 
 class GenerateCampaignCopyRequest(BaseModel):
-    business_description: str
+    url: str
+    competitors: str | None = None
+    campaign_type: str = "Search"
     
 class GenerateCampaignCopyResponse(BaseModel):
     campaign_name: str

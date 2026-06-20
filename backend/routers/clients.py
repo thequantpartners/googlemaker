@@ -95,8 +95,11 @@ async def generate_my_campaign_copy(
     Does not interact with Google Ads API.
     """
     try:
-        import asyncio
-        result = await asyncio.to_thread(generate_campaign_copy, request.business_description)
+        result = await generate_campaign_copy(
+            url=request.url,
+            competitors=request.competitors,
+            campaign_type=request.campaign_type
+        )
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
