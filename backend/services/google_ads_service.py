@@ -197,8 +197,9 @@ def _create_search_campaign(client: GoogleAdsClient, customer_id: str,
     campaign.status = client.enums.CampaignStatusEnum.PAUSED
     campaign.campaign_budget = budget_resource_name
 
-    # Bidding: Maximize Clicks (smart default, doesn't require conversion tracking enabled)
-    campaign.maximize_clicks = client.get_type("MaximizeClicks")()
+    # Bidding: Manual CPC (safest default, doesn't require conversion tracking enabled)
+    campaign.manual_cpc = client.get_type("ManualCpc")()
+    campaign.manual_cpc.enhanced_cpc_enabled = False
 
     # Network settings
     campaign.network_settings.target_google_search = True
