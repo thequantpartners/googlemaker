@@ -2,13 +2,14 @@
 
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks } from "lucide-react";
+import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks, Lock } from "lucide-react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [tier, setTier] = useState<string | null>(null);
 
@@ -22,21 +23,32 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         if (res.ok) {
           const data = await res.json();
           setTier(data.tier);
+        } else {
+          setTier("free");
         }
       } catch (err) {
-        // ignore
+        setTier("free");
       }
     }
     fetchTier();
   }, [session]);
 
+  // Redirect new users to onboarding
+  useEffect(() => {
+    if (tier && (tier === "free" || tier === "none" || tier === "") && pathname === "/dashboard") {
+      router.push("/onboarding");
+    }
+  }, [tier, pathname, router]);
+
+  const hasPlan = tier && tier !== "free" && tier !== "none" && tier !== "";
+
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Setup Guide", href: "/onboarding", icon: ListChecks },
-    { name: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone },
-    { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity },
-    { name: "My Plan", href: "/dashboard/planes", icon: CreditCard },
-    { name: "Settings", href: "/dashboard/configuracion", icon: Settings },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
+    { name: "Setup Guide", href: "/onboarding", icon: ListChecks, locked: false },
+    { name: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
+    { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity, locked: true },
+    { name: "My Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
+    { name: "Settings", href: "/dashboard/configuracion", icon: Settings, locked: true },
   ];
 
   return (
@@ -69,6 +81,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
+            const itemLocked = item.locked && tier !== null && !hasPlan;
+
+            if (itemLocked) {
+              return (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between px-4 py-3 rounded-xl font-medium text-gray-500 bg-white/[0.02] opacity-50 cursor-not-allowed"
+                >
+                  <div className="flex items-center gap-3">
+                    <item.icon size={20} className="text-gray-500" />
+                    {item.name}
+                  </div>
+                  <Lock size={14} className="text-gray-500" />
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={item.name}
