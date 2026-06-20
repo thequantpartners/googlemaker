@@ -64,8 +64,17 @@ async def google_ads_login(token: str, request: Request, db: AsyncSession = Depe
             error_msg = f"Has alcanzado el límite de {limit} cuenta(s) para tu plan {user.tier.value.capitalize()}."
             return RedirectResponse(f"{frontend_url}/dashboard?connected=error&message={urllib.parse.quote(error_msg)}")
 
-    # Encrypt user_id to use as state to prevent CSRF and identify the user in the callback
-    state = encrypt_value(user_id)
+    # Extract frontend origin from Referer header to redirect back to the correct environment
+    origin = request.headers.get("referer")
+    if origin:
+        parsed = urllib.parse.urlparse(origin)
+        frontend_url = f"{parsed.scheme}://{parsed.netloc}"
+    else:
+        frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
+
+    # Encrypt user_id and frontend_url to use as state to prevent CSRF and identify the user in the callback
+    state_payload = f"{user_id}::{frontend_url}"
+    state = encrypt_value(state_payload)
 
     # Determine redirect URI dynamically
     redirect_uri = str(request.base_url).rstrip("/") + "/auth/google-ads/callback"
@@ -93,7 +102,10 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
     Handle the callback from Google. Exchange code for refresh_token and save.
     """
     try:
-        user_id = decrypt_value(state)
+        decrypted_state = decrypt_value(state)
+        parts = decrypted_state.split("::")
+        user_id = parts[0]
+        frontend_url = parts[1] if len(parts) > 1 else os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid state parameter")
 
@@ -148,7 +160,6 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
         if not accessible_customers:
             raise ValueError("NO_ADS_ACCOUNTS")
     except Exception as ex:
-        frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
         error_str = str(ex)
         if "NOT_ADS_USER" in error_str or "NO_ADS_ACCOUNTS" in error_str:
             error_msg = "Esta cuenta de Google no tiene cuentas de Google Ads asociadas o accesibles. Crea una cuenta en ads.google.com o usa otra cuenta."
@@ -192,5 +203,4 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
     await db.commit()
 
     # Redirect back to the frontend dashboard
-    frontend_url = os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")[0]
     return RedirectResponse(f"{frontend_url}/dashboard?connected=success")
