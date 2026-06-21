@@ -15,6 +15,11 @@ DATABASE_URL: str = os.getenv(
     "sqlite+aiosqlite:///./saas.db",
 )
 
+if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+
 # SQLite needs connect_args for async; PostgreSQL does not.
 _is_sqlite = DATABASE_URL.startswith("sqlite")
 
