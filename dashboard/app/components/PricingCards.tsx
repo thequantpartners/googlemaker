@@ -30,7 +30,7 @@ export default function PricingCards({
       return {
         isLink: true,
         href: "/login",
-        text: `Choose ${tier.charAt(0).toUpperCase() + tier.slice(1)}`,
+        text: "Start 14-Day Free Trial",
         disabled: false,
       };
     }
@@ -45,7 +45,7 @@ export default function PricingCards({
         ? "Current Plan"
         : currentTier === "basic" && tier !== "basic" // legacy basic compatibility
         ? `Upgrade to ${tier.charAt(0).toUpperCase() + tier.slice(1)}`
-        : `Choose ${tier.charAt(0).toUpperCase() + tier.slice(1)}`,
+        : "Start 14-Day Free Trial",
     };
   };
 

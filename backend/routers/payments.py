@@ -159,4 +159,22 @@ async def lemon_squeezy_webhook(
         else:
             print(f"User {user_id} not found")
 
+    elif event_name in ("subscription_cancelled", "subscription_expired", "subscription_payment_failed"):
+        custom_data = payload.get("meta", {}).get("custom_data", {})
+        user_id = custom_data.get("user_id")
+
+        if not user_id:
+            print(f"Webhook missing user_id in custom_data for {event_name}")
+            return {"status": "ignored", "reason": "missing user_id"}
+
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+
+        if user:
+            print(f"Downgrading user {user_id} tier to none due to {event_name}")
+            user.tier = UserTier.none
+            await db.commit()
+        else:
+            print(f"User {user_id} not found")
+
     return {"status": "success"}

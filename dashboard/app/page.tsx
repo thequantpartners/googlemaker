@@ -134,7 +134,7 @@ export default function LandingPage() {
                 className="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-full font-semibold text-white overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] transition-all flex items-center justify-center gap-2"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Start Free Trial
+                  Start 14-Day Free Trial
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>

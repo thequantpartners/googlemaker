@@ -43,8 +43,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const hasPlan = tier && tier !== "free" && tier !== "none" && tier !== "";
 
   const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
     { name: "Setup Guide", href: "/onboarding", icon: ListChecks, locked: false },
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
     { name: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
     { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity, locked: true },
     { name: "My Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
