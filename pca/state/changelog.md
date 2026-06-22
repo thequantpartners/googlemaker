@@ -55,3 +55,5 @@
 - Integrated Telegram Autopilot: Added a 1-click connection UI (Deep Linking) in the dashboard settings to link a user's Telegram account. Upgraded the Orchestrator to dispatch real-time, interactive notifications (with Inline Keyboards/Buttons) for "Bleeding Campaigns" (PAUSE) and "Scaling Opportunities" (SCALE). Users can now approve or reject actions directly from Telegram, with background webhook handlers automatically mutating Google Ads state.
 - Built Setup/Onboarding page (`/onboarding`) using premium Tailwind CSS UI and custom micro-animations. Replaced Lemon Squeezy-style mock with GMaker-specific setup steps (Google Ads, Campaigns, Telegram).
 - Fixed Railway PostgreSQL asyncpg connection URL parsing and added backend Dockerfile for stable deployment.
+- Configured 14-day free trial on the frontend UI and updated backend Lemon Squeezy webhook to handle `subscription_cancelled`, `subscription_expired`, and `subscription_payment_failed` to automatically revoke access.
+- Fixed sidebar order by moving Setup Guide to the top.
