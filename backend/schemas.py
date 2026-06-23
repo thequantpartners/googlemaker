@@ -131,6 +131,12 @@ class GenerateCampaignCopyResponse(BaseModel):
     headlines: list[str]
     descriptions: list[str]
 
+class FindCompetitorsRequest(BaseModel):
+    url: str
+
+class FindCompetitorsResponse(BaseModel):
+    competitors: list[str]
+
 class SavedStrategyCreate(BaseModel):
     campaign_name: str
     keywords: list[str]

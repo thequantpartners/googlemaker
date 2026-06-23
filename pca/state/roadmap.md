@@ -44,3 +44,4 @@
 - [x] Implement 14-day free trial requiring an upfront credit card, handle subscription cancellation webhook logic, and fix sidebar menu order.
 - [x] Fixed project name capitalization to GMAKER in README.md.
 - [x] Added delete option for saved strategies.
+- [x] Upgraded AI Competitor Auto-Find to perform real web scraping using DuckDuckGo search to extract direct competitors.

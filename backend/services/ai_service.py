@@ -105,3 +105,76 @@ async def generate_campaign_copy(url: str, competitors: str | None, campaign_typ
         return data
     except Exception as e:
         raise ValueError(f"Failed to generate campaign copy: {str(e)}")
+
+import urllib.parse
+
+async def find_competitors(url: str) -> list[str]:
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY is not configured on the server.")
+
+    website_text = await scrape_website(url)
+    if not website_text:
+        raise ValueError("Could not scrape the provided URL.")
+
+    model = genai.GenerativeModel(
+        model_name="gemini-flash-latest",
+        generation_config=genai.types.GenerationConfig(temperature=0.3)
+    )
+
+    # 1. Ask Gemini for the best Google Search query
+    query_prompt = f"Analyze this website content and provide the single best Google Search query to find their direct competitors (e.g., 'Miami immigration lawyer' or 'CRM software'). Return ONLY the search query string, nothing else.\n\nContent:\n{website_text[:5000]}"
+    
+    try:
+        query_response = await model.generate_content_async(query_prompt)
+        search_query = query_response.text.strip().replace('"', '')
+    except Exception as e:
+        raise ValueError(f"Failed to generate search query: {str(e)}")
+
+    # 2. Scrape DuckDuckGo for the query
+    search_url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(search_query)}"
+    search_results_text = ""
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
+            res = await client.get(search_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=15.0)
+            soup = BeautifulSoup(res.text, "lxml")
+            results = soup.select('.result__snippet')
+            titles = soup.select('.result__title')
+            
+            for t, s in zip(titles, results):
+                search_results_text += f"Title: {t.text.strip()}\nSnippet: {s.text.strip()}\n\n"
+    except Exception as e:
+        print(f"Search failed: {e}")
+
+    # 3. Ask Gemini to extract the competitors from the search results
+    extract_prompt = f"""
+    We searched Google for "{search_query}" to find competitors for a business.
+    Here are the search results:
+    
+    {search_results_text}
+    
+    Extract the names of up to 5 direct competitors from these results. Ignore directories (like Yelp, Avvo, Expertise, Justia) if possible.
+    Return ONLY a raw JSON array of strings containing the names of the competitors. No markdown formatting, no backticks.
+    Example: ["Competitor 1", "Competitor 2"]
+    """
+
+    extract_model = genai.GenerativeModel(
+        model_name="gemini-flash-latest",
+        generation_config=genai.types.GenerationConfig(
+            temperature=0.3,
+            response_mime_type="application/json",
+        )
+    )
+
+    try:
+        response = await extract_model.generate_content_async(extract_prompt)
+        text = response.text.strip()
+        if text.startswith("```json"): text = text[7:]
+        if text.startswith("```"): text = text[3:]
+        if text.endswith("```"): text = text[:-3]
+        
+        data = json.loads(text.strip())
+        if isinstance(data, list):
+            return data
+        return []
+    except Exception as e:
+        raise ValueError(f"Failed to find competitors from search: {str(e)}")

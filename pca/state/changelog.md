@@ -61,3 +61,4 @@
 ## 2026-06-23
 - Fixed project name capitalization to GMAKER in README.md.
 - Added delete option for saved strategies (backend API and frontend UI).
+- Upgraded the AI Competitor Auto-Find functionality: it now uses Gemini to deduce the optimal search query, performs a live web search (via DuckDuckGo scraping), and extracts the most relevant direct competitors from the search results.

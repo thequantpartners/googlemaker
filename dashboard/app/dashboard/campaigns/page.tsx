@@ -56,6 +56,7 @@ export default function ClientCampaigns() {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [competitors, setCompetitors] = useState("");
   const [generatedResult, setGeneratedResult] = useState<GeneratedCopy | null>(null);
+  const [findCompetitorsLoading, setFindCompetitorsLoading] = useState(false);
 
   // Saved Strategies State
   const [savedStrategies, setSavedStrategies] = useState<SavedStrategy[]>([]);
@@ -103,6 +104,38 @@ export default function ClientCampaigns() {
       setWizardStep(2); // Go back on error
     } finally {
       setGenerateLoading(false);
+    }
+  };
+
+  const autoFindCompetitors = async () => {
+    if (!session?.backendToken || !websiteUrl.trim()) return;
+    setFindCompetitorsLoading(true);
+    setGenerateError("");
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/competitors`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ url: websiteUrl })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newCompetitors = data.competitors.join(", ");
+        if (competitors.trim()) {
+          setCompetitors(`${competitors}, ${newCompetitors}`);
+        } else {
+          setCompetitors(newCompetitors);
+        }
+      } else {
+        const errData = await res.json();
+        setGenerateError(errData.detail || "Error finding competitors.");
+      }
+    } catch (err) {
+      setGenerateError("Network error when finding competitors.");
+    } finally {
+      setFindCompetitorsLoading(false);
     }
   };
 
@@ -470,9 +503,20 @@ export default function ClientCampaigns() {
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
-                        <Target size={16} className="text-neon-purple"/> Competitors to target (Optional)
-                      </label>
+                      <div className="flex justify-between items-end mb-2">
+                        <label className="block text-sm font-semibold text-gray-300 flex items-center gap-2">
+                          <Target size={16} className="text-neon-purple"/> Competitors to target (Optional)
+                        </label>
+                        <button 
+                          onClick={autoFindCompetitors}
+                          disabled={!websiteUrl.trim() || findCompetitorsLoading}
+                          className="text-neon-purple hover:text-white transition-colors flex items-center gap-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Auto-find competitors based on your URL"
+                        >
+                          {findCompetitorsLoading ? <Activity className="animate-spin" size={14} /> : <Sparkles size={14} />} 
+                          Auto-Find
+                        </button>
+                      </div>
                       <textarea 
                         value={competitors}
                         onChange={(e) => setCompetitors(e.target.value)}

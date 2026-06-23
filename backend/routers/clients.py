@@ -106,8 +106,22 @@ async def get_my_campaigns(
             return []
         raise HTTPException(status_code=500, detail=f"Google Ads error: {type(e).__name__} - {str(e)}")
 
-from schemas import GenerateCampaignCopyRequest, GenerateCampaignCopyResponse, SavedStrategyCreate, SavedStrategyOut
-from services.ai_service import generate_campaign_copy
+from schemas import GenerateCampaignCopyRequest, GenerateCampaignCopyResponse, SavedStrategyCreate, SavedStrategyOut, FindCompetitorsRequest, FindCompetitorsResponse
+from services.ai_service import generate_campaign_copy, find_competitors
+
+@router.post("/me/campaigns/competitors", response_model=FindCompetitorsResponse)
+async def auto_find_competitors(
+    request: FindCompetitorsRequest,
+    user: User = Depends(require_client),
+):
+    """
+    Uses AI to scrape the provided URL and suggest 5 top competitors.
+    """
+    try:
+        competitors = await find_competitors(request.url)
+        return {"competitors": competitors}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/me/campaigns/generate", response_model=GenerateCampaignCopyResponse)
 async def generate_my_campaign_copy(
