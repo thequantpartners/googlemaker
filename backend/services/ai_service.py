@@ -132,34 +132,36 @@ async def find_competitors(url: str) -> list[str]:
 
     # 2. Scrape Google and DuckDuckGo for the query
     search_results_text = "--- GOOGLE SEARCH RESULTS ---\n"
+    google_url = f"https://www.google.com/search?q={urllib.parse.quote(search_query)}"
     
-    import asyncio
-    from googlesearch import search as gsearch
-    
-    def fetch_google_results(q):
-        try:
-            return list(gsearch(q, num_results=5, advanced=True, timeout=5))
-        except Exception as e:
-            print(f"Google search error: {e}")
-            return []
-
-    google_results = await asyncio.to_thread(fetch_google_results, search_query)
-    for r in google_results:
-        try:
-            search_results_text += f"Title: {r.title}\nSnippet: {r.description}\n\n"
-        except:
-            pass
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
+            res = await client.get(
+                google_url, 
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                },
+                timeout=5.0
+            )
+            soup = BeautifulSoup(res.text, "lxml")
+            titles = soup.select('h3')
+            for t in titles[:8]:
+                if t.text.strip():
+                    search_results_text += f"Title: {t.text.strip()}\n"
+    except Exception as e:
+        print(f"Google HTTP search error: {e}")
 
     search_results_text += "\n--- OTHER SEARCH ENGINE (DuckDuckGo) RESULTS ---\n"
     search_url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(search_query)}"
     try:
         async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
-            res = await client.get(search_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=15.0)
+            res = await client.get(search_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=5.0)
             soup = BeautifulSoup(res.text, "lxml")
             results = soup.select('.result__snippet')
             titles = soup.select('.result__title')
             
-            for t, s in zip(titles[:5], results[:5]):
+            for t, s in zip(titles[:8], results[:8]):
                 search_results_text += f"Title: {t.text.strip()}\nSnippet: {s.text.strip()}\n\n"
     except Exception as e:
         print(f"Search failed: {e}")
