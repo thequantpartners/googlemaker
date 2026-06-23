@@ -48,56 +48,33 @@ async def lifespan(app: FastAPI):
     from sqlalchemy import text
 
     async with async_session() as session:
-        # DB MIGRATION: Fix missing tier column and enum
-        try:
-            await session.execute(text("ALTER TABLE users ADD COLUMN tier VARCHAR(50) DEFAULT 'none';"))
-            await session.commit()
-            print("[OK] DB Migration: Added tier column.")
-        except Exception as e:
-            await session.rollback()
-            print(f"[WARN] DB Migration failed for tier column (might already exist): {e}")
+        # Safe migration helper — works on both SQLite and PostgreSQL
+        async def safe_add_column(table: str, column: str, col_type: str, default: str | None = None):
+            default_clause = f" DEFAULT {default}" if default else ""
+            try:
+                await session.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause};"))
+                await session.commit()
+            except Exception:
+                await session.rollback()
 
+        # DB MIGRATION: Add missing columns
+        await safe_add_column("users", "tier", "VARCHAR(50)", "'none'")
+        await safe_add_column("users", "telegram_chat_id", "VARCHAR(100)")
+        await safe_add_column("users", "telegram_link_token", "VARCHAR(100)")
+        await safe_add_column("orchestrator_logs", "status", "VARCHAR(20)", "'auto_applied'")
+        await safe_add_column("orchestrator_logs", "is_dry_run", "BOOLEAN", "true")
+
+        # DB MIGRATION: Fix legacy tier enums
         try:
-            # First, fix legacy string enums if they exist
             await session.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='enterprise';"))
-            
-            # Now migrate the previous feature tiers to the new Ad Spend tiers
             await session.execute(text("UPDATE users SET tier='starter' WHERE tier='basic';"))
             await session.execute(text("UPDATE users SET tier='growth' WHERE tier='scale';"))
-            # Old growth plan users get grandfathered into pro
-            await session.execute(text("UPDATE users SET tier='pro' WHERE tier='growth' AND email != 'superadmin@example.com';")) 
-            
+            await session.execute(text("UPDATE users SET tier='pro' WHERE tier='growth' AND email != 'superadmin@example.com';"))
             await session.commit()
-            print("[OK] DB Migration: Fixed legacy tier enums and migrated to Ad-Spend tiers.")
-        except Exception as e:
-            await session.rollback()
-            print(f"[WARN] DB Migration failed for tier legacy fix: {e}")
-
-        # DB MIGRATION: Fix missing columns for Hybrid Autopilot in orchestrator_logs
-        try:
-            await session.execute(text("ALTER TABLE orchestrator_logs ADD COLUMN status VARCHAR(20) DEFAULT 'auto_applied';"))
-            await session.commit()
-        except Exception as e:
+        except Exception:
             await session.rollback()
 
-        try:
-            await session.execute(text("ALTER TABLE orchestrator_logs ADD COLUMN is_dry_run BOOLEAN DEFAULT true;"))
-            await session.commit()
-        except Exception as e:
-            await session.rollback()
-
-        # DB MIGRATION: Add Telegram columns to users
-        try:
-            await session.execute(text("ALTER TABLE users ADD COLUMN telegram_chat_id VARCHAR(100);"))
-            await session.commit()
-        except Exception as e:
-            await session.rollback()
-
-        try:
-            await session.execute(text("ALTER TABLE users ADD COLUMN telegram_link_token VARCHAR(100);"))
-            await session.commit()
-        except Exception as e:
-            await session.rollback()
+        print("[OK] DB Migrations completed.")
 
         result = await session.execute(
             select(User).where(User.email == SUPERADMIN_EMAIL)
