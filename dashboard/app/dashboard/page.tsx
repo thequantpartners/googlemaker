@@ -4,20 +4,23 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ArrowRight, Plus, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, PlayCircle, PauseCircle, Activity, TrendingUp, TrendingDown, XCircle, Trash2 } from "lucide-react";
+import { Plus, AlertCircle, CheckCircle2, Activity, XCircle } from "lucide-react";
 import PricingCards from "../components/PricingCards";
+
+function Skeleton({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse bg-gray-800/50 rounded-xl ${className}`} />;
+}
 
 function DashboardContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [statusData, setStatusData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
   const [selectingPlan, setSelectingPlan] = useState(false);
 
   const [globalMetrics, setGlobalMetrics] = useState({ cost: 0, clicks: 0, conversions: 0, avgCpa: 0 });
   const [chartData, setChartData] = useState<any[]>([]);
-
-
 
   async function checkStatus() {
     try {
@@ -46,76 +49,79 @@ function DashboardContent() {
       checkStatus();
     } else {
       setLoading(false);
+      setIsLoadingMetrics(false);
     }
   }, [session, status]);
 
   useEffect(() => {
     async function loadMetrics() {
-      if (!session?.backendToken || !statusData?.connected_accounts) {
-        // Generate empty chart if no data
+      setIsLoadingMetrics(true);
+      try {
+        if (!session?.backendToken || !statusData?.connected_accounts?.length) {
+          const data = [];
+          for (let i = 14; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            data.push({ name: `${d.getDate()}/${d.getMonth() + 1}`, spend: 0, conversions: 0 });
+          }
+          setChartData(data);
+          return;
+        }
+
+        let totalCst = 0;
+        let totalClk = 0;
+        let totalConv = 0;
+
+        const validAccounts = statusData.connected_accounts.filter(
+          (acc: any) =>
+            acc.target_customer_id !== "Unknown" &&
+            acc.target_customer_id !== "Unknown:1" &&
+            !acc.target_customer_id.includes("PENDING")
+        );
+
+        const fetchPromises = validAccounts.map((acc: any) =>
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns?customer_id=${acc.target_customer_id}`, {
+            headers: { Authorization: `Bearer ${session.backendToken}` },
+          })
+            .then(async (res) => (res.ok ? await res.json() : []))
+            .catch((e) => { console.error(e); return []; })
+        );
+
+        const results = await Promise.all(fetchPromises);
+        for (const camps of results) {
+          for (const c of camps) {
+            totalCst += c.cost || 0;
+            totalClk += c.clicks || 0;
+            totalConv += c.conversions || 0;
+          }
+        }
+
+        const avgCpa = totalConv > 0 ? totalCst / totalConv : 0;
+        setGlobalMetrics({ cost: totalCst, clicks: totalClk, conversions: totalConv, avgCpa });
+
         const data = [];
-        for(let i=14; i>=0; i--) {
+        const days = 14;
+        for (let i = days; i >= 0; i--) {
           const d = new Date();
           d.setDate(d.getDate() - i);
-          data.push({ name: `${d.getDate()}/${d.getMonth()+1}`, spend: 0, conversions: 0 });
+          const noiseCst = totalCst > 0 ? (totalCst / days) * (0.8 + Math.random() * 0.4) : 0;
+          const noiseConv = totalConv > 0 ? (totalConv / days) * (0.8 + Math.random() * 0.4) : 0;
+          data.push({ name: `${d.getDate()}/${d.getMonth() + 1}`, spend: noiseCst, conversions: noiseConv });
         }
         setChartData(data);
-        return;
+      } finally {
+        setIsLoadingMetrics(false);
       }
-
-      let totalCst = 0;
-      let totalClk = 0;
-      let totalConv = 0;
-
-      const validAccounts = statusData.connected_accounts.filter(
-        (acc: any) => acc.target_customer_id !== "Unknown" && acc.target_customer_id !== "Unknown:1" && !acc.target_customer_id.includes("PENDING")
-      );
-
-      const fetchPromises = validAccounts.map((acc: any) => 
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns?customer_id=${acc.target_customer_id}`, {
-          headers: { Authorization: `Bearer ${session.backendToken}` }
-        }).then(async res => {
-          if (res.ok) {
-            return await res.json();
-          }
-          return [];
-        }).catch(e => {
-          console.error(e);
-          return [];
-        })
-      );
-
-      const results = await Promise.all(fetchPromises);
-      
-      for (const camps of results) {
-        for (const c of camps) {
-          totalCst += c.cost || 0;
-          totalClk += c.clicks || 0;
-          totalConv += c.conversions || 0;
-        }
-      }
-
-      const avgCpa = totalConv > 0 ? totalCst / totalConv : 0;
-      setGlobalMetrics({ cost: totalCst, clicks: totalClk, conversions: totalConv, avgCpa });
-
-      // Generate chart data based on metrics
-      const data = [];
-      const days = 14;
-      for(let i=days; i>=0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        // Distribute the total across days with some noise to make the chart look realistic
-        const noiseCst = totalCst > 0 ? (totalCst / days) * (0.8 + Math.random() * 0.4) : 0;
-        const noiseConv = totalConv > 0 ? (totalConv / days) * (0.8 + Math.random() * 0.4) : 0;
-        data.push({ name: `${d.getDate()}/${d.getMonth()+1}`, spend: noiseCst, conversions: noiseConv });
-      }
-      setChartData(data);
     }
+
+    if (loading) return;
 
     if (statusData && statusData.user_status !== 'suspended' && statusData.plan_limit !== 0) {
       loadMetrics();
+    } else {
+      setIsLoadingMetrics(false);
     }
-  }, [statusData, session]);
+  }, [statusData, session, loading]);
 
   const handleConnect = () => {
     if (!session?.backendToken) return;
@@ -136,11 +142,7 @@ function DashboardContent() {
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      } else {
-        console.error("Error creating checkout session");
+        if (data.url) window.location.href = data.url;
       }
     } catch (err) {
       console.error(err);
@@ -149,18 +151,8 @@ function DashboardContent() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-pulse text-neon-purple font-medium flex items-center gap-2">
-          <Activity className="animate-spin" /> Loading Dashboard...
-        </div>
-      </div>
-    );
-  }
-
   // --- SUSPENDED STATE ---
-  if (statusData?.user_status === 'suspended') {
+  if (!loading && statusData?.user_status === 'suspended') {
     return (
       <div className="max-w-2xl mx-auto mt-20 text-center bg-dark-card backdrop-blur-xl border border-red-500/30 p-12 rounded-3xl shadow-[0_0_30px_rgba(239,68,68,0.1)]">
         <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/50">
@@ -175,56 +167,53 @@ function DashboardContent() {
   }
 
   // --- PAYWALL STATE ---
-  if (statusData?.plan_limit === 0 && statusData?.ad_spend_limit === 0) {
+  if (!loading && statusData?.plan_limit === 0 && statusData?.ad_spend_limit === 0) {
     return (
       <div className="max-w-7xl mx-auto mt-10 text-center animate-fade-in-up pb-20">
         <h1 className="text-4xl font-bold text-white mb-4">Choose Your Ad Spend Tier</h1>
         <p className="text-gray-400 text-lg mb-12">
           Unlock the autopilot for your Immigration Law campaigns. All features included.
         </p>
-
-        <PricingCards 
-          selectingPlan={selectingPlan} 
-          onSelectPlan={handleSelectPlan} 
-        />
+        <PricingCards selectingPlan={selectingPlan} onSelectPlan={handleSelectPlan} />
       </div>
     );
   }
 
-  // --- DASHBOARD STATE ---
+  // --- DASHBOARD (renders immediately with skeletons while data loads) ---
   const connectedCount = statusData?.connected_accounts?.length || 0;
   const isUnlimited = statusData?.plan_limit === null;
-  const canConnectMore = isUnlimited || connectedCount < statusData?.plan_limit;
+  const canConnectMore = isUnlimited || connectedCount < (statusData?.plan_limit ?? 0);
   const isSuspended = statusData?.user_status === 'suspended';
+  const metricsLoading = loading || isLoadingMetrics;
 
   return (
     <div className="animate-fade-in-up max-w-[1400px] mx-auto pb-20">
-      
-
 
       {/* Top action bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
-          <p className="text-gray-400 text-sm">
-            {connectedCount} accounts connected.
-          </p>
+          {loading
+            ? <Skeleton className="h-4 w-44 mt-1" />
+            : <p className="text-gray-400 text-sm">{connectedCount} accounts connected.</p>
+          }
         </div>
-        
-        {canConnectMore && (
-          <button 
-            onClick={isSuspended ? undefined : handleConnect} 
+
+        {loading ? (
+          <Skeleton className="h-12 w-52 rounded-full" />
+        ) : canConnectMore ? (
+          <button
+            onClick={isSuspended ? undefined : handleConnect}
             disabled={isSuspended}
             className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white transition-all
-              ${isSuspended 
-                ? "bg-gray-700 cursor-not-allowed opacity-50" 
+              ${isSuspended
+                ? "bg-gray-700 cursor-not-allowed opacity-50"
                 : "bg-gradient-to-r from-neon-green/80 to-emerald-600 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
-              }
-            `}
+              }`}
           >
             <Plus size={18} /> Connect Google Ads
           </button>
-        )}
+        ) : null}
       </div>
 
       {searchParams.get("connected") === "success" && (
@@ -239,8 +228,8 @@ function DashboardContent() {
         </div>
       )}
 
-      {statusData?.ad_spend_limit > 0 && globalMetrics.cost >= statusData.ad_spend_limit && (
-        <div className="mb-8 p-6 bg-amber-500/10 border border-amber-500/50 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(245,158,11,0.15)] animate-pulse">
+      {!metricsLoading && statusData?.ad_spend_limit > 0 && globalMetrics.cost >= statusData.ad_spend_limit && (
+        <div className="mb-8 p-6 bg-amber-500/10 border border-amber-500/50 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-amber-500/20 rounded-full text-amber-500">
               <AlertCircle size={28} />
@@ -252,23 +241,38 @@ function DashboardContent() {
               </p>
             </div>
           </div>
-          <button onClick={() => window.scrollTo(0, document.body.scrollHeight)} className="px-6 py-3 bg-amber-500 text-black font-bold rounded-full hover:bg-amber-400 transition-colors whitespace-nowrap">
+          <button
+            onClick={() => window.scrollTo(0, document.body.scrollHeight)}
+            className="px-6 py-3 bg-amber-500 text-black font-bold rounded-full hover:bg-amber-400 transition-colors whitespace-nowrap"
+          >
             Upgrade Plan
           </button>
         </div>
       )}
 
-      {/* Connected Accounts / Campaigns Table MOVED TO TOP */}
+      {/* Connected Accounts */}
       <div className="mb-8">
         <h3 className="text-xl font-semibold text-white mb-4">Connected Accounts</h3>
-        {connectedCount === 0 ? (
+
+        {loading ? (
+          <div className="bg-dark-card border border-dark-card-border rounded-[2rem] p-6 space-y-5">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton className="w-8 h-8 rounded-lg flex-shrink-0" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-6 w-28 rounded-full" />
+                <Skeleton className="h-4 w-20 ml-auto" />
+              </div>
+            ))}
+          </div>
+        ) : connectedCount === 0 ? (
           <div className="bg-dark-card border border-dark-card-border p-12 text-center rounded-[2rem]">
             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
               <Activity className="text-gray-500" size={32} />
             </div>
             <p className="text-gray-400 mb-6">No Google Ads accounts connected yet.</p>
-            <button 
-              onClick={isSuspended ? undefined : handleConnect} 
+            <button
+              onClick={isSuspended ? undefined : handleConnect}
               disabled={isSuspended}
               className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
             >
@@ -289,7 +293,11 @@ function DashboardContent() {
                 </thead>
                 <tbody>
                   {statusData?.connected_accounts?.map((acc: any, index: number) => {
-                    const isInvalid = acc.target_customer_id === "Unknown" || acc.target_customer_id === "Unknown:1" || acc.target_customer_id === "PENDING" || acc.target_customer_id === "PENDING:1";
+                    const isInvalid =
+                      acc.target_customer_id === "Unknown" ||
+                      acc.target_customer_id === "Unknown:1" ||
+                      acc.target_customer_id === "PENDING" ||
+                      acc.target_customer_id === "PENDING:1";
                     return (
                       <tr key={index} className="border-b border-dark-card-border hover:bg-white/[0.02] transition-colors group">
                         <td className="py-4 px-6">
@@ -300,9 +308,7 @@ function DashboardContent() {
                             {acc.target_customer_id}
                           </div>
                         </td>
-                        <td className="py-4 px-6 text-gray-400">
-                          {acc.id.split("-")[0]}
-                        </td>
+                        <td className="py-4 px-6 text-gray-400">{acc.id.split("-")[0]}</td>
                         <td className="py-4 px-6">
                           {isInvalid ? (
                             <span className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-1 w-max">
@@ -314,14 +320,14 @@ function DashboardContent() {
                             </span>
                           )}
                         </td>
-                        <td className="py-4 px-6 text-right space-x-4">
-                          <button 
+                        <td className="py-4 px-6 text-right">
+                          <button
                             onClick={async () => {
                               if (confirm(`Are you sure you want to disconnect account ${acc.target_customer_id}?`)) {
                                 try {
                                   await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${acc.id}`, {
                                     method: "DELETE",
-                                    headers: { Authorization: `Bearer ${session?.backendToken}` }
+                                    headers: { Authorization: `Bearer ${session?.backendToken}` },
                                   });
                                   window.location.reload();
                                 } catch (err) {
@@ -344,57 +350,77 @@ function DashboardContent() {
         )}
       </div>
 
-      {/* 4 Metric Widgets */}
+      {/* 4 Metric Widgets — card shells always present to prevent layout shift */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Spend Widget with Progress Bar */}
+
+        {/* Spend */}
         <div className="bg-dark-card backdrop-blur-xl border border-neon-purple/30 p-6 rounded-2xl relative overflow-hidden shadow-[0_0_20px_rgba(168,85,247,0.05)]">
           <p className="text-gray-400 text-sm mb-2">Total Spend / Limit</p>
-          <div className="flex items-end gap-3 mb-4">
-            <h2 className="text-3xl font-bold text-white">${globalMetrics.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-            <span className="text-gray-500 mb-1">/ ${statusData?.ad_spend_limit?.toLocaleString("en-US")}</span>
-          </div>
-          <div className="w-full bg-black/40 rounded-full h-2.5 mb-2 overflow-hidden">
-            <div 
-              className={`h-2.5 rounded-full ${globalMetrics.cost >= statusData?.ad_spend_limit ? 'bg-amber-500' : 'bg-neon-purple'}`}
-              style={{ width: `${Math.min(100, (globalMetrics.cost / (statusData?.ad_spend_limit || 1)) * 100)}%` }}
-            ></div>
-          </div>
+          {metricsLoading ? (
+            <>
+              <Skeleton className="h-9 w-36 mb-4" />
+              <Skeleton className="h-2.5 w-full" />
+            </>
+          ) : (
+            <>
+              <div className="flex items-end gap-3 mb-4">
+                <h2 className="text-3xl font-bold text-white">
+                  ${globalMetrics.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h2>
+                <span className="text-gray-500 mb-1">/ ${statusData?.ad_spend_limit?.toLocaleString("en-US")}</span>
+              </div>
+              <div className="w-full bg-black/40 rounded-full h-2.5 overflow-hidden">
+                <div
+                  className={`h-2.5 rounded-full transition-all duration-700 ${globalMetrics.cost >= statusData?.ad_spend_limit ? 'bg-amber-500' : 'bg-neon-purple'}`}
+                  style={{ width: `${Math.min(100, (globalMetrics.cost / (statusData?.ad_spend_limit || 1)) * 100)}%` }}
+                />
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Widget 2 */}
+        {/* Conversions */}
         <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
           <p className="text-gray-400 text-sm mb-2">Conversions</p>
-          <div className="flex items-end gap-3">
-            <h2 className="text-3xl font-bold text-white">{globalMetrics.conversions.toLocaleString("en-US")}</h2>
-          </div>
+          {metricsLoading
+            ? <Skeleton className="h-9 w-24 mt-1" />
+            : <h2 className="text-3xl font-bold text-white">{globalMetrics.conversions.toLocaleString("en-US")}</h2>
+          }
         </div>
 
-        {/* Widget 3 */}
+        {/* Avg CPA */}
         <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
           <p className="text-gray-400 text-sm mb-2">Avg. CPA</p>
-          <div className="flex items-end gap-3">
-            <h2 className="text-3xl font-bold text-white">${globalMetrics.avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-          </div>
+          {metricsLoading
+            ? <Skeleton className="h-9 w-28 mt-1" />
+            : <h2 className="text-3xl font-bold text-white">
+                ${globalMetrics.avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </h2>
+          }
         </div>
 
-        {/* Widget 4 */}
+        {/* Autopilot */}
         <div className="bg-dark-card backdrop-blur-xl border border-neon-green/30 p-6 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.05)]">
           <p className="text-gray-400 text-sm mb-2">Autopilot Status</p>
-          <div className="flex items-center gap-3 mt-2">
-            {globalMetrics.cost >= statusData?.ad_spend_limit ? (
-              <span className="flex items-center gap-2 text-amber-500 font-bold bg-amber-500/10 px-4 py-2 rounded-xl">
-                <AlertCircle size={20} /> Paused (Limit Reached)
-              </span>
-            ) : (
-              <span className="flex items-center gap-2 text-neon-green font-bold bg-neon-green/10 px-4 py-2 rounded-xl">
-                <CheckCircle2 size={20} /> Active & Optimizing
-              </span>
-            )}
-          </div>
+          {metricsLoading ? (
+            <Skeleton className="h-10 w-48 mt-2 rounded-xl" />
+          ) : (
+            <div className="flex items-center gap-3 mt-2">
+              {globalMetrics.cost >= statusData?.ad_spend_limit ? (
+                <span className="flex items-center gap-2 text-amber-500 font-bold bg-amber-500/10 px-4 py-2 rounded-xl">
+                  <AlertCircle size={20} /> Paused (Limit Reached)
+                </span>
+              ) : (
+                <span className="flex items-center gap-2 text-neon-green font-bold bg-neon-green/10 px-4 py-2 rounded-xl">
+                  <CheckCircle2 size={20} /> Active & Optimizing
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Main Chart Area */}
+      {/* Chart — card chrome always visible */}
       <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-[2rem] mb-8">
         <div className="flex justify-between items-center mb-8">
           <h3 className="text-lg font-semibold text-white">Total Ad Spend vs Conversions</h3>
@@ -407,30 +433,32 @@ function DashboardContent() {
             </div>
           </div>
         </div>
-        
+
         <div className="w-full h-[350px]">
-          {chartData.length > 0 ? (
+          {metricsLoading ? (
+            <Skeleton className="w-full h-full" />
+          ) : chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorConversions" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#A855F7" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#A855F7" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                <XAxis dataKey="name" stroke="#52525b" tick={{fill: '#a1a1aa', fontSize: 12}} axisLine={false} tickLine={false} />
-                <YAxis stroke="#52525b" tick={{fill: '#a1a1aa', fontSize: 12}} axisLine={false} tickLine={false} tickFormatter={(value) => `$${value}`} />
-                <Tooltip 
+                <XAxis dataKey="name" stroke="#52525b" tick={{ fill: '#a1a1aa', fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis stroke="#52525b" tick={{ fill: '#a1a1aa', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                <Tooltip
                   contentStyle={{ backgroundColor: '#141822', borderColor: '#27272a', borderRadius: '12px', color: '#fff' }}
                   itemStyle={{ color: '#fff' }}
                   formatter={(value: any, name: any) => [
-                    name === 'spend' ? `$${Number(value).toFixed(2)}` : Number(value).toFixed(2), 
-                    name === 'spend' ? 'Spend' : 'Conversions'
+                    name === 'spend' ? `$${Number(value).toFixed(2)}` : Number(value).toFixed(2),
+                    name === 'spend' ? 'Spend' : 'Conversions',
                   ]}
                 />
                 <Area type="monotone" dataKey="conversions" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorConversions)" />
@@ -440,7 +468,7 @@ function DashboardContent() {
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500 flex-col gap-2">
               <Activity size={32} className="opacity-50" />
-              <p>Generating chart...</p>
+              <p>No data available</p>
             </div>
           )}
         </div>
