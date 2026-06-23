@@ -130,9 +130,28 @@ async def find_competitors(url: str) -> list[str]:
     except Exception as e:
         raise ValueError(f"Failed to generate search query: {str(e)}")
 
-    # 2. Scrape DuckDuckGo for the query
+    # 2. Scrape Google and DuckDuckGo for the query
+    search_results_text = "--- GOOGLE SEARCH RESULTS ---\n"
+    
+    import asyncio
+    from googlesearch import search as gsearch
+    
+    def fetch_google_results(q):
+        try:
+            return list(gsearch(q, num_results=5, advanced=True, timeout=5))
+        except Exception as e:
+            print(f"Google search error: {e}")
+            return []
+
+    google_results = await asyncio.to_thread(fetch_google_results, search_query)
+    for r in google_results:
+        try:
+            search_results_text += f"Title: {r.title}\nSnippet: {r.description}\n\n"
+        except:
+            pass
+
+    search_results_text += "\n--- OTHER SEARCH ENGINE (DuckDuckGo) RESULTS ---\n"
     search_url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(search_query)}"
-    search_results_text = ""
     try:
         async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
             res = await client.get(search_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=15.0)
@@ -140,12 +159,12 @@ async def find_competitors(url: str) -> list[str]:
             results = soup.select('.result__snippet')
             titles = soup.select('.result__title')
             
-            for t, s in zip(titles, results):
+            for t, s in zip(titles[:5], results[:5]):
                 search_results_text += f"Title: {t.text.strip()}\nSnippet: {s.text.strip()}\n\n"
     except Exception as e:
         print(f"Search failed: {e}")
 
-    # 3. Ask Gemini to extract the competitors from the search results
+    # 3. Ask Gemini to extract the competitors from the combined search results
     extract_prompt = f"""
     We searched Google for "{search_query}" to find competitors for a business.
     Here are the search results:
