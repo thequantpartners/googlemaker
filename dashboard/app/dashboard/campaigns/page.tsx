@@ -141,7 +141,7 @@ export default function ClientCampaigns() {
     }
   };
 
-  const saveStrategy = async () => {
+  const handleSaveStrategy = async () => {
     if (!session?.backendToken || !generatedResult) return;
     setSaveLoading(true);
     try {
@@ -154,7 +154,10 @@ export default function ClientCampaigns() {
         body: JSON.stringify(generatedResult)
       });
       if (res.ok) {
+        const data = await res.json();
+        setSavedStrategies([data, ...savedStrategies]);
         setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
       } else {
         console.error("Failed to save strategy", await res.text());
       }
@@ -165,15 +168,19 @@ export default function ClientCampaigns() {
     }
   };
 
-  const deleteStrategy = async (id: string) => {
+  const handleDeleteStrategy = async (strategyId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!session?.backendToken) return;
+    
+    if (!window.confirm("Are you sure you want to delete this strategy?")) return;
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved/${strategyId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${session.backendToken}` }
       });
       if (res.ok) {
-        setSavedStrategies(prev => prev.filter(s => s.id !== id));
+        setSavedStrategies(prev => prev.filter(s => s.id !== strategyId));
       } else {
         console.error("Failed to delete strategy", await res.text());
       }
