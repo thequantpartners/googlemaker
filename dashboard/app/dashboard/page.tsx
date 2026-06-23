@@ -8,7 +8,7 @@ import { ArrowRight, Plus, ExternalLink, RefreshCw, AlertCircle, CheckCircle2, P
 import PricingCards from "../components/PricingCards";
 
 function DashboardContent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [statusData, setStatusData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -20,10 +20,9 @@ function DashboardContent() {
 
 
   async function checkStatus() {
-    if (!session?.backendToken) return;
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/status`, {
-        headers: { Authorization: `Bearer ${session.backendToken}` },
+        headers: { Authorization: `Bearer ${session?.backendToken}` },
       });
       if (res.ok) {
         const data = await res.json();
@@ -42,8 +41,13 @@ function DashboardContent() {
   }
 
   useEffect(() => {
-    checkStatus();
-  }, [session]);
+    if (status === "loading") return;
+    if (status === "authenticated" && session?.backendToken) {
+      checkStatus();
+    } else {
+      setLoading(false);
+    }
+  }, [session, status]);
 
   useEffect(() => {
     async function loadMetrics() {

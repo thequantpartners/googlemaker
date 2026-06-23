@@ -37,10 +37,11 @@ interface SavedStrategy {
 }
 
 export default function ClientCampaigns() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string>("");
+  const [accountsLoaded, setAccountsLoaded] = useState(false);
   
   const [campaigns, setCampaigns] = useState<CampaignMetric[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,8 +101,9 @@ export default function ClientCampaigns() {
         setWizardStep(2); // Go back on error
       }
     } catch (err) {
-      setGenerateError("Network error when communicating with AI.");
-      setWizardStep(2); // Go back on error
+      console.error("Failed to generate campaign", err);
+      setGenerateError("Network error. Please try again.");
+      setWizardStep(2);
     } finally {
       setGenerateLoading(false);
     }
@@ -139,11 +141,11 @@ export default function ClientCampaigns() {
     }
   };
 
-  const handleSaveStrategy = async () => {
+  const saveStrategy = async () => {
     if (!session?.backendToken || !generatedResult) return;
     setSaveLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/save`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${session.backendToken}`,
@@ -152,10 +154,9 @@ export default function ClientCampaigns() {
         body: JSON.stringify(generatedResult)
       });
       if (res.ok) {
-        const data = await res.json();
-        setSavedStrategies([data, ...savedStrategies]);
         setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        console.error("Failed to save strategy", await res.text());
       }
     } catch (err) {
       console.error("Failed to save strategy", err);
@@ -164,19 +165,15 @@ export default function ClientCampaigns() {
     }
   };
 
-  const handleDeleteStrategy = async (strategyId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const deleteStrategy = async (id: string) => {
     if (!session?.backendToken) return;
-    
-    if (!window.confirm("Are you sure you want to delete this strategy?")) return;
-
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved/${strategyId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${session.backendToken}` },
+        headers: { Authorization: `Bearer ${session.backendToken}` }
       });
       if (res.ok) {
-        setSavedStrategies(savedStrategies.filter(s => s.id !== strategyId));
+        setSavedStrategies(prev => prev.filter(s => s.id !== id));
       } else {
         console.error("Failed to delete strategy", await res.text());
       }
@@ -187,7 +184,13 @@ export default function ClientCampaigns() {
 
   useEffect(() => {
     async function fetchAccounts() {
-      if (!session?.backendToken) return;
+      if (!session?.backendToken) {
+        if (status === "unauthenticated") {
+          setAccountsLoaded(true);
+          setLoading(false);
+        }
+        return;
+      }
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/status`, {
           headers: { Authorization: `Bearer ${session.backendToken}` },
@@ -197,14 +200,23 @@ export default function ClientCampaigns() {
           setAccounts(data.connected_accounts || []);
           if (data.connected_accounts?.length > 0) {
             setSelectedAccount(data.connected_accounts[0].target_customer_id);
+          } else {
+            setLoading(false); // No accounts, stop loading
           }
+        } else {
+          setLoading(false);
         }
       } catch (err) {
         console.error("Failed to fetch accounts", err);
+        setLoading(false);
+      } finally {
+        setAccountsLoaded(true);
       }
     }
-    fetchAccounts();
-  }, [session]);
+    if (status !== "loading") {
+      fetchAccounts();
+    }
+  }, [session, status]);
 
   useEffect(() => {
     async function fetchCampaigns() {
@@ -229,8 +241,10 @@ export default function ClientCampaigns() {
         setLoading(false);
       }
     }
-    fetchCampaigns();
-  }, [session, selectedAccount]);
+    if (accountsLoaded) {
+      fetchCampaigns();
+    }
+  }, [session, selectedAccount, accountsLoaded]);
 
   useEffect(() => {
     async function fetchSavedStrategies() {
