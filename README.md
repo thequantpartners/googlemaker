@@ -1,7 +1,6 @@
 > [!IMPORTANT]
 > **AI AGENT NOTICE**: If you are an AI agent, you **MUST** read AGENTS.md first to understand the workspace operating rules and context requirements.
-
-# GMaker
+# GMAKER
 
 This repository uses PCA (Persistent Context Architecture).
 
