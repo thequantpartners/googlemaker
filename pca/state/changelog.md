@@ -57,3 +57,7 @@
 - Fixed Railway PostgreSQL asyncpg connection URL parsing and added backend Dockerfile for stable deployment.
 - Configured 14-day free trial on the frontend UI and updated backend Lemon Squeezy webhook to handle `subscription_cancelled`, `subscription_expired`, and `subscription_payment_failed` to automatically revoke access.
 - Fixed sidebar order by moving Setup Guide to the top.
+
+## 2026-06-23
+- Fixed project name capitalization to GMAKER in README.md.
+- Added delete option for saved strategies (backend API and frontend UI).

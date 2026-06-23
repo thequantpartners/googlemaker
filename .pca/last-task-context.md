@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-agregar trial de pagos con tarjeta
+Add a delete option to the saved strategy vault cards
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
+- [general] docs: close task and update context logs (2026-06-23T14:55:28.598Z)
+- [general] docs: close task and update context logs (2026-06-22T03:33:52.845Z)
 - [general] docs: close task and update context logs (2026-06-21T03:46:14.111Z)
-- [general] docs: close task and update context logs (2026-06-20T22:28:59.539Z)
-- [general] docs: close task and update context logs (2026-06-20T00:28:45.582Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

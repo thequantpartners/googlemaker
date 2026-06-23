@@ -160,6 +160,24 @@ async def get_saved_strategies(
     )
     return result.scalars().all()
 
+@router.delete("/me/campaigns/saved/{strategy_id}", status_code=204)
+async def delete_saved_strategy(
+    strategy_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    """Deletes a saved strategy for the authenticated user."""
+    result = await db.execute(
+        select(SavedStrategy)
+        .where(SavedStrategy.id == strategy_id, SavedStrategy.user_id == user.id)
+    )
+    strategy = result.scalar_one_or_none()
+    if not strategy:
+        raise HTTPException(status_code=404, detail="Strategy not found")
+        
+    await db.delete(strategy)
+    await db.commit()
+
 @router.delete("/me/credentials", status_code=204)
 async def delete_my_credentials(
     user: User = Depends(require_client),

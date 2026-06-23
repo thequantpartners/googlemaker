@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles, Target, Globe, ChevronRight, ChevronLeft, Lightbulb, Save } from "lucide-react";
+import { Plus, X, Search, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles, Target, Globe, ChevronRight, ChevronLeft, Lightbulb, Save, Trash2 } from "lucide-react";
 
 interface ConnectedAccount {
   id: string;
@@ -128,6 +128,27 @@ export default function ClientCampaigns() {
       console.error("Failed to save strategy", err);
     } finally {
       setSaveLoading(false);
+    }
+  };
+
+  const handleDeleteStrategy = async (strategyId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!session?.backendToken) return;
+    
+    if (!window.confirm("Are you sure you want to delete this strategy?")) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns/saved/${strategyId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session.backendToken}` },
+      });
+      if (res.ok) {
+        setSavedStrategies(savedStrategies.filter(s => s.id !== strategyId));
+      } else {
+        console.error("Failed to delete strategy", await res.text());
+      }
+    } catch (err) {
+      console.error("Failed to delete strategy", err);
     }
   };
 
@@ -371,22 +392,31 @@ export default function ClientCampaigns() {
                     <span className="px-2 py-1 bg-black/40 text-[10px] uppercase font-bold text-gray-300 rounded-md border border-white/5">{strategy.keywords.length} KW</span>
                     <span className="px-2 py-1 bg-black/40 text-[10px] uppercase font-bold text-gray-300 rounded-md border border-white/5">{strategy.headlines.length} HL</span>
                   </div>
-                  <button 
-                    onClick={() => {
-                      setGeneratedResult({
-                        campaign_name: strategy.campaign_name,
-                        keywords: strategy.keywords,
-                        headlines: strategy.headlines,
-                        descriptions: strategy.descriptions
-                      });
-                      setWizardStep(4);
-                      setIsModalOpen(true);
-                      setSaveSuccess(true); // Don't allow re-saving instantly
-                    }}
-                    className="text-neon-purple hover:text-white transition-colors text-sm font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100"
-                  >
-                    View <ChevronRight size={16} />
-                  </button>
+                  <div className="flex gap-3 items-center">
+                    <button 
+                      onClick={(e) => handleDeleteStrategy(strategy.id, e)}
+                      className="text-red-500/70 hover:text-red-500 transition-colors text-sm font-semibold flex items-center p-1.5 opacity-0 group-hover:opacity-100 bg-red-500/10 hover:bg-red-500/20 rounded-lg"
+                      title="Delete strategy"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setGeneratedResult({
+                          campaign_name: strategy.campaign_name,
+                          keywords: strategy.keywords,
+                          headlines: strategy.headlines,
+                          descriptions: strategy.descriptions
+                        });
+                        setWizardStep(4);
+                        setIsModalOpen(true);
+                        setSaveSuccess(true); // Don't allow re-saving instantly
+                      }}
+                      className="text-neon-purple hover:text-white transition-colors text-sm font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100"
+                    >
+                      View <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

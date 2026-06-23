@@ -42,3 +42,5 @@
 - [x] Implemented Setup/Onboarding page (`/onboarding`) to guide users through GMaker configuration steps (Google Ads, Campaigns, Telegram).
 - [x] Fix Railway PostgreSQL asyncpg connection and add backend Dockerfile.
 - [x] Implement 14-day free trial requiring an upfront credit card, handle subscription cancellation webhook logic, and fix sidebar menu order.
+- [x] Fixed project name capitalization to GMAKER in README.md.
+- [x] Added delete option for saved strategies.

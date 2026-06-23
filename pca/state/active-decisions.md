@@ -24,3 +24,4 @@
 - **AI Feature Data Strategy**: Adopted a manual "Saved Strategies Vault" approach instead of auto-saving all AI generation. This prevents database bloat from low-value generations and empowers the user to curate their own vault of high-value ad copy.
 - **AI Content Extraction**: Instead of relying on user-provided descriptions, the AI strategy tool mandates a URL input to scrape the client's actual landing page for unique selling propositions, reducing user cognitive load and improving copy quality.
 - **Notifications & Approvals (Telegram)**: Selected Telegram as the primary channel for Autopilot notifications over email. This enables real-time engagement and immediate action via Inline Keyboards without leaving the messaging app. Webhook handlers in the backend process these button clicks asynchronously to mutate Google Ads.
+- **Branding Enforcement**: Project name must be strictly capitalized as GMAKER in all documentation, including README.md.
