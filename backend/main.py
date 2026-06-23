@@ -76,22 +76,28 @@ async def lifespan(app: FastAPI):
         # DB MIGRATION: Fix missing columns for Hybrid Autopilot in orchestrator_logs
         try:
             await session.execute(text("ALTER TABLE orchestrator_logs ADD COLUMN status VARCHAR(20) DEFAULT 'auto_applied';"))
-            await session.execute(text("ALTER TABLE orchestrator_logs ADD COLUMN is_dry_run BOOLEAN DEFAULT true;"))
             await session.commit()
-            print("[OK] DB Migration: Added missing columns to orchestrator_logs.")
         except Exception as e:
             await session.rollback()
-            print(f"[WARN] DB Migration failed for new columns: {e}")
+
+        try:
+            await session.execute(text("ALTER TABLE orchestrator_logs ADD COLUMN is_dry_run BOOLEAN DEFAULT true;"))
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
 
         # DB MIGRATION: Add Telegram columns to users
         try:
             await session.execute(text("ALTER TABLE users ADD COLUMN telegram_chat_id VARCHAR(100);"))
-            await session.execute(text("ALTER TABLE users ADD COLUMN telegram_link_token VARCHAR(100);"))
             await session.commit()
-            print("[OK] DB Migration: Added Telegram columns to users.")
         except Exception as e:
             await session.rollback()
-            print(f"[WARN] DB Migration failed for Telegram columns: {e}")
+
+        try:
+            await session.execute(text("ALTER TABLE users ADD COLUMN telegram_link_token VARCHAR(100);"))
+            await session.commit()
+        except Exception as e:
+            await session.rollback()
 
         result = await session.execute(
             select(User).where(User.email == SUPERADMIN_EMAIL)
