@@ -128,6 +128,8 @@ async def find_competitors(url: str) -> list[str]:
         query_response = await model.generate_content_async(query_prompt)
         search_query = query_response.text.strip().replace('"', '')
     except Exception as e:
+        if "429" in str(e):
+            raise ValueError("La Inteligencia Artificial está saturada (límite del plan gratuito). Por favor, espera 1 minuto y vuelve a intentarlo.")
         raise ValueError(f"Failed to generate search query: {str(e)}")
 
     # 2. Scrape Google and DuckDuckGo for the query
@@ -198,4 +200,6 @@ async def find_competitors(url: str) -> list[str]:
             return data
         return []
     except Exception as e:
+        if "429" in str(e):
+            raise ValueError("La Inteligencia Artificial está saturada (límite del plan gratuito). Por favor, espera 1 minuto y vuelve a intentarlo.")
         raise ValueError(f"Failed to find competitors from search: {str(e)}")
