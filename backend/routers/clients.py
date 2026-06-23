@@ -96,8 +96,11 @@ async def get_my_campaigns(
         target = decrypt_value(selected_cred.target_customer_id)
         login = decrypt_value(selected_cred.login_customer_id)
         
+        import asyncio
         client = get_google_ads_client(refresh_token, login)
-        campaigns = fetch_campaign_metrics(client, target)
+        # Run the synchronous Google Ads gRPC call in a thread pool 
+        # so it doesn't block the entire FastAPI event loop for 3-5 seconds.
+        campaigns = await asyncio.to_thread(fetch_campaign_metrics, client, target)
         return campaigns
     except Exception as e:
         error_msg = str(e).lower()
