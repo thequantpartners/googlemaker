@@ -43,39 +43,47 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Seed superadmin if not exists
-    from database import async_session
+    # Run DB migrations using isolated connections (not the shared session)
+    # This prevents PostgreSQL session corruption after rollbacks
     from sqlalchemy import text
 
-    async with async_session() as session:
-        # Safe migration helper — works on both SQLite and PostgreSQL
-        async def safe_add_column(table: str, column: str, col_type: str, default: str | None = None):
-            default_clause = f" DEFAULT {default}" if default else ""
-            try:
-                await session.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause};"))
-                await session.commit()
-            except Exception:
-                await session.rollback()
+    async def safe_add_column(table: str, column: str, col_type: str, default: str | None = None):
+        """Add a column only if it doesn't already exist. Uses its own connection."""
+        async with engine.begin() as conn:
+            # Check if column exists using information_schema (works on both SQLite and PostgreSQL)
+            result = await conn.execute(text(
+                f"SELECT 1 FROM pragma_table_info('{table}') WHERE name='{column}'"
+                if str(engine.url).startswith("sqlite")
+                else f"SELECT 1 FROM information_schema.columns WHERE table_name='{table}' AND column_name='{column}'"
+            ))
+            if result.first() is None:
+                default_clause = f" DEFAULT {default}" if default else ""
+                await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause};"))
 
-        # DB MIGRATION: Add missing columns
+    try:
         await safe_add_column("users", "tier", "VARCHAR(50)", "'none'")
         await safe_add_column("users", "telegram_chat_id", "VARCHAR(100)")
         await safe_add_column("users", "telegram_link_token", "VARCHAR(100)")
         await safe_add_column("orchestrator_logs", "status", "VARCHAR(20)", "'auto_applied'")
         await safe_add_column("orchestrator_logs", "is_dry_run", "BOOLEAN", "true")
+    except Exception as e:
+        print(f"[WARN] Migration error (non-fatal): {e}")
 
-        # DB MIGRATION: Fix legacy tier enums
-        try:
-            await session.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='enterprise';"))
-            await session.execute(text("UPDATE users SET tier='starter' WHERE tier='basic';"))
-            await session.execute(text("UPDATE users SET tier='growth' WHERE tier='scale';"))
-            await session.execute(text("UPDATE users SET tier='pro' WHERE tier='growth' AND email != 'superadmin@example.com';"))
-            await session.commit()
-        except Exception:
-            await session.rollback()
+    # Fix legacy tier enums
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='enterprise';"))
+            await conn.execute(text("UPDATE users SET tier='starter' WHERE tier='basic';"))
+            await conn.execute(text("UPDATE users SET tier='growth' WHERE tier='scale';"))
+            await conn.execute(text("UPDATE users SET tier='pro' WHERE tier='growth' AND email != 'superadmin@example.com';"))
+    except Exception:
+        pass
 
-        print("[OK] DB Migrations completed.")
+    print("[OK] DB Migrations completed.")
 
+    # Seed superadmin if not exists
+    from database import async_session
+    async with async_session() as session:
         result = await session.execute(
             select(User).where(User.email == SUPERADMIN_EMAIL)
         )
