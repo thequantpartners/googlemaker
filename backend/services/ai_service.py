@@ -132,41 +132,50 @@ async def find_competitors(url: str) -> list[str]:
             raise ValueError("La Inteligencia Artificial está saturada (límite del plan gratuito). Por favor, espera 1 minuto y vuelve a intentarlo.")
         raise ValueError(f"Failed to generate search query: {str(e)}")
 
-    # 2. Scrape Google and DuckDuckGo for the query
-    search_results_text = "--- GOOGLE SEARCH RESULTS ---\n"
-    google_url = f"https://www.google.com/search?q={urllib.parse.quote(search_query)}"
+    # 2. Scrape Google and DuckDuckGo for the query concurrently
+    search_results_text = ""
     
-    try:
-        async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
-            res = await client.get(
-                google_url, 
-                headers={
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                },
-                timeout=5.0
-            )
-            soup = BeautifulSoup(res.text, "lxml")
-            titles = soup.select('h3')
-            for t in titles[:8]:
-                if t.text.strip():
-                    search_results_text += f"Title: {t.text.strip()}\n"
-    except Exception as e:
-        print(f"Google HTTP search error: {e}")
+    import asyncio
+    async def fetch_google():
+        google_url = f"https://www.google.com/search?q={urllib.parse.quote(search_query)}"
+        try:
+            async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
+                res = await client.get(
+                    google_url, 
+                    headers={
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                    },
+                    timeout=5.0
+                )
+                soup = BeautifulSoup(res.text, "lxml")
+                titles = soup.select('h3')
+                return "--- GOOGLE SEARCH RESULTS ---\n" + "".join([f"Title: {t.text.strip()}\n" for t in titles[:8] if t.text.strip()])
+        except Exception as e:
+            print(f"Google HTTP search error: {e}")
+            return ""
 
-    search_results_text += "\n--- OTHER SEARCH ENGINE (DuckDuckGo) RESULTS ---\n"
-    search_url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(search_query)}"
+    async def fetch_ddg():
+        search_url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(search_query)}"
+        try:
+            async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
+                res = await client.get(search_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=5.0)
+                soup = BeautifulSoup(res.text, "lxml")
+                results = soup.select('.result__snippet')
+                titles = soup.select('.result__title')
+                return "\n--- OTHER SEARCH ENGINE (DuckDuckGo) RESULTS ---\n" + "".join([f"Title: {t.text.strip()}\nSnippet: {s.text.strip()}\n\n" for t, s in zip(titles[:8], results[:8])])
+        except Exception as e:
+            print(f"DuckDuckGo Search failed: {e}")
+            return ""
+
     try:
-        async with httpx.AsyncClient(follow_redirects=True, verify=False) as client:
-            res = await client.get(search_url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}, timeout=5.0)
-            soup = BeautifulSoup(res.text, "lxml")
-            results = soup.select('.result__snippet')
-            titles = soup.select('.result__title')
-            
-            for t, s in zip(titles[:8], results[:8]):
-                search_results_text += f"Title: {t.text.strip()}\nSnippet: {s.text.strip()}\n\n"
+        g_task = asyncio.wait_for(fetch_google(), timeout=4.0)
+        d_task = asyncio.wait_for(fetch_ddg(), timeout=4.0)
+        concurrent_results = await asyncio.gather(g_task, d_task, return_exceptions=True)
+        search_results_text += concurrent_results[0] if isinstance(concurrent_results[0], str) else ""
+        search_results_text += concurrent_results[1] if isinstance(concurrent_results[1], str) else ""
     except Exception as e:
-        print(f"Search failed: {e}")
+        print(f"Concurrent search error: {e}")
 
     # 3. Ask Gemini to extract the competitors from the combined search results
     extract_prompt = f"""
