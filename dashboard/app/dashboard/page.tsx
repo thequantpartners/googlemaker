@@ -67,22 +67,31 @@ function DashboardContent() {
       let totalClk = 0;
       let totalConv = 0;
 
-      for (const acc of statusData.connected_accounts) {
-        if (acc.target_customer_id === "Unknown" || acc.target_customer_id === "Unknown:1" || acc.target_customer_id.includes("PENDING")) continue;
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns?customer_id=${acc.target_customer_id}`, {
-            headers: { Authorization: `Bearer ${session.backendToken}` }
-          });
+      const validAccounts = statusData.connected_accounts.filter(
+        (acc: any) => acc.target_customer_id !== "Unknown" && acc.target_customer_id !== "Unknown:1" && !acc.target_customer_id.includes("PENDING")
+      );
+
+      const fetchPromises = validAccounts.map((acc: any) => 
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/campaigns?customer_id=${acc.target_customer_id}`, {
+          headers: { Authorization: `Bearer ${session.backendToken}` }
+        }).then(async res => {
           if (res.ok) {
-            const camps = await res.json();
-            for (const c of camps) {
-              totalCst += c.cost || 0;
-              totalClk += c.clicks || 0;
-              totalConv += c.conversions || 0;
-            }
+            return await res.json();
           }
-        } catch (e) {
+          return [];
+        }).catch(e => {
           console.error(e);
+          return [];
+        })
+      );
+
+      const results = await Promise.all(fetchPromises);
+      
+      for (const camps of results) {
+        for (const c of camps) {
+          totalCst += c.cost || 0;
+          totalClk += c.clicks || 0;
+          totalConv += c.conversions || 0;
         }
       }
 
