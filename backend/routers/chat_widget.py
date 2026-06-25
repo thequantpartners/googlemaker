@@ -2,20 +2,27 @@
 routers/chat_widget.py — Chat Widget endpoints.
 
 PRIVATE  (JWT required, prefix /clients/me):
-  GET  /clients/me/chat-widget          → get or create config
-  PUT  /clients/me/chat-widget          → update config
-  GET  /clients/me/chat-widget/leads    → list captured leads
+  GET  /clients/me/chat-widget              → get or create config
+  PUT  /clients/me/chat-widget              → update config
+  GET  /clients/me/chat-widget/leads        → list captured leads
+  GET  /clients/me/payment-config           → get payment configuration
+  PUT  /clients/me/payment-config           → update payment configuration
 
 PUBLIC   (open CORS, mounted under /widget via a separate FastAPI sub-app):
-  POST /widget/chat/{client_id}/start   → create session, return first messages
-  POST /widget/chat/{client_id}/message → process user message, return bot reply
+  POST /widget/chat/{client_id}/start       → create session, return first messages
+  POST /widget/chat/{client_id}/message     → process user message, return bot reply
+  GET  /widget/chat/{client_id}/payment-info → safe payment info (no secret keys)
+  POST /widget/chat/{client_id}/create-checkout → create Stripe checkout session
 """
 
 from __future__ import annotations
 
+import os
+import secrets
 from datetime import datetime, timezone
+from typing import Optional
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi import APIRouter, Body, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,6 +33,7 @@ from models import (
     ChatSession,
     ChatSessionState,
     ChatWidgetConfig,
+    ClientPaymentConfig,
     Lead,
     User,
 )
@@ -33,10 +41,15 @@ from schemas import (
     ChatBotMessage,
     ChatMessageRequest,
     ChatMessageResponse,
+    ChatStartRequest,
     ChatStartResponse,
     ChatWidgetConfigOut,
     ChatWidgetConfigUpdate,
+    ClientPaymentConfigOut,
+    ClientPaymentConfigUpdate,
+    CreateCheckoutRequest,
     LeadOut,
+    PaymentInfo,
 )
 from services.chat_engine import process_chat_message
 
@@ -55,18 +68,34 @@ def _now() -> datetime:
 async def _get_or_create_config(
     user: User, db: AsyncSession
 ) -> ChatWidgetConfig:
-    """Return the user's ChatWidgetConfig, creating a default one if needed."""
     result = await db.execute(
         select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == user.id)
     )
     config = result.scalar_one_or_none()
-
     if config is None:
         config = ChatWidgetConfig(client_id=user.id)
         db.add(config)
         await db.commit()
         await db.refresh(config)
+    return config
 
+
+async def _get_or_create_payment_config(
+    user: User, db: AsyncSession
+) -> ClientPaymentConfig:
+    result = await db.execute(
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == user.id)
+    )
+    config = result.scalar_one_or_none()
+    if config is None:
+        config = ClientPaymentConfig(
+            user_id=user.id,
+            provider="custom",
+            generic_webhook_secret=secrets.token_urlsafe(32),
+        )
+        db.add(config)
+        await db.commit()
+        await db.refresh(config)
     return config
 
 
@@ -75,8 +104,6 @@ async def get_chat_widget_config(
     user: User = Depends(require_client),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return the widget configuration for the authenticated client.
-    A default config is auto-created on first access."""
     return await _get_or_create_config(user, db)
 
 
@@ -86,19 +113,15 @@ async def update_chat_widget_config(
     user: User = Depends(require_client),
     db: AsyncSession = Depends(get_db),
 ):
-    """Update widget appearance, rules, and AI parameters."""
     config = await _get_or_create_config(user, db)
-
     update_data = body.model_dump(exclude_unset=True)
     for field, value in update_data.items():
-        # rules_config arrives as list[RuleQuestion] Pydantic models → convert to plain dicts
         if field == "rules_config" and value is not None:
             value = [
                 rq.model_dump() if hasattr(rq, "model_dump") else rq
                 for rq in value
             ]
         setattr(config, field, value)
-
     config.updated_at = _now()
     await db.commit()
     await db.refresh(config)
@@ -110,7 +133,6 @@ async def get_my_leads(
     user: User = Depends(require_client),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return all leads captured by this client's widget (newest first)."""
     result = await db.execute(
         select(Lead)
         .where(Lead.client_id == user.id)
@@ -118,6 +140,73 @@ async def get_my_leads(
         .limit(500)
     )
     return result.scalars().all()
+
+
+@router.get("/me/payment-config", response_model=ClientPaymentConfigOut)
+async def get_payment_config(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    config = await _get_or_create_payment_config(user, db)
+    keys = config.provider_keys or {}
+    return ClientPaymentConfigOut(
+        id=config.id,
+        user_id=config.user_id,
+        provider=config.provider,
+        custom_payment_link=config.custom_payment_link,
+        generic_webhook_secret=config.generic_webhook_secret,
+        consultation_fee=config.consultation_fee,
+        has_stripe_key=bool(keys.get("stripe_secret_key")),
+        has_paypal_key=bool(keys.get("paypal_client_id")),
+        created_at=config.created_at,
+        updated_at=config.updated_at,
+    )
+
+
+@router.put("/me/payment-config", response_model=ClientPaymentConfigOut)
+async def update_payment_config(
+    body: ClientPaymentConfigUpdate,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    config = await _get_or_create_payment_config(user, db)
+    data = body.model_dump(exclude_unset=True)
+
+    if "provider" in data:
+        config.provider = data["provider"]
+    if "custom_payment_link" in data:
+        config.custom_payment_link = data["custom_payment_link"]
+    if "consultation_fee" in data:
+        config.consultation_fee = data["consultation_fee"]
+
+    # Merge provider keys without overwriting unrelated providers
+    keys = dict(config.provider_keys or {})
+    if data.get("stripe_secret_key") is not None:
+        keys["stripe_secret_key"] = data["stripe_secret_key"]
+    if data.get("stripe_webhook_secret") is not None:
+        keys["stripe_webhook_secret"] = data["stripe_webhook_secret"]
+    if data.get("paypal_client_id") is not None:
+        keys["paypal_client_id"] = data["paypal_client_id"]
+    if data.get("paypal_client_secret") is not None:
+        keys["paypal_client_secret"] = data["paypal_client_secret"]
+    config.provider_keys = keys
+
+    config.updated_at = _now()
+    await db.commit()
+    await db.refresh(config)
+
+    return ClientPaymentConfigOut(
+        id=config.id,
+        user_id=config.user_id,
+        provider=config.provider,
+        custom_payment_link=config.custom_payment_link,
+        generic_webhook_secret=config.generic_webhook_secret,
+        consultation_fee=config.consultation_fee,
+        has_stripe_key=bool(keys.get("stripe_secret_key")),
+        has_paypal_key=bool(keys.get("paypal_client_id")),
+        created_at=config.created_at,
+        updated_at=config.updated_at,
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -130,12 +219,10 @@ public_router = APIRouter(prefix="/chat", tags=["Chat Widget — Public"])
 async def _require_active_config(
     client_id: str, db: AsyncSession
 ) -> ChatWidgetConfig:
-    """Fetch widget config and guard against missing / disabled widgets."""
     result = await db.execute(
         select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id)
     )
     config = result.scalar_one_or_none()
-
     if config is None or not config.is_enabled:
         raise HTTPException(
             status_code=404, detail="Widget not found or not enabled for this client."
@@ -144,7 +231,6 @@ async def _require_active_config(
 
 
 async def _require_client_user(client_id: str, db: AsyncSession) -> User:
-    """Load the owner User row (needed for Telegram notifications in the engine)."""
     result = await db.execute(select(User).where(User.id == client_id))
     user = result.scalar_one_or_none()
     if user is None:
@@ -155,23 +241,28 @@ async def _require_client_user(client_id: str, db: AsyncSession) -> User:
 @public_router.post("/{client_id}/start", response_model=ChatStartResponse)
 async def start_chat_session(
     client_id: str,
+    body: Optional[ChatStartRequest] = Body(default=None),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Initialise a new chat session for a visitor.
-
-    Returns the welcome message and the first rule question (with button options)
-    so the widget can render them immediately without a second round-trip.
+    Accepts optional UTM / gclid tracking data in the request body.
     """
     config = await _require_active_config(client_id, db)
     rules: list[dict] = config.rules_config or []
 
-    # Decide initial state: if there are no rules → go straight to AI_MODE.
     initial_state = (
         ChatSessionState.ai_mode
         if not rules
         else ChatSessionState.rules_mode
     )
+
+    # Store UTM tracking data from the visitor's page URL
+    tracking_data: dict | None = None
+    if body:
+        tracking_data = {
+            k: v for k, v in body.model_dump().items() if v is not None
+        } or None
 
     session = ChatSession(
         client_id=client_id,
@@ -179,19 +270,17 @@ async def start_chat_session(
         current_score=0,
         current_rule_index=0,
         history=[],
+        tracking_data=tracking_data,
     )
     db.add(session)
 
-    # ── Build the opening message sequence ───────────────────────────────────
     messages: list[ChatBotMessage] = []
     now_iso = datetime.now(timezone.utc).isoformat()
     history: list[dict] = []
 
-    # 1. Welcome message (always shown)
     history.append({"role": "bot", "content": config.welcome_message, "timestamp": now_iso})
     messages.append(ChatBotMessage(content=config.welcome_message, type="text"))
 
-    # 2a. First rule question (if rules exist)
     if rules:
         first_rule = rules[0]
         first_question = first_rule.get("question", "")
@@ -222,12 +311,7 @@ async def send_chat_message(
     body: ChatMessageRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Process a visitor's message and return the bot's reply.
-
-    The engine handles the full state transition logic (RULES → AI → CLOSED).
-    """
-    # ── Validate session ──────────────────────────────────────────────────────
+    """Process a visitor's message. Returns bot reply, state, and payment info on lead capture."""
     result = await db.execute(
         select(ChatSession).where(
             ChatSession.session_id == body.session_id,
@@ -238,11 +322,9 @@ async def send_chat_message(
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found.")
 
-    # ── Load config and owner user ────────────────────────────────────────────
     config = await _require_active_config(client_id, db)
     client_user = await _require_client_user(client_id, db)
 
-    # ── Run the state machine ─────────────────────────────────────────────────
     result_obj = await process_chat_message(
         session=session,
         config=config,
@@ -250,6 +332,28 @@ async def send_chat_message(
         db=db,
         client_user=client_user,
     )
+
+    # Build payment info when a lead was just captured
+    payment_info: PaymentInfo | None = None
+    if result_obj.lead_captured and result_obj.lead_id:
+        pay_result = await db.execute(
+            select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
+        )
+        pay_cfg = pay_result.scalar_one_or_none()
+
+        if pay_cfg and pay_cfg.consultation_fee and pay_cfg.consultation_fee > 0:
+            payment_url = None
+            if pay_cfg.provider == "custom" and pay_cfg.custom_payment_link:
+                payment_url = (
+                    f"{pay_cfg.custom_payment_link}"
+                    f"?lead_id={result_obj.lead_id}&type=consultation"
+                )
+            payment_info = PaymentInfo(
+                required=True,
+                amount=pay_cfg.consultation_fee,
+                provider=pay_cfg.provider,
+                payment_url=payment_url,
+            )
 
     return ChatMessageResponse(
         messages=[
@@ -262,7 +366,91 @@ async def send_chat_message(
         ],
         state=result_obj.new_state.value,
         lead_captured=result_obj.lead_captured,
+        lead_id=result_obj.lead_id,
+        payment_info=payment_info,
     )
+
+
+@public_router.get("/{client_id}/payment-info")
+async def get_public_payment_info(
+    client_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Return safe payment metadata for the widget (no secret keys exposed)."""
+    result = await db.execute(
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
+    )
+    config = result.scalar_one_or_none()
+
+    if not config or not config.consultation_fee:
+        return {"has_payment": False, "amount": 0, "provider": None}
+
+    return {
+        "has_payment": bool(config.consultation_fee > 0),
+        "amount": config.consultation_fee,
+        "provider": config.provider,
+    }
+
+
+@public_router.post("/{client_id}/create-checkout")
+async def create_stripe_checkout(
+    client_id: str,
+    body: CreateCheckoutRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Create a Stripe Checkout session and return the redirect URL."""
+    try:
+        import stripe
+    except ImportError:
+        raise HTTPException(status_code=500, detail="Stripe SDK not installed.")
+
+    # Load payment config
+    result = await db.execute(
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
+    )
+    pay_cfg = result.scalar_one_or_none()
+    if not pay_cfg or pay_cfg.provider != "stripe":
+        raise HTTPException(status_code=400, detail="Stripe not configured for this client.")
+
+    keys = pay_cfg.provider_keys or {}
+    stripe_secret = keys.get("stripe_secret_key")
+    if not stripe_secret:
+        raise HTTPException(status_code=400, detail="Stripe secret key not set.")
+
+    # Load lead to verify and get amount
+    lead_result = await db.execute(
+        select(Lead).where(Lead.id == body.lead_id, Lead.client_id == client_id)
+    )
+    lead = lead_result.scalar_one_or_none()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+
+    amount = pay_cfg.consultation_fee if body.payment_type == "consultation" else None
+    if not amount or amount <= 0:
+        raise HTTPException(status_code=400, detail="Consultation fee not configured.")
+
+    stripe.api_key = stripe_secret
+    checkout_session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "product_data": {"name": "Consultation"},
+                "unit_amount": int(amount * 100),
+            },
+            "quantity": 1,
+        }],
+        mode="payment",
+        metadata={
+            "lead_id": body.lead_id,
+            "payment_type": body.payment_type,
+            "client_id": client_id,
+        },
+        success_url=f"{body.return_url}?payment_success=1&lead_id={body.lead_id}",
+        cancel_url=f"{body.return_url}?payment_cancelled=1",
+    )
+
+    return {"checkout_url": checkout_session.url}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -270,21 +458,16 @@ async def send_chat_message(
 # ─────────────────────────────────────────────────────────────────────────────
 
 def create_widget_app() -> FastAPI:
-    """
-    Build an isolated FastAPI sub-application for the public widget endpoints.
-    This sub-app has fully open CORS so any website can embed the widget.
-    It shares the same DB engine (imported from database.py) as the main app.
-    """
     app = FastAPI(
         title="GMaker Chat Widget — Public API",
-        docs_url=None,   # hide docs from public
+        docs_url=None,
         redoc_url=None,
     )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
-        allow_credentials=False,          # cannot use credentials=True with allow_origins=["*"]
-        allow_methods=["POST", "OPTIONS"],
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["Content-Type"],
     )
     app.include_router(public_router)

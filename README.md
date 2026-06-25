@@ -1,6 +1,6 @@
 > [!IMPORTANT]
 > **AI AGENT NOTICE**: If you are an AI agent, you **MUST** read AGENTS.md first to understand the workspace operating rules and context requirements.
-# GMAKER
+# QSS (Quant SaaS System)
 
 This repository uses PCA (Persistent Context Architecture).
 
@@ -33,3 +33,7 @@ pca task "current task"
     *   **Rule-based Pre-qualification**: Deterministic state machine to evaluate user intent.
     *   **AI Handoff**: Gemini 2.0 Flash integration for autonomous lead closing.
     *   **CORS Sub-app Isolation**: Secure internal API separation from public widget endpoints.
+*   **Lightweight CRM & Payments (QSS)**:
+    *   **Lead Tracking**: Auto-captures `gclid` and UTM parameters for robust Google Ads attribution.
+    *   **Dynamic Payments**: Configurable payment providers per client (`ClientPaymentConfig`), natively supporting Stripe checkouts or Custom redirect links (e.g., LawPay).
+    *   **Conversion Metrics**: Centralized dashboard calculating Ad Spend vs Leads Captured vs Consultations Paid vs Full Cases Paid.

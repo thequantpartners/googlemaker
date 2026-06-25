@@ -44,6 +44,7 @@ class EngineResult:
     messages: list[dict] = field(default_factory=list)
     new_state: ChatSessionState = ChatSessionState.rules_mode
     lead_captured: bool = False
+    lead_id: str | None = None
 
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
@@ -196,12 +197,17 @@ async def _call_gemini(
     lead_captured = False
     new_state = session.state
 
+    lead_id: str | None = None
+
     if lead_match:
         # Strip the marker from the visible reply
         clean_reply = _LEAD_RE.sub("", raw_text).strip()
 
         try:
             lead_data: dict = json.loads(lead_match.group(1))
+
+            # Pull UTM attribution from the session (set during /start)
+            tracking: dict = session.tracking_data or {}
 
             new_lead = Lead(
                 client_id=session.client_id,
@@ -210,10 +216,15 @@ async def _call_gemini(
                 email=lead_data.get("email") or None,
                 phone=lead_data.get("phone") or None,
                 source="chat_widget",
-                # Persist full transcript including this final bot message
                 chat_transcript=_push(history, "bot", clean_reply),
+                gclid=tracking.get("gclid"),
+                utm_source=tracking.get("utm_source"),
+                utm_medium=tracking.get("utm_medium"),
+                utm_campaign=tracking.get("utm_campaign"),
             )
             db.add(new_lead)
+            await db.flush()  # populate UUID so we can return the id
+            lead_id = new_lead.id
             new_state = ChatSessionState.closed
             lead_captured = True
 
@@ -251,6 +262,7 @@ async def _call_gemini(
         "updated_history": updated_history,
         "new_state": new_state,
         "lead_captured": lead_captured,
+        "lead_id": lead_id,
     }
 
 
@@ -293,6 +305,7 @@ async def _handle_rules_mode(
             messages=[{"content": ai["reply"], "type": "text", "options": None}],
             new_state=session.state,
             lead_captured=ai["lead_captured"],
+            lead_id=ai.get("lead_id"),
         )
 
     # 3b. More questions remain ───────────────────────────────────────────────
@@ -346,6 +359,7 @@ async def _handle_ai_mode(
         messages=[{"content": ai["reply"], "type": "text", "options": None}],
         new_state=session.state,
         lead_captured=ai["lead_captured"],
+        lead_id=ai.get("lead_id"),
     )
 
 

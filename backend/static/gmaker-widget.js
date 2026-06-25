@@ -37,6 +37,22 @@
   var initialized  = false;
   var sending      = false;
 
+  /* ── UTM / gclid tracking from page URL ───────────────────────────────── */
+
+  function _getTrackingData() {
+    try {
+      var params = new URLSearchParams(win.location.search);
+      return {
+        gclid:        params.get('gclid')        || undefined,
+        utm_source:   params.get('utm_source')   || undefined,
+        utm_medium:   params.get('utm_medium')   || undefined,
+        utm_campaign: params.get('utm_campaign') || undefined,
+      };
+    } catch (e) { return {}; }
+  }
+
+  var trackingData = _getTrackingData();
+
   /* ── 2. CSS (all classes prefixed with gm- to avoid host-page conflicts) */
 
   var CSS = [
@@ -127,6 +143,14 @@
     '.gm-pw{text-align:center;padding:5px 0 7px;font-size:10px;color:#9ca3af;background:#fff;flex-shrink:0}',
     '.gm-pw a{color:#9ca3af;text-decoration:none}',
     '.gm-pw a:hover{color:var(--gm-p,#4F46E5)}',
+
+    /* Payment CTA */
+    '.gm-pay-cta{padding:12px 14px;background:#fff;border-top:1px solid #e5e7eb;flex-shrink:0}',
+    '.gm-pay-btn{width:100%;padding:11px;border-radius:12px;border:none;cursor:pointer;',
+    'font-size:14px;font-weight:600;color:#fff;',
+    'background:var(--gm-p,#4F46E5);transition:opacity .14s}',
+    '.gm-pay-btn:hover{opacity:.85}',
+    '.gm-pay-label{font-size:11px;color:#6b7280;text-align:center;margin-top:6px}',
 
     /* Animations */
     '@keyframes gmIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}',
@@ -255,7 +279,65 @@
     });
   }
 
-  /* ── 6. API calls ────────────────────────────────────────────────────────── */
+  /* ── 6. Payment CTA ─────────────────────────────────────────────────────── */
+
+  function showPaymentCTA(paymentInfo, leadId) {
+    var chatWinEl = doc.getElementById('gm-win');
+    // Remove existing CTA if any
+    var existing = doc.getElementById('gm-pay-cta');
+    if (existing) existing.remove();
+
+    var provider = paymentInfo.provider;
+    var amount   = paymentInfo.amount;
+    var btnLabel = 'Pay $' + (amount ? amount.toFixed(2) : '0.00') + ' — Book Consultation';
+
+    var ctaEl = doc.createElement('div');
+    ctaEl.id = 'gm-pay-cta';
+    ctaEl.className = 'gm-pay-cta';
+    ctaEl.innerHTML =
+      '<button class="gm-pay-btn" id="gm-pay-btn">' + btnLabel + '</button>' +
+      '<p class="gm-pay-label">Secure payment · No commitment after consultation</p>';
+
+    // Insert before footer
+    var footer = chatWinEl ? chatWinEl.querySelector('.gm-pw') : null;
+    if (chatWinEl) chatWinEl.insertBefore(ctaEl, footer);
+
+    doc.getElementById('gm-pay-btn').addEventListener('click', function () {
+      if (provider === 'custom' && paymentInfo.payment_url) {
+        win.location.href = paymentInfo.payment_url;
+      } else if (provider === 'stripe') {
+        _createStripeCheckout(leadId);
+      }
+    });
+  }
+
+  function _createStripeCheckout(leadId) {
+    var btn = doc.getElementById('gm-pay-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Redirecting…'; }
+
+    fetch(API + '/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lead_id: leadId,
+        payment_type: 'consultation',
+        return_url: win.location.href,
+      }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.checkout_url) {
+          win.location.href = data.checkout_url;
+        } else {
+          if (btn) { btn.disabled = false; btn.textContent = 'Try Again'; }
+        }
+      })
+      .catch(function () {
+        if (btn) { btn.disabled = false; btn.textContent = 'Try Again'; }
+      });
+  }
+
+  /* ── 7. API calls ────────────────────────────────────────────────────────── */
 
   function applyTheme(color, name) {
     if (color) {
@@ -272,6 +354,7 @@
     fetch(API + '/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(trackingData),
     })
       .then(function (r) {
         if (!r.ok) throw new Error('start:' + r.status);
@@ -328,7 +411,11 @@
 
         if (data.state === 'CLOSED') {
           setInputLocked(true);
-          localStorage.removeItem(STORAGE_KEY);   // allow fresh start next page load
+          localStorage.removeItem(STORAGE_KEY);
+          // Show payment CTA if the backend returned payment info
+          if (data.lead_captured && data.payment_info && data.payment_info.required) {
+            showPaymentCTA(data.payment_info, data.lead_id);
+          }
         } else {
           setInputLocked(false);
         }
@@ -344,7 +431,7 @@
       });
   }
 
-  /* ── 7. UI toggles ───────────────────────────────────────────────────────── */
+  /* ── 8. UI toggles ───────────────────────────────────────────────────────── */
 
   function openChat() {
     doc.getElementById('gm-win').classList.add('gm-open');
@@ -360,7 +447,7 @@
     doc.getElementById('gm-win').classList.remove('gm-open');
   }
 
-  /* ── 8. Bootstrap ────────────────────────────────────────────────────────── */
+  /* ── 9. Bootstrap ────────────────────────────────────────────────────────── */
 
   function init() {
     if (initialized) return;

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Plus, AlertCircle, CheckCircle2, Activity, XCircle } from "lucide-react";
+import { Plus, AlertCircle, CheckCircle2, Activity, XCircle, Users, CreditCard, TrendingUp, Target } from "lucide-react";
 import PricingCards from "../components/PricingCards";
 
 function Skeleton({ className = "" }: { className?: string }) {
@@ -21,6 +21,14 @@ function DashboardContent() {
 
   const [globalMetrics, setGlobalMetrics] = useState({ cost: 0, clicks: 0, conversions: 0, avgCpa: 0 });
   const [chartData, setChartData] = useState<any[]>([]);
+  const [crmMetrics, setCrmMetrics] = useState<{
+    ad_spend: number;
+    total_leads_tracked: number;
+    consultation_paid_count: number;
+    full_case_paid_count: number;
+    lead_sources: { source: string; count: number }[];
+  } | null>(null);
+  const [crmLoading, setCrmLoading] = useState(true);
 
   async function checkStatus() {
     try {
@@ -47,11 +55,27 @@ function DashboardContent() {
     if (status === "loading") return;
     if (status === "authenticated" && session?.backendToken) {
       checkStatus();
+      loadCrmMetrics();
     } else {
       setLoading(false);
       setIsLoadingMetrics(false);
+      setCrmLoading(false);
     }
   }, [session, status]);
+
+  async function loadCrmMetrics() {
+    if (!session?.backendToken) { setCrmLoading(false); return; }
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dashboard/metrics`, {
+        headers: { Authorization: `Bearer ${session.backendToken}` },
+      });
+      if (res.ok) setCrmMetrics(await res.json());
+    } catch (e) {
+      console.error("CRM metrics fetch failed", e);
+    } finally {
+      setCrmLoading(false);
+    }
+  }
 
   useEffect(() => {
     async function loadMetrics() {
@@ -418,6 +442,104 @@ function DashboardContent() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── QSS CRM KPIs ──────────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-white">Lead & Revenue Tracking</h3>
+          <a href="/dashboard/chat-widget" className="text-xs text-neon-purple hover:text-white transition-colors">
+            Manage Widget →
+          </a>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+
+          {/* Total Leads */}
+          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                          shadow-[0_0_30px_rgba(168,85,247,0.05)] group hover:border-neon-purple/30 transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-neon-purple/5 to-transparent pointer-events-none" />
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-2 rounded-xl bg-neon-purple/10 border border-neon-purple/20">
+                <Users size={18} className="text-neon-purple" />
+              </div>
+              <span className="text-[10px] font-semibold text-neon-purple/70 uppercase tracking-widest">CRM</span>
+            </div>
+            {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (
+              <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.total_leads_tracked ?? 0}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Total leads captured</p>
+          </div>
+
+          {/* Consultations Paid */}
+          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                          shadow-[0_0_30px_rgba(16,185,129,0.05)] group hover:border-neon-green/30 transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent pointer-events-none" />
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-2 rounded-xl bg-neon-green/10 border border-neon-green/20">
+                <CreditCard size={18} className="text-neon-green" />
+              </div>
+              <span className="text-[10px] font-semibold text-neon-green/70 uppercase tracking-widest">Paid</span>
+            </div>
+            {crmLoading ? <Skeleton className="h-8 w-16 mb-1" /> : (
+              <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.consultation_paid_count ?? 0}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Consultations paid</p>
+          </div>
+
+          {/* Full Cases Paid */}
+          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                          shadow-[0_0_30px_rgba(59,130,246,0.05)] group hover:border-neon-blue/30 transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-neon-blue/5 to-transparent pointer-events-none" />
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-2 rounded-xl bg-neon-blue/10 border border-neon-blue/20">
+                <TrendingUp size={18} className="text-neon-blue" />
+              </div>
+              <span className="text-[10px] font-semibold text-neon-blue/70 uppercase tracking-widest">Closed</span>
+            </div>
+            {crmLoading ? <Skeleton className="h-8 w-16 mb-1" /> : (
+              <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.full_case_paid_count ?? 0}</p>
+            )}
+            <p className="text-xs text-gray-500 mt-1">Full cases retained</p>
+          </div>
+
+          {/* Conversion Rate */}
+          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                          shadow-[0_0_30px_rgba(245,158,11,0.05)] group hover:border-amber-500/30 transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+            <div className="flex items-start justify-between mb-3">
+              <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <Target size={18} className="text-amber-400" />
+              </div>
+              <span className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-widest">Rate</span>
+            </div>
+            {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (() => {
+              const total = crmMetrics?.total_leads_tracked ?? 0;
+              const paid = (crmMetrics?.consultation_paid_count ?? 0) + (crmMetrics?.full_case_paid_count ?? 0);
+              const rate = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
+              return <p className="text-3xl font-bold text-white tracking-tight">{rate}%</p>;
+            })()}
+            <p className="text-xs text-gray-500 mt-1">Lead → payment rate</p>
+          </div>
+        </div>
+
+        {/* Lead Sources breakdown */}
+        {!crmLoading && crmMetrics && crmMetrics.lead_sources.length > 0 && (
+          <div className="bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5">
+            <p className="text-sm font-medium text-gray-400 mb-3">Lead Sources</p>
+            <div className="flex flex-wrap gap-2">
+              {crmMetrics.lead_sources.map((src) => (
+                <span key={src.source}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]
+                             text-xs text-gray-300 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-neon-purple" />
+                  {src.source}
+                  <span className="text-gray-500 font-normal">({src.count})</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Chart — card chrome always visible */}

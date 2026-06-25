@@ -221,10 +221,28 @@ class ChatMessageRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
 
 
+class ChatStartRequest(BaseModel):
+    """Optional tracking data sent by the widget on session open."""
+    gclid: str | None = None
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_campaign: str | None = None
+
+
+class PaymentInfo(BaseModel):
+    """Payment metadata returned alongside a lead-capture event."""
+    required: bool = False
+    amount: float | None = None
+    provider: str | None = None
+    payment_url: str | None = None  # pre-built link for "custom" provider
+
+
 class ChatMessageResponse(BaseModel):
     messages: list[ChatBotMessage]
     state: str
     lead_captured: bool = False
+    lead_id: str | None = None
+    payment_info: PaymentInfo | None = None
 
 
 class LeadOut(BaseModel):
@@ -235,6 +253,67 @@ class LeadOut(BaseModel):
     phone: str | None = None
     email: str | None = None
     source: str
+    gclid: str | None = None
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_campaign: str | None = None
+    consultation_paid: bool = False
+    consultation_amount: float | None = None
+    full_case_paid: bool = False
+    full_case_amount: float | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ── Payment Config ────────────────────────────────────────────────────────────
+
+
+class ClientPaymentConfigUpdate(BaseModel):
+    provider: str | None = Field(None, pattern=r"^(stripe|paypal|custom)$")
+    stripe_secret_key: str | None = None
+    stripe_webhook_secret: str | None = None
+    paypal_client_id: str | None = None
+    paypal_client_secret: str | None = None
+    custom_payment_link: str | None = None
+    consultation_fee: float | None = Field(None, ge=0)
+
+
+class ClientPaymentConfigOut(BaseModel):
+    id: str
+    user_id: str
+    provider: str
+    custom_payment_link: str | None = None
+    generic_webhook_secret: str | None = None
+    consultation_fee: float | None = None
+    has_stripe_key: bool = False
+    has_paypal_key: bool = False
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# ── Dashboard Metrics ─────────────────────────────────────────────────────────
+
+
+class LeadSourceStat(BaseModel):
+    source: str
+    count: int
+
+
+class DashboardMetrics(BaseModel):
+    ad_spend: float = 0.0
+    total_leads_tracked: int = 0
+    consultation_paid_count: int = 0
+    full_case_paid_count: int = 0
+    lead_sources: list[LeadSourceStat] = []
+
+
+# ── Stripe Checkout ───────────────────────────────────────────────────────────
+
+
+class CreateCheckoutRequest(BaseModel):
+    lead_id: str
+    payment_type: str = "consultation"
+    return_url: str = Field(..., description="Page URL to redirect after payment")

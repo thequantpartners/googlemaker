@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks, Lock, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks, Lock, MessageSquare, Wallet } from "lucide-react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -49,6 +49,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity, locked: true },
     { name: "My Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
     { name: "Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
+    { name: "Payments", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
     { name: "Settings", href: "/dashboard/configuracion", icon: Settings, locked: true },
   ];
 

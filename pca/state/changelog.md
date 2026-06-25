@@ -71,5 +71,13 @@
 - Implemented the AI Chat Widget MVP: Added `ChatWidgetConfig`, `ChatSession`, and `Lead` models using SQLAlchemy without Alembic.
 - Built the `chat_engine.py` state machine handling `RULES_MODE` and `AI_MODE` (Gemini 2.0 Flash).
 - Created a CORS-isolated FastAPI sub-app mounted at `/widget` for public script endpoints, keeping `/clients` endpoints secure.
-- Developed the Vanilla JS `gmaker-widget.js` embed script with dynamic self-configuration and local storage session persistence.
+- Desarrollado el Vanilla JS `gmaker-widget.js` embed script con configuración dinámica y persistencia de sesión en local storage.
 - Built the Next.js Configuration Dashboard `/dashboard/chat-widget` with Rule Builder, Appearance Editor, and AI Prompts settings.
+
+- **2026-06-25**
+- Rebranded GMaker to QSS (Quant SaaS System).
+- Implemented Lightweight CRM for tracking Google Ads Leads (gclid, UTMs).
+- Added dynamic `ClientPaymentConfig` to support Stripe, PayPal, and Custom payment links (e.g., LawPay).
+- Integrated Lead Payment tracking (`consultation_paid`, `full_case_paid`) via webhooks (Stripe and Generic HMAC).
+- Developed Dashboard Metrics endpoint integrating Google Ads API to calculate Ad Spend and Lead Conversion KPIs.
+- Upgraded Chat Widget to automatically capture UTM parameters from URL/localStorage and trigger Stripe Checkout or Custom Link redirection.

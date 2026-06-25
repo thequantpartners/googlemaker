@@ -48,3 +48,4 @@
 - [x] Fixed project name capitalization to GMAKER in README.md.
 - [x] Added delete option for saved strategies.
 - [x] Upgraded AI Competitor Auto-Find to perform real web scraping using DuckDuckGo search to extract direct competitors.
+- [x] Convert GMaker into QSS: Integrated Lightweight CRM, Google Ads lead tracking, and dynamic Payment Providers (Stripe, Custom).

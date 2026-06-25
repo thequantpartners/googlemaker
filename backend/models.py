@@ -120,6 +120,12 @@ class User(Base):
         foreign_keys="Lead.client_id",
         cascade="all, delete-orphan",
     )
+    payment_config: Mapped["ClientPaymentConfig | None"] = relationship(
+        back_populates="user",
+        foreign_keys="ClientPaymentConfig.user_id",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.email} role={self.role}>"
@@ -293,6 +299,8 @@ class ChatSession(Base):
     # Index of the next rule question to ask (used in RULES_MODE)
     current_rule_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     history: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    # UTM / gclid tracking captured from the visitor's URL on widget open
+    tracking_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -326,6 +334,18 @@ class Lead(Base):
     source: Mapped[str] = mapped_column(String(100), nullable=False, default="chat_widget")
     chat_transcript: Mapped[list | None] = mapped_column(JSON, nullable=True)
 
+    # UTM / Google Ads attribution
+    gclid: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    utm_source: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    utm_medium: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    utm_campaign: Mapped[str | None] = mapped_column(String(200), nullable=True)
+
+    # Payment tracking
+    consultation_paid: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    consultation_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+    full_case_paid: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    full_case_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     # Relationships
@@ -334,3 +354,49 @@ class Lead(Base):
 
     def __repr__(self) -> str:
         return f"<Lead name={self.name} email={self.email} client_id={self.client_id}>"
+
+
+# ── Payment Configuration ─────────────────────────────────────────────────────
+
+
+class ClientPaymentConfig(Base):
+    """
+    One row per client. Stores payment provider configuration for their widget.
+
+    provider_keys shape (JSON):
+    - Stripe:  {"stripe_secret_key": "sk_live_...", "stripe_webhook_secret": "whsec_..."}
+    - PayPal:  {"paypal_client_id": "...", "paypal_client_secret": "..."}
+    """
+
+    __tablename__ = "client_payment_configs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+
+    # Payment provider: "stripe" | "paypal" | "custom"
+    provider: Mapped[str] = mapped_column(String(20), nullable=False, default="custom")
+
+    # Encrypted keys per provider (stripe_secret_key, paypal_client_secret, etc.)
+    provider_keys: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    # For custom/external payment pages (LawPay, Square, etc.)
+    custom_payment_link: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Auto-generated secret for third-party webhook validation
+    generic_webhook_secret: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    # Default fee charged at consultation (used to pre-fill the Lead amount)
+    consultation_fee: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship(back_populates="payment_config")
+
+    def __repr__(self) -> str:
+        return f"<ClientPaymentConfig user_id={self.user_id} provider={self.provider}>"
