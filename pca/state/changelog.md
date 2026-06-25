@@ -58,7 +58,13 @@
 - Configured 14-day free trial on the frontend UI and updated backend Lemon Squeezy webhook to handle `subscription_cancelled`, `subscription_expired`, and `subscription_payment_failed` to automatically revoke access.
 - Fixed sidebar order by moving Setup Guide to the top.
 
-## 2026-06-23
+- **2026-06-23**
 - Fixed project name capitalization to GMAKER in README.md.
 - Added delete option for saved strategies (backend API and frontend UI).
 - Upgraded the AI Competitor Auto-Find functionality: it now uses Gemini to deduce the optimal search query, performs a live web search (via DuckDuckGo scraping), and extracts the most relevant direct competitors from the search results.
+- Strategically rejected the implementation of an Inbound SMS Acquisition Widget to prevent feature creep and maintain focus on the core Telegram Autopilot loop.
+- Diagnosed and fixed the Telegram Webhook integration in production by manually registering the Railway webhook URL via the Telegram API and injecting the missing `TELEGRAM_BOT_TOKEN` using the Railway CLI.
+
+- **2026-06-24**
+- Pivoted the business model from pure B2B SaaS to a Growth Partner / Tech-Enabled Agency model for "The Quant Partners".
+- GMaker will now be positioned as an internal/core tool to manage client acquisition (Ads + Chat Widget + Web).

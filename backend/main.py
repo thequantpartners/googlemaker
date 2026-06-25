@@ -16,10 +16,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 load_dotenv()
 
+from fastapi.staticfiles import StaticFiles
+
 from auth import create_jwt, get_current_user, verify_google_token
 from database import Base, engine, get_db
-from models import User, UserRole, UserStatus
+from models import User, UserRole, UserStatus, ChatWidgetConfig, ChatSession, Lead  # noqa: F401 – registers new tables with Base.metadata
 from routers import admin, clients, orchestrator, auth_google, payments, telegram
+from routers.chat_widget import router as chat_widget_router, create_widget_app
 from schemas import GoogleLoginRequest, TokenResponse, UserOut
 
 SUPERADMIN_EMAIL: str = os.getenv("SUPERADMIN_EMAIL", "thequantpartners@gmail.com")
@@ -133,6 +136,17 @@ app.include_router(orchestrator.router)
 app.include_router(auth_google.router)
 app.include_router(payments.router)
 app.include_router(telegram.router)
+app.include_router(chat_widget_router)   # private: GET/PUT /clients/me/chat-widget
+
+# Public widget sub-app (open CORS — any origin may embed the widget)
+# Accessible at /widget/chat/{client_id}/start and /widget/chat/{client_id}/message
+app.mount("/widget", create_widget_app())
+
+# Static files — serves gmaker-widget.js and any future assets
+import pathlib as _pl
+_static_dir = _pl.Path(__file__).parent / "static"
+_static_dir.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
 
 
 # ── Health check ─────────────────────────────────────────────────────────────

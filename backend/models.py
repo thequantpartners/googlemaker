@@ -10,7 +10,9 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Enum,
+    Float,
     ForeignKey,
+    Integer,
     JSON,
     String,
     Text,
@@ -102,6 +104,22 @@ class User(Base):
     saved_strategies: Mapped[list["SavedStrategy"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    chat_widget_config: Mapped["ChatWidgetConfig | None"] = relationship(
+        back_populates="client",
+        foreign_keys="ChatWidgetConfig.client_id",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+    chat_sessions: Mapped[list["ChatSession"]] = relationship(
+        back_populates="client",
+        foreign_keys="ChatSession.client_id",
+        cascade="all, delete-orphan",
+    )
+    leads: Mapped[list["Lead"]] = relationship(
+        back_populates="client",
+        foreign_keys="Lead.client_id",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.email} role={self.role}>"
@@ -179,3 +197,140 @@ class SavedStrategy(Base):
 
     def __repr__(self) -> str:
         return f"<SavedStrategy campaign={self.campaign_name}>"
+
+
+# ── Chat Widget Enums ─────────────────────────────────────────────────────────
+
+
+class ChatSessionState(str, enum.Enum):
+    rules_mode = "RULES_MODE"
+    ai_mode = "AI_MODE"
+    closed = "CLOSED"
+
+
+# ── Chat Widget Models ────────────────────────────────────────────────────────
+
+
+class ChatWidgetConfig(Base):
+    """
+    One row per client. Stores all configuration for their embedded chat widget.
+
+    rules_config shape (JSONB array):
+    [
+      {
+        "id": "q1",
+        "question": "¿Cuál es tu presupuesto mensual?",
+        "options": [
+          {"text": "Menos de $500", "points": 1},
+          {"text": "$500 - $2,000", "points": 5},
+          {"text": "Más de $2,000", "points": 10}
+        ]
+      }
+    ]
+    """
+
+    __tablename__ = "chat_widget_configs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    client_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+
+    # Appearance
+    is_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    widget_name: Mapped[str] = mapped_column(String(255), nullable=False, default="Chat con nosotros")
+    welcome_message: Mapped[str] = mapped_column(
+        Text, nullable=False, default="¡Hola! ¿En qué podemos ayudarte hoy?"
+    )
+    theme_color: Mapped[str] = mapped_column(String(7), nullable=False, default="#4F46E5")
+
+    # Rules engine — ordered list of questions with point-bearing options
+    rules_config: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
+
+    # AI engine
+    intent_threshold: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
+    system_prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    security_protocol: Mapped[str | None] = mapped_column(Text, nullable=True)
+    temperature: Mapped[float] = mapped_column(Float, nullable=False, default=0.7)
+    max_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=1024)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    # Relationships
+    client: Mapped["User"] = relationship(back_populates="chat_widget_config")
+
+    def __repr__(self) -> str:
+        return f"<ChatWidgetConfig client_id={self.client_id} enabled={self.is_enabled}>"
+
+
+class ChatSession(Base):
+    """
+    One row per visitor conversation. Tracks the state machine and accumulated score.
+
+    history shape (JSONB array):
+    [
+      {"role": "bot",  "content": "¡Hola! ...", "timestamp": "2025-01-01T00:00:00Z"},
+      {"role": "user", "content": "Quiero saber más", "timestamp": "2025-01-01T00:00:01Z"}
+    ]
+    """
+
+    __tablename__ = "chat_sessions"
+
+    session_id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    client_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+    state: Mapped[ChatSessionState] = mapped_column(
+        Enum(ChatSessionState, native_enum=False, length=20),
+        nullable=False,
+        default=ChatSessionState.rules_mode,
+    )
+    current_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Index of the next rule question to ask (used in RULES_MODE)
+    current_rule_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    history: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    # Relationships
+    client: Mapped["User"] = relationship(back_populates="chat_sessions")
+    lead: Mapped["Lead | None"] = relationship(back_populates="session", uselist=False)
+
+    def __repr__(self) -> str:
+        return f"<ChatSession session_id={self.session_id} state={self.state} score={self.current_score}>"
+
+
+class Lead(Base):
+    """Contact captured by the chat widget once the visitor provides their data."""
+
+    __tablename__ = "leads"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    client_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    session_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("chat_sessions.session_id", ondelete="SET NULL"), nullable=True, index=True
+    )
+
+    name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(320), nullable=True)
+    source: Mapped[str] = mapped_column(String(100), nullable=False, default="chat_widget")
+    chat_transcript: Mapped[list | None] = mapped_column(JSON, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    # Relationships
+    client: Mapped["User"] = relationship(back_populates="leads")
+    session: Mapped["ChatSession | None"] = relationship(back_populates="lead")
+
+    def __repr__(self) -> str:
+        return f"<Lead name={self.name} email={self.email} client_id={self.client_id}>"

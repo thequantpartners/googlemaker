@@ -2,14 +2,16 @@
 
 ## In Process
 
-- [Define upcoming work]
+- [ ] Plan and implement Chat Widget in GMaker (Rules + Heuristics for intent detection, then AI handoff).
 
 ## Pending
 
-- [Define upcoming work]
+- [ ] Build the central landing page for "The Quant Partners" (Growth Partner model).
+- [ ] Define standardized tech stack for client webs.
 
 ## Done
 
+- [x] Pivoted business strategy to Growth Partner / Tech-Enabled Agency model ("The Quant Partners" offering 360 acquisition systems).
 - [x] Execute Autopilot Pivot Implementation Plan (Ad Spend pricing, Soft Pause logic, Immigration Lawyer Templates).
 - [x] Conceptual Alignment on Autopilot Pivot (Immigration Lawyer ICP, Ad Spend pricing).
 - [x] Set up PCA, GitHub Monorepo, and configure Railway backend deployment.

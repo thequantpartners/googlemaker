@@ -152,3 +152,89 @@ class SavedStrategyOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ── Chat Widget ───────────────────────────────────────────────────────────────
+
+
+class RuleOption(BaseModel):
+    text: str = Field(..., min_length=1, max_length=200)
+    points: int = Field(..., ge=0, le=1000)
+
+
+class RuleQuestion(BaseModel):
+    id: str = Field(..., min_length=1, max_length=50)
+    question: str = Field(..., min_length=1, max_length=500)
+    options: list[RuleOption] = Field(default_factory=list, max_length=10)
+
+
+class ChatWidgetConfigUpdate(BaseModel):
+    is_enabled: bool | None = None
+    widget_name: str | None = Field(None, max_length=255)
+    welcome_message: str | None = Field(None, max_length=1000)
+    theme_color: str | None = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
+    rules_config: list[RuleQuestion] | None = Field(None, max_length=20)
+    intent_threshold: int | None = Field(None, ge=0, le=10_000)
+    system_prompt: str | None = None
+    security_protocol: str | None = None
+    temperature: float | None = Field(None, ge=0.0, le=2.0)
+    max_tokens: int | None = Field(None, ge=64, le=8192)
+
+
+class ChatWidgetConfigOut(BaseModel):
+    id: str
+    client_id: str
+    is_enabled: bool
+    widget_name: str
+    welcome_message: str
+    theme_color: str
+    rules_config: list | None = []
+    intent_threshold: int
+    system_prompt: str | None = None
+    security_protocol: str | None = None
+    temperature: float
+    max_tokens: int
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ChatBotMessage(BaseModel):
+    """A single message bubble returned to the widget frontend."""
+    content: str
+    type: str  # "text" | "buttons"
+    options: list[str] | None = None
+
+
+class ChatStartResponse(BaseModel):
+    session_id: str
+    messages: list[ChatBotMessage]
+    state: str
+    # Widget appearance — sent once on start so the JS knows colors immediately
+    theme_color: str = "#4F46E5"
+    widget_name: str = "Chat con nosotros"
+
+
+class ChatMessageRequest(BaseModel):
+    session_id: str
+    message: str = Field(..., min_length=1, max_length=2000)
+
+
+class ChatMessageResponse(BaseModel):
+    messages: list[ChatBotMessage]
+    state: str
+    lead_captured: bool = False
+
+
+class LeadOut(BaseModel):
+    id: str
+    client_id: str
+    session_id: str | None = None
+    name: str | None = None
+    phone: str | None = None
+    email: str | None = None
+    source: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
