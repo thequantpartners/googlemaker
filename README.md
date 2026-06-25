@@ -29,3 +29,7 @@ pca task "current task"
     *   **Ad-Spend Pricing Model**: Pricing is tied to the volume of ad spend managed, not feature gating. All users get the full Autopilot.
     *   **Soft Pause Enforcement**: Limits are enforced safely by pausing the Autopilot optimization engine, without ever touching or pausing the client's live Google Ads campaigns.
     *   **Multi-Account Support**: Supports multiple Google Ads customer IDs mapped to subscription limits.
+*   **AI Chat Widget (Lead Capture)**: Native embeddable widget for client websites.
+    *   **Rule-based Pre-qualification**: Deterministic state machine to evaluate user intent.
+    *   **AI Handoff**: Gemini 2.0 Flash integration for autonomous lead closing.
+    *   **CORS Sub-app Isolation**: Secure internal API separation from public widget endpoints.

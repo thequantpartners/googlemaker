@@ -2,7 +2,7 @@
 
 ## In Process
 
-- [ ] Plan and implement Chat Widget in GMaker (Rules + Heuristics for intent detection, then AI handoff).
+- [Define upcoming work]
 
 ## Pending
 
@@ -11,6 +11,7 @@
 
 ## Done
 
+- [x] Plan and implement Chat Widget in GMaker (Rules + Heuristics for intent detection, then AI handoff).
 - [x] Pivoted business strategy to Growth Partner / Tech-Enabled Agency model ("The Quant Partners" offering 360 acquisition systems).
 - [x] Execute Autopilot Pivot Implementation Plan (Ad Spend pricing, Soft Pause logic, Immigration Lawyer Templates).
 - [x] Conceptual Alignment on Autopilot Pivot (Immigration Lawyer ICP, Ad Spend pricing).

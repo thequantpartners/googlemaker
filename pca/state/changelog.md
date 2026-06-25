@@ -68,3 +68,8 @@
 - **2026-06-24**
 - Pivoted the business model from pure B2B SaaS to a Growth Partner / Tech-Enabled Agency model for "The Quant Partners".
 - GMaker will now be positioned as an internal/core tool to manage client acquisition (Ads + Chat Widget + Web).
+- Implemented the AI Chat Widget MVP: Added `ChatWidgetConfig`, `ChatSession`, and `Lead` models using SQLAlchemy without Alembic.
+- Built the `chat_engine.py` state machine handling `RULES_MODE` and `AI_MODE` (Gemini 2.0 Flash).
+- Created a CORS-isolated FastAPI sub-app mounted at `/widget` for public script endpoints, keeping `/clients` endpoints secure.
+- Developed the Vanilla JS `gmaker-widget.js` embed script with dynamic self-configuration and local storage session persistence.
+- Built the Next.js Configuration Dashboard `/dashboard/chat-widget` with Rule Builder, Appearance Editor, and AI Prompts settings.
