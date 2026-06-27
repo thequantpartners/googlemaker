@@ -426,7 +426,7 @@
 
   function openChat() {
     doc.getElementById('gm-win').classList.add('gm-open');
-    if (!sessionId) {
+    if (!sessionId || msgsEl().children.length === 0) {
       startSession();
     } else {
       // Session exists — input enabled unless CLOSED
