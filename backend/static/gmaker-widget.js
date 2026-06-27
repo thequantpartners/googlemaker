@@ -98,16 +98,16 @@
     '#gm-root .gm-typing span:nth-child(1){animation-delay:-0.32s}',
     '#gm-root .gm-typing span:nth-child(2){animation-delay:-0.16s}',
     
-    '#gm-root .gm-inp-row{display:flex;flex-direction:column;position:relative;z-index:10}',
-    '#gm-root .gm-inp-wrapper{position:relative}',
-    '#gm-root .gm-inp{width:100%;min-height:90px;max-height:130px;padding:16px 24px;background:transparent;border:none;outline:none;resize:none;font-size:15px;color:#f4f4f5;font-family:inherit;scrollbar-width:none}',
+    '#gm-root .gm-inp-container{display:flex;flex-direction:column;position:relative;z-index:10;background:rgba(24,24,27,0.6);border-top:1px solid rgba(63,63,70,0.5);padding:16px 20px 12px;border-bottom-left-radius:24px;border-bottom-right-radius:24px}',
+    '#gm-root .gm-inp-row{display:flex;align-items:flex-end;gap:10px;width:100%}',
+    '#gm-root .gm-inp-wrapper{flex:1;position:relative}',
+    '#gm-root .gm-inp{width:100%;min-height:44px;max-height:120px;padding:12px 16px;background:rgba(39,39,42,0.8);border:1px solid rgba(82,82,91,0.6);border-radius:18px;outline:none;resize:none;font-size:14px;color:#f4f4f5;font-family:inherit;scrollbar-width:none;line-height:1.4;transition:border-color 0.2s, background 0.2s}',
+    '#gm-root .gm-inp:focus{border-color:rgba(99,102,241,0.6);background:rgba(39,39,42,1)}',
     '#gm-root .gm-inp::placeholder{color:#71717a}',
-    '#gm-root .gm-inp-gradient{position:absolute;inset:0;background:linear-gradient(to top, rgba(39,39,42,0.5), transparent);pointer-events:none}',
     
-    '#gm-root .gm-controls{display:flex;align-items:center;justify-content:space-between;padding:0 24px 16px}',
-    '#gm-root .gm-char-count{font-size:12px;font-weight:500;color:#71717a}',
+    '#gm-root .gm-actions{display:flex;align-items:center;gap:8px;padding-bottom:2px}',
+    '#gm-root .gm-char-count{font-size:11px;font-weight:500;color:#71717a;position:absolute;bottom:-18px;left:4px}',
     '#gm-root .gm-char-count span{color:#a1a1aa}',
-    '#gm-root .gm-actions{display:flex;align-items:center;gap:12px}',
     
     '#gm-root .gm-mic{width:36px;height:36px;border-radius:10px;border:1px solid rgba(113,113,122,0.3);background:transparent;color:#71717a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}',
     '#gm-root .gm-mic:hover{color:#ef4444;background:rgba(39,39,42,0.8);border-color:rgba(239,68,68,0.3);transform:scale(1.05)}',
@@ -120,7 +120,7 @@
     '#gm-root .gm-snd svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:all 0.3s}',
     '#gm-root .gm-snd:hover:not(:disabled) svg{transform:translateX(2px) translateY(-2px) rotate(10deg)}',
     
-    '#gm-root .gm-footer{display:flex;align-items:center;justify-content:space-between;width:100%;padding:12px 24px;border-top:1px solid rgba(63,63,70,0.5);font-size:11px;color:#71717a}',
+    '#gm-root .gm-footer{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:20px;font-size:10px;color:#71717a}',
     '#gm-root .gm-footer-left{display:flex;align-items:center;gap:6px}',
     '#gm-root .gm-kbd{padding:2px 6px;background:rgba(39,39,42,1);border:1px solid rgba(82,82,91,1);border-radius:4px;color:#a1a1aa;font-family:monospace;font-size:10px}',
     '#gm-root .gm-pw a{color:#71717a;text-decoration:none;transition:color 0.2s}',
@@ -166,13 +166,12 @@
           '</div>' +
         '</div>' +
         '<div class="gm-msgs" id="gm-msgs"></div>' +
-        '<div class="gm-inp-row">' +
-          '<div class="gm-inp-wrapper">' +
-            '<textarea class="gm-inp" id="gm-inp" placeholder="¿En qué te puedo ayudar?..." maxlength="2000"></textarea>' +
-            '<div class="gm-inp-gradient"></div>' +
-          '</div>' +
-          '<div class="gm-controls">' +
-            '<div class="gm-char-count"><span id="gm-char">0</span>/2000</div>' +
+        '<div class="gm-inp-container">' +
+          '<div class="gm-inp-row">' +
+            '<div class="gm-inp-wrapper">' +
+              '<textarea class="gm-inp" id="gm-inp" placeholder="Escribe un mensaje..." maxlength="2000" rows="1"></textarea>' +
+              '<div class="gm-char-count"><span id="gm-char">0</span>/2000</div>' +
+            '</div>' +
             '<div class="gm-actions">' +
               '<button class="gm-mic" aria-label="Audio" title="Audio no disponible por ahora" onclick="alert(\'Función de audio próximamente\')">' +
                 '<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>' +
