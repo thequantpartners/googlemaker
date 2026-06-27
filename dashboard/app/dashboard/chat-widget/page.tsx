@@ -159,6 +159,15 @@ export default function ChatWidgetPage() {
 
   const handleSave = async () => {
     if (!session?.backendToken || !config) return;
+    
+    // Validar que no haya preguntas u opciones vacías
+    const hasEmpty = config.rules_config.some(q => !q.question.trim() || q.options.some(o => !o.text.trim()));
+    if (hasEmpty) {
+      setMsg({ text: "Las preguntas y opciones de las reglas no pueden estar vacías.", type: "error" });
+      setTimeout(() => setMsg(null), 4000);
+      return;
+    }
+
     setSaving(true);
     setMsg(null);
     try {
@@ -769,7 +778,7 @@ function RuleQuestionCard({
           type="text"
           value={q.question}
           onChange={(e) => onUpdateQuestion(qIdx, e.target.value)}
-          placeholder="¿Cuál es tu presupuesto mensual?"
+          placeholder="Ej: ¿Cuál es tu presupuesto mensual?"
           className="flex-1 bg-transparent text-white text-sm outline-none placeholder-gray-600"
         />
         <button
@@ -797,7 +806,7 @@ function RuleQuestionCard({
                 type="text"
                 value={opt.text}
                 onChange={(e) => onUpdateOption(qIdx, oIdx, "text", e.target.value)}
-                placeholder="Texto de la opción"
+                placeholder="Ej: Opción 1"
                 className={`${inputCls} flex-1`}
               />
               <div className="flex items-center gap-1.5 flex-shrink-0">
