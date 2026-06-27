@@ -75,9 +75,6 @@
     '#gm-root .gm-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:gmPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}',
     '#gm-root .gm-hdr-title{font-size:12px;font-weight:500;color:#a1a1aa}',
     '#gm-root .gm-hdr-right{display:flex;align-items:center;gap:8px}',
-    '#gm-root .gm-badge{padding:4px 8px;font-size:12px;font-weight:500;border-radius:16px}',
-    '#gm-root .gm-badge-gpt{background:rgba(39,39,42,0.6);color:#d4d4d8}',
-    '#gm-root .gm-badge-pro{background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.2)}',
     '#gm-root .gm-hdr-close{padding:6px;border-radius:50%;border:none;background:transparent;cursor:pointer;transition:background 0.2s;display:flex}',
     '#gm-root .gm-hdr-close:hover{background:rgba(63,63,70,0.5)}',
     '#gm-root .gm-hdr-close svg{width:16px;height:16px;stroke:#a1a1aa;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
@@ -106,8 +103,6 @@
     '#gm-root .gm-inp::placeholder{color:#71717a}',
     
     '#gm-root .gm-actions{display:flex;align-items:center;gap:8px;padding-bottom:2px}',
-    '#gm-root .gm-char-count{font-size:11px;font-weight:500;color:#71717a;position:absolute;bottom:-18px;left:4px}',
-    '#gm-root .gm-char-count span{color:#a1a1aa}',
     
     '#gm-root .gm-mic{width:36px;height:36px;border-radius:10px;border:1px solid rgba(113,113,122,0.3);background:transparent;color:#71717a;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}',
     '#gm-root .gm-mic:hover{color:#ef4444;background:rgba(39,39,42,0.8);border-color:rgba(239,68,68,0.3);transform:scale(1.05)}',
@@ -120,9 +115,7 @@
     '#gm-root .gm-snd svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:all 0.3s}',
     '#gm-root .gm-snd:hover:not(:disabled) svg{transform:translateX(2px) translateY(-2px) rotate(10deg)}',
     
-    '#gm-root .gm-footer{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:20px;font-size:10px;color:#71717a}',
-    '#gm-root .gm-footer-left{display:flex;align-items:center;gap:6px}',
-    '#gm-root .gm-kbd{padding:2px 6px;background:rgba(39,39,42,1);border:1px solid rgba(82,82,91,1);border-radius:4px;color:#a1a1aa;font-family:monospace;font-size:10px}',
+    '#gm-root .gm-footer{display:flex;align-items:center;justify-content:center;width:100%;margin-top:20px;font-size:10px;color:#71717a}',
     '#gm-root .gm-pw a{color:#71717a;text-decoration:none;transition:color 0.2s}',
     '#gm-root .gm-pw a:hover{color:#a1a1aa}',
     
@@ -158,8 +151,6 @@
             '<div class="gm-hdr-title" id="gm-name">' + esc(name) + '</div>' +
           '</div>' +
           '<div class="gm-hdr-right">' +
-            '<span class="gm-badge gm-badge-gpt">GPT-4</span>' +
-            '<span class="gm-badge gm-badge-pro">Pro</span>' +
             '<button class="gm-hdr-close" id="gm-close" aria-label="Cerrar">' +
               '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
             '</button>' +
@@ -170,7 +161,6 @@
           '<div class="gm-inp-row">' +
             '<div class="gm-inp-wrapper">' +
               '<textarea class="gm-inp" id="gm-inp" placeholder="Escribe un mensaje..." maxlength="2000" rows="1"></textarea>' +
-              '<div class="gm-char-count"><span id="gm-char">0</span>/2000</div>' +
             '</div>' +
             '<div class="gm-actions">' +
               '<button class="gm-mic" aria-label="Audio" title="Audio no disponible por ahora" onclick="alert(\'Función de audio próximamente\')">' +
@@ -182,11 +172,7 @@
             '</div>' +
           '</div>' +
           '<div class="gm-footer">' +
-            '<div class="gm-footer-left">' +
-              '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:#71717a;fill:none;stroke-width:2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>' +
-              '<span><kbd class="gm-kbd">Shift + Enter</kbd> nueva línea</span>' +
-            '</div>' +
-            '<div class="gm-pw">Powered by <a href="https://gmaker.io" target="_blank" rel="noopener">GMaker</a></div>' +
+            '<div class="gm-pw">Powered by <a href="https://www.thequantpartners.com" target="_blank" rel="noopener">Quant Partners</a></div>' +
           '</div>' +
         '</div>' +
       '</div>'
