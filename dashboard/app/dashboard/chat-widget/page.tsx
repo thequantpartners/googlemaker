@@ -35,6 +35,8 @@ interface RuleOption {
 interface RuleQuestion {
   id: string;
   question: string;
+  response_type?: string;
+  points_if_answered?: number;
   options: RuleOption[];
 }
 
@@ -161,7 +163,10 @@ export default function ChatWidgetPage() {
     if (!session?.backendToken || !config) return;
     
     // Validar que no haya preguntas u opciones vacías
-    const hasEmpty = config.rules_config.some(q => !q.question.trim() || q.options.some(o => !o.text.trim()));
+    const hasEmpty = config.rules_config.some(q => 
+      !q.question.trim() || 
+      ((!q.response_type || q.response_type === "options") && q.options.some(o => !o.text.trim()))
+    );
     if (hasEmpty) {
       setMsg({ text: "Las preguntas y opciones de las reglas no pueden estar vacías.", type: "error" });
       setTimeout(() => setMsg(null), 4000);
@@ -222,7 +227,7 @@ export default function ChatWidgetPage() {
       ...config,
       rules_config: [
         ...config.rules_config,
-        { id: nextId(), question: "", options: [{ text: "", points: 5 }] },
+        { id: nextId(), question: "", response_type: "options", points_if_answered: 0, options: [{ text: "", points: 5 }] },
       ],
     });
   };
@@ -232,10 +237,10 @@ export default function ChatWidgetPage() {
     setConfig({ ...config, rules_config: config.rules_config.filter((_, i) => i !== idx) });
   };
 
-  const updateQuestion = (idx: number, question: string) => {
+  const updateQuestion = (idx: number, field: keyof RuleQuestion, value: any) => {
     if (!config) return;
     const rules = [...config.rules_config];
-    rules[idx] = { ...rules[idx], question };
+    rules[idx] = { ...rules[idx], [field]: value };
     setConfig({ ...config, rules_config: rules });
   };
 
@@ -759,7 +764,7 @@ function RuleQuestionCard({
   q: RuleQuestion;
   qIdx: number;
   totalQuestions: number;
-  onUpdateQuestion: (i: number, v: string) => void;
+  onUpdateQuestion: (i: number, f: keyof RuleQuestion, v: any) => void;
   onRemoveQuestion: (i: number) => void;
   onAddOption: (i: number) => void;
   onRemoveOption: (qi: number, oi: number) => void;
@@ -777,7 +782,7 @@ function RuleQuestionCard({
         <input
           type="text"
           value={q.question}
-          onChange={(e) => onUpdateQuestion(qIdx, e.target.value)}
+          onChange={(e) => onUpdateQuestion(qIdx, "question", e.target.value)}
           placeholder="Ej: ¿Cuál es tu presupuesto mensual?"
           className="flex-1 bg-transparent text-white text-sm outline-none placeholder-gray-600"
         />
@@ -798,43 +803,78 @@ function RuleQuestionCard({
 
       {/* Options */}
       {!collapsed && (
-        <div className="p-4 space-y-2">
-          {q.options.map((opt, oIdx) => (
-            <div key={oIdx} className="flex items-center gap-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-neon-purple/50 flex-shrink-0" />
-              <input
-                type="text"
-                value={opt.text}
-                onChange={(e) => onUpdateOption(qIdx, oIdx, "text", e.target.value)}
-                placeholder="Ej: Opción 1"
-                className={`${inputCls} flex-1`}
-              />
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <input
-                  type="number"
-                  min={0} max={999}
-                  value={opt.points}
-                  onChange={(e) => onUpdateOption(qIdx, oIdx, "points", parseInt(e.target.value) || 0)}
-                  className={`${inputCls} w-20 text-center`}
-                />
-                <span className="text-xs text-gray-600 whitespace-nowrap">pts</span>
-              </div>
-              <button
-                onClick={() => onRemoveOption(qIdx, oIdx)}
-                disabled={q.options.length === 1}
-                className="text-gray-600 hover:text-red-400 transition-colors p-1 flex-shrink-0"
+        <div className="p-4 space-y-4">
+          <div className="flex items-center gap-4 border-b border-white/5 pb-4">
+            <div className="w-1/3">
+              <label className="block text-xs font-medium text-gray-400 mb-1">Tipo de Respuesta</label>
+              <select
+                value={q.response_type || "options"}
+                onChange={(e) => onUpdateQuestion(qIdx, "response_type", e.target.value)}
+                className={`${inputCls} py-1.5 px-2`}
               >
-                <Trash2 size={14} />
+                <option value="options">Opciones (Botones)</option>
+                <option value="text">Texto Libre / Input</option>
+                <option value="number">Número</option>
+              </select>
+            </div>
+            
+            {(q.response_type === "text" || q.response_type === "number") && (
+              <div className="w-1/3">
+                <label className="block text-xs font-medium text-gray-400 mb-1">Puntos otorgados</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0} max={999}
+                    value={q.points_if_answered || 0}
+                    onChange={(e) => onUpdateQuestion(qIdx, "points_if_answered", parseInt(e.target.value) || 0)}
+                    className={`${inputCls} py-1.5 px-2 text-center w-20`}
+                  />
+                  <span className="text-xs text-gray-500">pts</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {(!q.response_type || q.response_type === "options") && (
+            <div className="space-y-2">
+              {q.options.map((opt, oIdx) => (
+                <div key={oIdx} className="flex items-center gap-3">
+                  <div className="w-1.5 h-1.5 rounded-full bg-neon-purple/50 flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={opt.text}
+                    onChange={(e) => onUpdateOption(qIdx, oIdx, "text", e.target.value)}
+                    placeholder="Ej: Opción 1"
+                    className={`${inputCls} flex-1`}
+                  />
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <input
+                      type="number"
+                      min={0} max={999}
+                      value={opt.points}
+                      onChange={(e) => onUpdateOption(qIdx, oIdx, "points", parseInt(e.target.value) || 0)}
+                      className={`${inputCls} w-20 text-center`}
+                    />
+                    <span className="text-xs text-gray-600 whitespace-nowrap">pts</span>
+                  </div>
+                  <button
+                    onClick={() => onRemoveOption(qIdx, oIdx)}
+                    disabled={q.options.length === 1}
+                    className="text-gray-600 hover:text-red-400 transition-colors p-1 flex-shrink-0"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+
+              <button
+                onClick={() => onAddOption(qIdx)}
+                className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-neon-purple transition-colors mt-2 ml-4"
+              >
+                <Plus size={14} /> Agregar opción
               </button>
             </div>
-          ))}
-
-          <button
-            onClick={() => onAddOption(qIdx)}
-            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-neon-purple transition-colors mt-2 ml-4"
-          >
-            <Plus size={14} /> Agregar opción
-          </button>
+          )}
         </div>
       )}
     </div>

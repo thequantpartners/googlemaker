@@ -282,13 +282,22 @@ async def _handle_rules_mode(
     # 1. Record the user's answer
     history = _push(history, "user", user_message)
 
-    # 2. Score the selected option (exact text match)
+    # 2. Score the user's answer
     idx = session.current_rule_index
     if idx < len(rules):
-        for opt in rules[idx].get("options", []):
-            if opt.get("text", "").strip() == user_message.strip():
-                session.current_score += int(opt.get("points", 0))
-                break
+        current_rule = rules[idx]
+        rtype = current_rule.get("response_type", "options")
+        
+        if rtype == "options":
+            for opt in current_rule.get("options", []):
+                if opt.get("text", "").strip() == user_message.strip():
+                    session.current_score += int(opt.get("points", 0))
+                    break
+        else:
+            # text, textarea, number, etc.
+            if user_message.strip():
+                session.current_score += int(current_rule.get("points_if_answered", 0))
+                
         session.current_rule_index = idx + 1
 
     next_idx = session.current_rule_index
@@ -312,12 +321,20 @@ async def _handle_rules_mode(
     if next_idx < len(rules):
         next_rule = rules[next_idx]
         bot_reply = next_rule["question"]
-        options = [opt["text"] for opt in next_rule.get("options", [])]
+        rtype = next_rule.get("response_type", "options")
+        
+        if rtype == "options":
+            options = [opt["text"] for opt in next_rule.get("options", [])]
+            msg_type = "buttons"
+        else:
+            options = []
+            msg_type = "text"
+            
         history = _push(history, "bot", bot_reply)
         session.history = history
         await db.commit()
         return EngineResult(
-            messages=[{"content": bot_reply, "type": "buttons", "options": options}],
+            messages=[{"content": bot_reply, "type": msg_type, "options": options}],
             new_state=ChatSessionState.rules_mode,
         )
 

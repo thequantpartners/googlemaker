@@ -165,6 +165,8 @@ class RuleOption(BaseModel):
 class RuleQuestion(BaseModel):
     id: str = Field(..., min_length=1, max_length=50)
     question: str = Field(..., min_length=1, max_length=500)
+    response_type: str = Field(default="options", max_length=50)
+    points_if_answered: int = Field(default=0, ge=0, le=1000)
     options: list[RuleOption] = Field(default_factory=list, max_length=10)
 
 

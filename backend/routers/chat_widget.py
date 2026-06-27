@@ -284,13 +284,21 @@ async def start_chat_session(
     if rules:
         first_rule = rules[0]
         first_question = first_rule.get("question", "")
-        options = [opt["text"] for opt in first_rule.get("options", [])]
+        rtype = first_rule.get("response_type", "options")
+        
+        if rtype == "options":
+            options = [opt["text"] for opt in first_rule.get("options", [])]
+            msg_type = "buttons"
+        else:
+            options = []
+            msg_type = "text"
+            
         history.append({
             "role": "bot",
             "content": first_question,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         })
-        messages.append(ChatBotMessage(content=first_question, type="buttons", options=options))
+        messages.append(ChatBotMessage(content=first_question, type=msg_type, options=options))
 
     session.history = history
     await db.commit()

@@ -344,7 +344,14 @@
         localStorage.setItem(STORAGE_KEY, sessionId);
         applyTheme(data.theme_color, data.widget_name);
         renderMessages(data.messages);
-        if (sessionState !== 'CLOSED') setInputLocked(false);
+        
+        if (sessionState === 'CLOSED') {
+          setInputLocked(true);
+        } else {
+          var lastMsg = data.messages && data.messages[data.messages.length - 1];
+          var needsOptions = lastMsg && lastMsg.type === 'buttons' && lastMsg.options && lastMsg.options.length > 0;
+          setInputLocked(needsOptions);
+        }
       })
       .catch(function (err) {
         console.error('[GMaker] start error:', err);
@@ -399,7 +406,9 @@
             showPaymentCTA(data.payment_info, data.lead_id);
           }
         } else {
-          setInputLocked(false);
+          var lastMsg = data.messages && data.messages[data.messages.length - 1];
+          var needsOptions = lastMsg && lastMsg.type === 'buttons' && lastMsg.options && lastMsg.options.length > 0;
+          setInputLocked(needsOptions);
         }
       })
       .catch(function (err) {
