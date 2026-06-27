@@ -146,6 +146,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+class WidgetCORSMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if request.url.path.startswith("/widget/"):
+            if request.method == "OPTIONS":
+                response = Response(status_code=204)
+            else:
+                response = await call_next(request)
+            
+            origin = request.headers.get("origin")
+            response.headers["Access-Control-Allow-Origin"] = origin if origin else "*"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+            return response
+            
+        return await call_next(request)
+
+app.add_middleware(WidgetCORSMiddleware)
+
+
 # Include routers
 app.include_router(admin.router)
 app.include_router(clients.router)

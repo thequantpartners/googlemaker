@@ -70,6 +70,21 @@ function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-white/5 rounded-xl ${className}`} />;
 }
 
+/* ── Rules normalizer ─────────────────────────────────────────────────────── */
+// The backend may return rules_config as a parsed array OR as a raw JSON string.
+// Always coerce it into a valid array so .map()/spread never crash React.
+function normalizeRules(raw: unknown): RuleQuestion[] {
+  let value = raw;
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return [];
+    }
+  }
+  return Array.isArray(value) ? (value as RuleQuestion[]) : [];
+}
+
 /* ── Tab IDs ──────────────────────────────────────────────────────────────── */
 
 const TABS = [
@@ -110,8 +125,8 @@ export default function ChatWidgetPage() {
       });
       if (res.ok) {
         const data: WidgetConfig = await res.json();
-        // Ensure rules_config is always an array
-        setConfig({ ...data, rules_config: data.rules_config ?? [] });
+        // Ensure rules_config is always a valid array (backend may send a JSON string)
+        setConfig({ ...data, rules_config: normalizeRules(data.rules_config) });
       }
     } catch (e) {
       console.error("Failed to load widget config", e);
@@ -168,11 +183,17 @@ export default function ChatWidgetPage() {
       });
       if (res.ok) {
         const updated = await res.json();
-        setConfig({ ...updated, rules_config: updated.rules_config ?? [] });
+        setConfig({ ...updated, rules_config: normalizeRules(updated.rules_config) });
         setMsg({ text: "¡Configuración guardada correctamente!", type: "success" });
       } else {
         const err = await res.json().catch(() => ({}));
-        setMsg({ text: err.detail ?? "Error al guardar la configuración.", type: "error" });
+        let errorMessage = "Error al guardar la configuración.";
+        if (typeof err.detail === "string") {
+          errorMessage = err.detail;
+        } else if (Array.isArray(err.detail) && err.detail.length > 0) {
+          errorMessage = err.detail[0].msg || "Error de validación.";
+        }
+        setMsg({ text: errorMessage, type: "error" });
       }
     } catch {
       setMsg({ text: "Error de red. Inténtalo de nuevo.", type: "error" });
