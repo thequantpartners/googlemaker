@@ -457,7 +457,16 @@ export default function ChatWidgetPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Field label="API Key" hint={config.has_api_key ? "Ya tienes una API Key configurada. Escribe aquí solo si deseas cambiarla." : "Pega tu clave secreta de la API."}>
+                  <Field label={
+                    <div className="flex items-center gap-2">
+                      API Key
+                      {config.has_api_key && (
+                        <span className="text-[10px] uppercase tracking-wider font-bold bg-neon-green/20 text-neon-green px-2 py-0.5 rounded-full">
+                          ✓ Configurada
+                        </span>
+                      )}
+                    </div>
+                  } hint={config.has_api_key ? "Ya tienes una API Key guardada de forma segura. Escribe aquí solo si deseas sobrescribirla con una nueva." : "Pega tu clave secreta de la API."}>
                     <input
                       type="password"
                       value={config.ai_api_key || ""}
@@ -785,7 +794,7 @@ function Field({
   hint,
   children,
 }: {
-  label: string;
+  label: React.ReactNode | string;
   hint?: string;
   children: React.ReactNode;
 }) {
