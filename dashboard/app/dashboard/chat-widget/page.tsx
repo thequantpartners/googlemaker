@@ -116,6 +116,7 @@ export default function ChatWidgetPage() {
   const [saving, setSaving]         = useState(false);
   const [msg, setMsg]               = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [copied, setCopied]         = useState(false);
+  const [isEditingKey, setIsEditingKey] = useState(false);
 
   // leads sub-state
   const [leads, setLeads]           = useState<Lead[]>([]);
@@ -466,14 +467,47 @@ export default function ChatWidgetPage() {
                         </span>
                       )}
                     </div>
-                  } hint={config.has_api_key ? "Ya tienes una API Key guardada de forma segura. Escribe aquí solo si deseas sobrescribirla con una nueva." : "Pega tu clave secreta de la API."}>
-                    <input
-                      type="password"
-                      value={config.ai_api_key || ""}
-                      onChange={(e) => setConfig({ ...config, ai_api_key: e.target.value })}
-                      className={inputCls}
-                      placeholder={config.has_api_key ? "••••••••••••••••••••••••••••" : "sk-..."}
-                    />
+                  } hint={config.has_api_key ? "Ya tienes una API Key guardada de forma segura." : "Pega tu clave secreta de la API."}>
+                    {config.has_api_key && !isEditingKey ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="password"
+                          value="sk-...*********************************"
+                          disabled
+                          className={`${inputCls} opacity-50 cursor-not-allowed`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingKey(true)}
+                          className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-medium transition-colors border border-white/10 whitespace-nowrap"
+                        >
+                          Cambiar clave
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="password"
+                          value={config.ai_api_key || ""}
+                          onChange={(e) => setConfig({ ...config, ai_api_key: e.target.value })}
+                          className={inputCls}
+                          placeholder="sk-..."
+                          autoFocus
+                        />
+                        {config.has_api_key && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsEditingKey(false);
+                              setConfig({ ...config, ai_api_key: "" });
+                            }}
+                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-medium transition-colors border border-red-500/20"
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </Field>
                 </div>
               </div>
