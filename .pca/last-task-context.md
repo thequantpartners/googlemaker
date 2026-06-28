@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-Convertir Gmaker en QSS con CRM ligero, widget para leads de google ads, cobro, tracking de pago y dashboard
+Fix CORS issue for widget chat start
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
-- [general] docs: close task and update context logs (2026-06-25T01:10:13.063Z)
-- [general] docs: close task and update context logs (2026-06-24T22:43:58.872Z)
-- [general] docs: close task and update context logs (2026-06-24T01:55:12.000Z)
+- [general] docs: close task and update context logs (2026-06-27T02:30:58.401Z)
+- [general] docs: update active decisions to closed registration (2026-06-25T22:50:10.659Z)
+- [general] docs: close task and update context logs (2026-06-25T22:19:41.524Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

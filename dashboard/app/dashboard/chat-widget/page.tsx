@@ -46,6 +46,7 @@ interface WidgetConfig {
   is_enabled: boolean;
   widget_name: string;
   welcome_message: string;
+  rejection_message: string;
   theme_color: string;
   rules_config: RuleQuestion[];
   intent_threshold: number;
@@ -186,6 +187,7 @@ export default function ChatWidgetPage() {
           is_enabled:       config.is_enabled,
           widget_name:      config.widget_name,
           welcome_message:  config.welcome_message,
+          rejection_message: config.rejection_message,
           theme_color:      config.theme_color,
           rules_config:     config.rules_config,
           intent_threshold: config.intent_threshold,

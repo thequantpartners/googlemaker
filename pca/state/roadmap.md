@@ -49,3 +49,4 @@
 - [x] Added delete option for saved strategies.
 - [x] Upgraded AI Competitor Auto-Find to perform real web scraping using DuckDuckGo search to extract direct competitors.
 - [x] Convert GMaker into QSS: Integrated Lightweight CRM, Google Ads lead tracking, and dynamic Payment Providers (Stripe, Custom).
+- [x] Fixed React rendering crashes in the Chat Widget configuration dashboard and resolved global CORS blocking issues for the public widget API.

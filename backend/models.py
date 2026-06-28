@@ -249,6 +249,9 @@ class ChatWidgetConfig(Base):
         Text, nullable=False, default="¡Hola! ¿En qué podemos ayudarte hoy?"
     )
     theme_color: Mapped[str] = mapped_column(String(7), nullable=False, default="#4F46E5")
+    rejection_message: Mapped[str] = mapped_column(
+        Text, nullable=False, default="¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad."
+    )
 
     # Rules engine — ordered list of questions with point-bearing options
     rules_config: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)

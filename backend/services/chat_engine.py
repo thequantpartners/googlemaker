@@ -339,10 +339,7 @@ async def _handle_rules_mode(
         )
 
     # 3c. Rules exhausted, threshold not reached → polite close ──────────────
-    bot_reply = (
-        "¡Muchas gracias por tus respuestas! Un asesor revisará tu caso "
-        "y se pondrá en contacto contigo a la brevedad."
-    )
+    bot_reply = config.rejection_message or "¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad."
     history = _push(history, "bot", bot_reply)
     session.history = history
     session.state = ChatSessionState.closed

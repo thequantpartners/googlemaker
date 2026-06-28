@@ -81,3 +81,6 @@
 - Integrated Lead Payment tracking (`consultation_paid`, `full_case_paid`) via webhooks (Stripe and Generic HMAC).
 - Developed Dashboard Metrics endpoint integrating Google Ads API to calculate Ad Spend and Lead Conversion KPIs.
 - Upgraded Chat Widget to automatically capture UTM parameters from URL/localStorage and trigger Stripe Checkout or Custom Link redirection.
+- **2026-06-26**
+- Fixed React rendering crash ("This page couldn't load") in the Chat Widget configuration dashboard caused by FastAPI returning 422 validation errors as an array instead of a string, and safely normalized `rules_config` JSON string to array.
+- Fixed public Chat Widget CORS blocking ("El chat no está disponible ahora mismo") by injecting a custom `WidgetCORSMiddleware` to bypass the restrictive global FastAPI `CORSMiddleware`, allowing the widget to be embedded on any external website.
