@@ -390,27 +390,18 @@ export default function ChatWidgetPage() {
               />
             </Field>
 
-            <Field label="Color primario" hint="Color del header y botones">
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={config.theme_color}
-                  onChange={(e) => setConfig({ ...config, theme_color: e.target.value })}
-                  className="w-12 h-12 rounded-xl border border-dark-card-border bg-transparent cursor-pointer"
+            <div className="md:col-span-2">
+              <Field label="Mensaje de despedida" hint="Se muestra si el usuario no alcanza el umbral de IA">
+                <textarea
+                  value={config.rejection_message}
+                  rows={2}
+                  maxLength={500}
+                  onChange={(e) => setConfig({ ...config, rejection_message: e.target.value })}
+                  className={textareaCls}
+                  placeholder="Ej: ¡Gracias! Nos pondremos en contacto contigo a la brevedad."
                 />
-                <input
-                  type="text"
-                  value={config.theme_color}
-                  maxLength={7}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (/^#[0-9A-Fa-f]{0,6}$/.test(v)) setConfig({ ...config, theme_color: v });
-                  }}
-                  className={`${inputCls} font-mono`}
-                  placeholder="#4F46E5"
-                />
-              </div>
-            </Field>
+              </Field>
+            </div>
 
             <div className="md:col-span-2">
               <Field label="Mensaje de bienvenida" hint="Primera línea que verá el visitante">
@@ -430,7 +421,7 @@ export default function ChatWidgetPage() {
           <div className="mt-4 p-4 rounded-2xl bg-black/20 border border-dark-card-border">
             <p className="text-xs text-gray-500 mb-3 font-medium uppercase tracking-wider">Vista previa</p>
             <div className="inline-flex flex-col rounded-2xl overflow-hidden shadow-xl text-sm max-w-[260px]">
-              <div className="px-4 py-3 flex items-center gap-3" style={{ background: config.theme_color }}>
+              <div className="px-4 py-3 flex items-center gap-3 bg-gradient-to-r from-[#4F46E5] to-[#818CF8]">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-xs">AI</div>
                 <div>
                   <p className="text-white font-semibold text-sm">{config.widget_name || "Chat"}</p>
