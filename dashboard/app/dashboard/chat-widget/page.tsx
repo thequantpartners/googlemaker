@@ -47,6 +47,7 @@ interface WidgetConfig {
   widget_name: string;
   welcome_message: string;
   rejection_message: string;
+  allowed_domains: string;
   theme_color: string;
   rules_config: RuleQuestion[];
   intent_threshold: number;
@@ -188,6 +189,7 @@ export default function ChatWidgetPage() {
           widget_name:      config.widget_name,
           welcome_message:  config.welcome_message,
           rejection_message: config.rejection_message,
+          allowed_domains:  config.allowed_domains,
           theme_color:      config.theme_color,
           rules_config:     config.rules_config,
           intent_threshold: config.intent_threshold,
@@ -393,12 +395,25 @@ export default function ChatWidgetPage() {
             <div className="md:col-span-2">
               <Field label="Mensaje de despedida" hint="Se muestra si el usuario no alcanza el umbral de IA">
                 <textarea
-                  value={config.rejection_message}
+                  value={config.rejection_message || ""}
                   rows={2}
                   maxLength={500}
                   onChange={(e) => setConfig({ ...config, rejection_message: e.target.value })}
                   className={textareaCls}
                   placeholder="Ej: ¡Gracias! Nos pondremos en contacto contigo a la brevedad."
+                />
+              </Field>
+            </div>
+
+            <div className="md:col-span-2">
+              <Field label="Dominios Permitidos (Opcional)" hint="Separa los dominios con comas. Déjalo en blanco para aceptar todos los dominios.">
+                <textarea
+                  value={config.allowed_domains || ""}
+                  rows={2}
+                  maxLength={1000}
+                  onChange={(e) => setConfig({ ...config, allowed_domains: e.target.value })}
+                  className={textareaCls}
+                  placeholder="Ej: miempresa.com, www.miempresa.com"
                 />
               </Field>
             </div>

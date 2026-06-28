@@ -175,6 +175,7 @@ class ChatWidgetConfigUpdate(BaseModel):
     widget_name: str | None = Field(None, max_length=255)
     welcome_message: str | None = Field(None, max_length=1000)
     rejection_message: str | None = Field(None, max_length=1000)
+    allowed_domains: str | None = Field(None, max_length=1000)
     theme_color: str | None = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
     rules_config: list[RuleQuestion] | None = Field(None, max_length=20)
     intent_threshold: int | None = Field(None, ge=0, le=10_000)
@@ -191,6 +192,7 @@ class ChatWidgetConfigOut(BaseModel):
     widget_name: str
     welcome_message: str
     rejection_message: str
+    allowed_domains: str | None
     theme_color: str
     rules_config: list | None = []
     intent_threshold: int

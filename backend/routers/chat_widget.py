@@ -233,14 +233,44 @@ async def _require_active_config(
 async def _require_client_user(client_id: str, db: AsyncSession) -> User:
     result = await db.execute(select(User).where(User.id == client_id))
     user = result.scalar_one_or_none()
-    if user is None:
-        raise HTTPException(status_code=404, detail="Client not found.")
+    if not user:
+        raise HTTPException(status_code=403, detail="Client account not active.")
     return user
+
+
+def _validate_origin(request: Request, config: ChatWidgetConfig):
+    """Verifies that the request Origin matches the allowed domains."""
+    if not config.allowed_domains:
+        return
+        
+    allowed = [d.strip().lower() for d in config.allowed_domains.split(",") if d.strip()]
+    if not allowed:
+        return
+
+    origin = request.headers.get("origin") or request.headers.get("referer")
+    if not origin:
+        raise HTTPException(status_code=403, detail="Origin header missing.")
+        
+    # Extract hostname from origin (e.g. https://example.com -> example.com)
+    from urllib.parse import urlparse
+    parsed = urlparse(origin)
+    hostname = parsed.hostname or origin.lower()
+    
+    # Check exact match or subdomains
+    is_allowed = False
+    for domain in allowed:
+        if hostname == domain or hostname.endswith(f".{domain}"):
+            is_allowed = True
+            break
+            
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Domain not allowed by client configuration.")
 
 
 @public_router.post("/{client_id}/start", response_model=ChatStartResponse)
 async def start_chat_session(
     client_id: str,
+    request: Request,
     body: Optional[ChatStartRequest] = Body(default=None),
     db: AsyncSession = Depends(get_db),
 ):
@@ -249,6 +279,7 @@ async def start_chat_session(
     Accepts optional UTM / gclid tracking data in the request body.
     """
     config = await _require_active_config(client_id, db)
+    _validate_origin(request, config)
     rules: list[dict] = config.rules_config or []
 
     initial_state = (
@@ -316,6 +347,7 @@ async def start_chat_session(
 @public_router.post("/{client_id}/message", response_model=ChatMessageResponse)
 async def send_chat_message(
     client_id: str,
+    request: Request,
     body: ChatMessageRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -331,6 +363,7 @@ async def send_chat_message(
         raise HTTPException(status_code=404, detail="Session not found.")
 
     config = await _require_active_config(client_id, db)
+    _validate_origin(request, config)
     client_user = await _require_client_user(client_id, db)
 
     result_obj = await process_chat_message(

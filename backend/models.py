@@ -252,6 +252,7 @@ class ChatWidgetConfig(Base):
     rejection_message: Mapped[str] = mapped_column(
         Text, nullable=False, default="¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad."
     )
+    allowed_domains: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Rules engine — ordered list of questions with point-bearing options
     rules_config: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
