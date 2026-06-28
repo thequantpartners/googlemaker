@@ -400,7 +400,7 @@ export default function PaymentSettingsPage() {
               <div>
                 <h2 className="text-white font-semibold text-base">Generic Webhook</h2>
                 <p className="text-gray-500 text-xs mt-0.5">
-                  Notify GMaker of any payment from any provider
+                  Notify QSS of any payment from any provider
                 </p>
               </div>
             </div>

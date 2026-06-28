@@ -8,7 +8,7 @@ import { AnimatedTestimonials } from "../components/ui/animated-testimonials";
 
 const testimonials = [
   {
-    quote: "We used to spend $10,000 a month on Google and half were calls looking for free help. Since we turned on GMaker's Autopilot, our cost per case dropped 40% and the consultation quality is excellent.",
+    quote: "We used to spend $10,000 a month on Google and half were calls looking for free help. Since we turned on QSS's Autopilot, our cost per case dropped 40% and the consultation quality is excellent.",
     name: "Carlos Rodriguez",
     designation: "Founding Partner, GrowthX Law",
     src: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop"
@@ -32,7 +32,7 @@ const testimonials = [
     src: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1887&auto=format&fit=crop"
   },
   {
-    quote: "We fired our expensive ad agency and switched entirely to GMaker. Not only did we save $3,000/mo, but our actual cost per client dropped by 35%. Best legal tech investment of the year.",
+    quote: "We fired our expensive ad agency and switched entirely to QSS. Not only did we save $3,000/mo, but our actual cost per client dropped by 35%. Best legal tech investment of the year.",
     name: "Fatima Al-Jamil",
     designation: "Managing Director, Apex Legal",
     src: "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?q=80&w=1887&auto=format&fit=crop"
@@ -57,7 +57,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple font-bold text-lg">
             G
           </div>
-          <span className="font-semibold text-xl tracking-tight">GMaker</span>
+          <span className="font-semibold text-xl tracking-tight">QSS</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
@@ -239,7 +239,7 @@ export default function LandingPage() {
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-red-500 mb-4 bg-red-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Clock size={24} /></div>
               <h3 className="text-xl font-bold mb-2">Constant Junk Clicks</h3>
-              <p className="text-gray-400">People looking for free asylum help or out-of-state services drain your budget by noon. GMaker blocks them 24/7.</p>
+              <p className="text-gray-400">People looking for free asylum help or out-of-state services drain your budget by noon. QSS blocks them 24/7.</p>
             </div>
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-orange-500 mb-4 bg-orange-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><BarChart3 size={24} /></div>
@@ -270,7 +270,7 @@ export default function LandingPage() {
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-blue flex items-center justify-center text-2xl font-bold text-neon-blue mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)]">1</div>
               <h3 className="text-xl font-bold mb-3">Connect Your Accounts</h3>
-              <p className="text-gray-400">Securely link your Google Ads account and connect our Telegram Bot. GMaker reads your history and prepares your notification channels.</p>
+              <p className="text-gray-400">Securely link your Google Ads account and connect our Telegram Bot. QSS reads your history and prepares your notification channels.</p>
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
@@ -357,7 +357,7 @@ export default function LandingPage() {
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                No. GMaker only connects to the Google Ads API to read click, cost, and conversion metrics. We have absolutely no access to your CRM, emails, or client names. Everything is 100% confidential and secure.
+                No. QSS only connects to the Google Ads API to read click, cost, and conversion metrics. We have absolutely no access to your CRM, emails, or client names. Everything is 100% confidential and secure.
               </p>
             </details>
             <details className="group bg-dark-card border border-dark-card-border rounded-2xl p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
@@ -375,7 +375,7 @@ export default function LandingPage() {
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                Absolutely. GMaker's algorithm doesn't judge the language, it judges the math. It will quickly identify which campaigns are bringing you cases at the best price, regardless of language.
+                Absolutely. QSS's algorithm doesn't judge the language, it judges the math. It will quickly identify which campaigns are bringing you cases at the best price, regardless of language.
               </p>
             </details>
           </div>
@@ -396,7 +396,7 @@ export default function LandingPage() {
           </Link>
           <div className="mt-16 border-t border-dark-card-border/50 pt-8 flex flex-col md:flex-row items-center justify-between text-gray-500 text-sm">
             <div className="mb-4 md:mb-0">
-              © 2026 GMaker. Built by TheQuantPartners.
+              © 2026 QSS. Built by TheQuantPartners.
             </div>
             <div className="flex items-center space-x-6">
               <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>

@@ -422,7 +422,7 @@ export default function ClientCampaigns() {
         <div className="bg-gradient-to-r from-neon-purple/10 to-blue-500/10 border border-neon-purple/20 p-6 rounded-2xl flex items-start gap-4">
           <Lightbulb className="text-neon-purple shrink-0 mt-1" size={28} />
           <div>
-            <h3 className="text-lg font-bold text-white mb-2">GMaker Recommendations</h3>
+            <h3 className="text-lg font-bold text-white mb-2">QSS Recommendations</h3>
             <ul className="list-disc list-inside text-gray-300 space-y-2 text-sm">
               <li><strong>Track Conversions:</strong> Make sure you have installed the Google Tag (gtag.js) on your website to accurately track conversions. Without it, our autopilot cannot optimize effectively.</li>
               <li><strong>Sitelink Extensions:</strong> Add at least 4 sitelink extensions to your campaigns in Google Ads to improve your ad's real estate on search results and increase CTR.</li>

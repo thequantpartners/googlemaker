@@ -22,12 +22,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import ChatSession, ChatSessionState, ChatWidgetConfig, Lead, User
 from services.telegram_service import send_telegram_message
+from encryption import decrypt_value
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-
-# Marker embedded by Gemini when it has collected lead data.
+# Marker embedded by AI when it has collected lead data.
 # Format: [[LEAD:{"name":"...","email":"...","phone":"..."}]]
 _LEAD_RE = re.compile(r"\[\[LEAD:(.*?)\]\]", re.DOTALL)
 
@@ -115,37 +112,23 @@ def _build_system_instruction(config: ChatWidgetConfig) -> str:
     return "\n\n".join(parts)
 
 
-# ── Gemini call ───────────────────────────────────────────────────────────────
+# ── AI Provider Call ─────────────────────────────────────────────────────────
 
 
-async def _call_gemini(
+async def _call_ai_provider(
     session: ChatSession,
     config: ChatWidgetConfig,
     db: AsyncSession,
     client_user: User,
 ) -> dict:
     """
-    Send session.history to Gemini 2.0 Flash and handle the response.
-
-    Precondition: session.history already includes the latest user message as the
-    last entry (role="user"). This is set by the caller before invoking this function.
-
-    Returns:
-        {
-            "reply":           str,                  # clean text for the widget
-            "updated_history": list,                 # history with AI reply appended
-            "new_state":       ChatSessionState,
-            "lead_captured":   bool,
-        }
+    Send session.history to the selected AI provider (OpenAI, Anthropic, Gemini).
     """
     history: list = list(session.history or [])
 
-    # ── Graceful degradation when no API key ─────────────────────────────────
-    if not GEMINI_API_KEY:
-        fallback = (
-            "El asistente de IA no está disponible en este momento. "
-            "Por favor, contáctenos directamente."
-        )
+    # Enforce BYOK (Bring Your Own Key)
+    if not config.ai_api_key:
+        fallback = "Por favor, configura tu propia API Key en el panel de control para activar el asistente de Inteligencia Artificial."
         return {
             "reply": fallback,
             "updated_history": _push(history, "bot", fallback),
@@ -153,44 +136,94 @@ async def _call_gemini(
             "lead_captured": False,
         }
 
-    # ── Build Gemini history, separating the last user turn ──────────────────
-    gemini_history = _to_gemini_history(history)
+    try:
+        api_key = decrypt_value(config.ai_api_key)
+    except Exception as e:
+        fallback = "Error de seguridad: La API Key configurada es inválida o no pudo ser desencriptada."
+        return {
+            "reply": fallback,
+            "updated_history": _push(history, "bot", fallback),
+            "new_state": session.state,
+            "lead_captured": False,
+        }
 
-    if gemini_history and gemini_history[-1]["role"] == "user":
-        current_message = gemini_history[-1]["parts"][0]
-        prior_history = gemini_history[:-1]
-    else:
-        # Edge case: history ended with a bot message or is empty.
-        current_message = "Hola"
-        prior_history = gemini_history
-
-    # ── Gemini model call ─────────────────────────────────────────────────────
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
-        system_instruction=_build_system_instruction(config),
-        generation_config=genai.types.GenerationConfig(
-            temperature=config.temperature,
-            max_output_tokens=config.max_tokens,
-        ),
-    )
+    system_prompt = _build_system_instruction(config)
+    provider = config.ai_provider or "openai"
+    raw_text = ""
 
     try:
-        chat = model.start_chat(history=prior_history)
-        response = await chat.send_message_async(current_message)
-        raw_text = response.text.strip()
+        if provider == "openai":
+            import openai
+            client = openai.AsyncOpenAI(api_key=api_key)
+            oai_history = [{"role": "system", "content": system_prompt}]
+            for msg in history:
+                content = (msg.get("content") or "").strip()
+                if not content:
+                    continue
+                role = "assistant" if msg.get("role") == "bot" else "user"
+                oai_history.append({"role": role, "content": content})
+                
+            response = await client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=oai_history,
+                temperature=config.temperature,
+                max_tokens=config.max_tokens,
+            )
+            raw_text = response.choices[0].message.content.strip()
+
+        elif provider == "anthropic":
+            import anthropic
+            client = anthropic.AsyncAnthropic(api_key=api_key)
+            ant_history = []
+            for msg in history:
+                content = (msg.get("content") or "").strip()
+                if not content:
+                    continue
+                role = "assistant" if msg.get("role") == "bot" else "user"
+                ant_history.append({"role": role, "content": content})
+                
+            response = await client.messages.create(
+                model="claude-3-5-haiku-20241022",
+                system=system_prompt,
+                messages=ant_history,
+                temperature=config.temperature,
+                max_tokens=config.max_tokens,
+            )
+            raw_text = response.content[0].text.strip()
+
+        elif provider == "gemini":
+            genai.configure(api_key=api_key)
+            gemini_history = _to_gemini_history(history)
+            
+            if gemini_history and gemini_history[-1]["role"] == "user":
+                current_message = gemini_history[-1]["parts"][0]
+                prior_history = gemini_history[:-1]
+            else:
+                current_message = "Hola"
+                prior_history = gemini_history
+                
+            model = genai.GenerativeModel(
+                model_name="gemini-2.0-flash",
+                system_instruction=system_prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=config.temperature,
+                    max_output_tokens=config.max_tokens,
+                ),
+            )
+            chat = model.start_chat(history=prior_history)
+            resp = await chat.send_message_async(current_message)
+            raw_text = resp.text.strip()
+
+        else:
+            raw_text = "Proveedor de Inteligencia Artificial no soportado."
+
     except Exception as exc:
         err = str(exc)
-        if "429" in err:
-            raw_text = (
-                "El asistente está experimentando alta demanda en este momento. "
-                "Intenta de nuevo en unos segundos."
-            )
+        if "429" in err or "Too Many Requests" in err or "insufficient_quota" in err:
+            raw_text = "El asistente está experimentando alta demanda o la cuota de la API se ha agotado. Intenta de nuevo más tarde."
         else:
-            print(f"[chat_engine] Gemini error: {exc}")
-            raw_text = (
-                "Lo siento, estoy teniendo dificultades técnicas. "
-                "Por favor, contáctanos directamente."
-            )
+            print(f"[chat_engine] {provider} error: {exc}")
+            raw_text = "Lo siento, el asistente de IA no pudo procesar tu mensaje debido a un problema con la API configurada."
 
     # ── Lead extraction ───────────────────────────────────────────────────────
     lead_match = _LEAD_RE.search(raw_text)
@@ -306,7 +339,7 @@ async def _handle_rules_mode(
     if session.current_score >= config.intent_threshold:
         session.history = history
         session.state = ChatSessionState.ai_mode
-        ai = await _call_gemini(session, config, db, client_user)
+        ai = await _call_ai_provider(session, config, db, client_user)
         session.history = ai["updated_history"]
         session.state = ai["new_state"]
         await db.commit()
@@ -364,7 +397,7 @@ async def _handle_ai_mode(
     history = list(session.history or [])
     session.history = _push(history, "user", user_message)
 
-    ai = await _call_gemini(session, config, db, client_user)
+    ai = await _call_ai_provider(session, config, db, client_user)
     session.history = ai["updated_history"]
     session.state = ai["new_state"]
     await db.commit()

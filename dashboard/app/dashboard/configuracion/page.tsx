@@ -69,8 +69,8 @@ export default function ConfiguracionPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        // Replace 'gmaker_autopilot_bot' with the actual bot username provided by the user
-        const botUsername = "gmaker_autopilot_bot"; 
+        // Replace 'qss_autopilot_bot' with the actual bot username provided by the user
+        const botUsername = "qss_autopilot_bot"; 
         const telegramUrl = `https://t.me/${botUsername}?start=${data.token}`;
         window.open(telegramUrl, "_blank");
         setMsg({ text: "Opening Telegram... Please click 'Start' in the bot. Refresh this page once connected.", type: "success" });

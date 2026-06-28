@@ -253,6 +253,8 @@ class ChatWidgetConfig(Base):
         Text, nullable=False, default="¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad."
     )
     allowed_domains: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_provider: Mapped[str] = mapped_column(String(50), nullable=False, default="openai")
+    ai_api_key: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Rules engine — ordered list of questions with point-bearing options
     rules_config: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
@@ -263,6 +265,10 @@ class ChatWidgetConfig(Base):
     security_protocol: Mapped[str | None] = mapped_column(Text, nullable=True)
     temperature: Mapped[float] = mapped_column(Float, nullable=False, default=0.7)
     max_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=1024)
+
+    @property
+    def has_api_key(self) -> bool:
+        return bool(self.ai_api_key)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(

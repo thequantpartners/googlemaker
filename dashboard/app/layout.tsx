@@ -6,8 +6,8 @@ import { AuthProvider } from "@/components/AuthProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GMaker | The Hybrid Autopilot for Google Ads",
-  description: "Automate and optimize your Google Ads campaigns with GMaker. Stop wasting budget and start scaling winners automatically.",
+  title: "QSS | The Hybrid Autopilot for Google Ads",
+  description: "Automate and optimize your Google Ads campaigns with QSS. Stop wasting budget and start scaling winners automatically.",
 };
 
 export default function RootLayout({

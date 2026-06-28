@@ -28,15 +28,15 @@ from routers.metrics import router as metrics_router
 from schemas import GoogleLoginRequest, TokenResponse, UserOut
 
 SUPERADMIN_EMAIL: str = os.getenv("SUPERADMIN_EMAIL", "thequantpartners@gmail.com")
-FRONTEND_ORIGINS: list[str] = [
+FRONTEND_ORIGINS = [
     o.strip()
-    for o in os.getenv("FRONTEND_ORIGINS", "https://gmaker.thequantpartners.com,http://localhost:3000,https://googlemaker-pdf.vercel.app,https://googlemaker-psi.vercel.app").split(",")
+    for o in os.getenv("FRONTEND_ORIGINS", "https://qss.thequantpartners.com,http://localhost:3000,https://googlemaker-pdf.vercel.app,https://googlemaker-psi.vercel.app").split(",")
     if o.strip()
 ]
 
-# Unconditionally add the main domain just in case FRONTEND_ORIGINS is overridden in Railway
-if "https://gmaker.thequantpartners.com" not in FRONTEND_ORIGINS:
-    FRONTEND_ORIGINS.append("https://gmaker.thequantpartners.com")
+# Ensure the main production dashboard is always allowed
+if "https://qss.thequantpartners.com" not in FRONTEND_ORIGINS:
+    FRONTEND_ORIGINS.append("https://qss.thequantpartners.com")
 
 
 # ── Lifespan (startup / shutdown) ────────────────────────────────────────────
@@ -88,6 +88,8 @@ async def lifespan(app: FastAPI):
         await safe_add_column("chat_sessions", "tracking_data", _json_type)
         await safe_add_column("chat_widget_configs", "rejection_message", "TEXT", "'¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad.'")
         await safe_add_column("chat_widget_configs", "allowed_domains", "TEXT")
+        await safe_add_column("chat_widget_configs", "ai_provider", "VARCHAR(50)", "'openai'")
+        await safe_add_column("chat_widget_configs", "ai_api_key", "TEXT")
     except Exception as e:
         print(f"[WARN] Migration error (non-fatal): {e}")
 

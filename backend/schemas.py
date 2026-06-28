@@ -179,6 +179,8 @@ class ChatWidgetConfigUpdate(BaseModel):
     theme_color: str | None = Field(None, pattern=r"^#[0-9A-Fa-f]{6}$")
     rules_config: list[RuleQuestion] | None = Field(None, max_length=20)
     intent_threshold: int | None = Field(None, ge=0, le=10_000)
+    ai_provider: str | None = Field(None, max_length=50)
+    ai_api_key: str | None = Field(None)
     system_prompt: str | None = None
     security_protocol: str | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
@@ -196,6 +198,8 @@ class ChatWidgetConfigOut(BaseModel):
     theme_color: str
     rules_config: list | None = []
     intent_threshold: int
+    ai_provider: str
+    has_api_key: bool = False
     system_prompt: str | None = None
     security_protocol: str | None = None
     temperature: float

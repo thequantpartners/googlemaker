@@ -48,7 +48,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     { name: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
     { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity, locked: true },
     { name: "My Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
-    { name: "Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
+    { name: "Leads Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
     { name: "Payments", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
     { name: "Settings", href: "/dashboard/configuracion", icon: Settings, locked: true },
   ];
@@ -72,11 +72,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       >
         
         {/* Logo */}
-        <div className="h-20 flex items-center px-6 gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple font-bold text-white text-lg">
-            G
+        <div className="p-4 md:p-6 mb-2 mt-4 flex items-center gap-3 select-none hover:opacity-80 transition-opacity">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-purple to-neon-pink flex items-center justify-center text-white font-bold text-sm shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+            Q
           </div>
-          <span className="font-semibold text-lg text-white">GMaker</span>
+          <span className="font-semibold text-lg text-white">QSS</span>
         </div>
 
         {/* Navigation */}

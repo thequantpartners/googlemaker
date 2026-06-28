@@ -29,6 +29,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth import require_client
 from database import get_db
+from encryption import decrypt_value, encrypt_value
 from models import (
     ChatSession,
     ChatSessionState,
@@ -121,6 +122,11 @@ async def update_chat_widget_config(
                 rq.model_dump() if hasattr(rq, "model_dump") else rq
                 for rq in value
             ]
+        
+        if field == "ai_api_key" and value:
+            # Encrypt the API key before saving
+            value = encrypt_value(value)
+            
         setattr(config, field, value)
     config.updated_at = _now()
     await db.commit()

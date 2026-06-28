@@ -15,7 +15,7 @@ export default function PrivacyPage() {
           <p>We collect information you provide directly to us, such as your Google Account details (email, name) when you sign in using Google OAuth. We also request access to your Google Ads API to provide automation.</p>
           
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. Client Confidentiality (For Law Firms)</h2>
-          <p>GMaker strictly accesses aggregate advertising metrics (clicks, impressions, cost, conversion counts). <strong>We do not read, extract, or store Personally Identifiable Information (PII) of your legal clients.</strong> We do not have access to your CRM, emails, or specific case details.</p>
+          <p>QSS strictly accesses aggregate advertising metrics (clicks, impressions, cost, conversion counts). <strong>We do not read, extract, or store Personally Identifiable Information (PII) of your legal clients.</strong> We do not have access to your CRM, emails, or specific case details.</p>
 
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. How We Use Your Information</h2>
           <p>We use your Google Ads metrics strictly to execute the algorithmic automation you configured (pausing underperforming ads and scaling winners). We do not use your data to train public AI models.</p>

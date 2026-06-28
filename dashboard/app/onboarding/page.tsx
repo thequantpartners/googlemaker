@@ -86,7 +86,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-3xl">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight sm:text-4xl mb-3">
-            Welcome to GMaker!
+            Welcome to QSS!
           </h1>
           <p className="text-lg text-gray-500">
             Complete these simple steps to get your system up and running.

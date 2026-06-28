@@ -48,6 +48,9 @@ interface WidgetConfig {
   welcome_message: string;
   rejection_message: string;
   allowed_domains: string;
+  ai_provider: string;
+  ai_api_key?: string;
+  has_api_key?: boolean;
   theme_color: string;
   rules_config: RuleQuestion[];
   intent_threshold: number;
@@ -190,6 +193,9 @@ export default function ChatWidgetPage() {
           welcome_message:  config.welcome_message,
           rejection_message: config.rejection_message,
           allowed_domains:  config.allowed_domains,
+          ai_provider:      "openai",
+          ai_api_key:       "",
+          has_api_key:      false,
           theme_color:      config.theme_color,
           rules_config:     config.rules_config,
           intent_threshold: config.intent_threshold,
@@ -274,7 +280,7 @@ export default function ChatWidgetPage() {
   /* ── Copy snippet ──────────────────────────────────────────────────────── */
 
   const snippet = config
-    ? `<script src="${API}/static/gmaker-widget.js?client=${config.client_id}"></script>`
+    ? `<script src="${API}/static/qss-widget.js?client=${config.client_id}"></script>`
     : "";
 
   const copySnippet = () => {
@@ -318,7 +324,7 @@ export default function ChatWidgetPage() {
         <div>
           <h1 className="text-3xl font-bold text-white flex items-center gap-3">
             <MessageSquare className="text-neon-purple" size={32} />
-            Chat Widget
+            Leads Widget
           </h1>
           <p className="text-gray-400 mt-1 text-sm">
             Configura y personaliza el asistente de chat para tu sitio web.
@@ -429,6 +435,39 @@ export default function ChatWidgetPage() {
                   placeholder="¡Hola! ¿En qué podemos ayudarte hoy?"
                 />
               </Field>
+            </div>
+
+            <div className="md:col-span-2 border-t border-dark-card-border pt-6 mt-4">
+              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span className="text-neon-purple">⚙️</span> Proveedor de IA
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Field label="Proveedor de IA" hint="Selecciona el modelo de Inteligencia Artificial">
+                    <select
+                      value={config.ai_provider || "openai"}
+                      onChange={(e) => setConfig({ ...config, ai_provider: e.target.value })}
+                      className={inputCls}
+                    >
+                      <option value="openai">OpenAI (GPT-4o Mini)</option>
+                      <option value="anthropic">Anthropic (Claude 3.5 Haiku)</option>
+                      <option value="gemini">Google (Gemini 2.0 Flash)</option>
+                    </select>
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Field label="API Key" hint={config.has_api_key ? "Ya tienes una API Key configurada. Escribe aquí solo si deseas cambiarla." : "Pega tu clave secreta de la API."}>
+                    <input
+                      type="password"
+                      value={config.ai_api_key || ""}
+                      onChange={(e) => setConfig({ ...config, ai_api_key: e.target.value })}
+                      className={inputCls}
+                      placeholder={config.has_api_key ? "••••••••••••••••••••••••••••" : "sk-..."}
+                    />
+                  </Field>
+                </div>
+              </div>
             </div>
           </div>
 

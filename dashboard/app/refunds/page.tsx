@@ -12,10 +12,10 @@ export default function RefundsPage() {
         <div className="space-y-4 text-gray-300 leading-relaxed">
           <p>Last updated: June 2026</p>
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">1. Software Subscription Refunds</h2>
-          <p>We offer a 14-day money-back guarantee for your initial GMaker subscription fee. If the software does not meet your expectations, contact us within 14 days of your first purchase for a full refund of the subscription cost.</p>
+          <p>We offer a 14-day money-back guarantee for your initial QSS subscription fee. If the software does not meet your expectations, contact us within 14 days of your first purchase for a full refund of the subscription cost.</p>
 
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. Absolutely NO Refunds for Ad Spend</h2>
-          <p><strong>GMaker is a management tool, not an advertising platform.</strong> You pay Google directly for your ad clicks. Under no circumstances will GMaker refund, reimburse, or credit you for any money spent on Google Ads, even if such spend occurred due to algorithmic actions, delays, or software bugs.</p>
+          <p><strong>QSS is a management tool, not an advertising platform.</strong> You pay Google directly for your ad clicks. Under no circumstances will QSS refund, reimburse, or credit you for any money spent on Google Ads, even if such spend occurred due to algorithmic actions, delays, or software bugs.</p>
 
           <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. Eligibility for Refunds</h2>
           <p>To be eligible for a subscription refund, you must request it within 14 days of your initial purchase. Renewals and subsequent billing cycles are final and non-refundable.</p>
