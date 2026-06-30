@@ -81,6 +81,19 @@
 - Integrated Lead Payment tracking (`consultation_paid`, `full_case_paid`) via webhooks (Stripe and Generic HMAC).
 - Developed Dashboard Metrics endpoint integrating Google Ads API to calculate Ad Spend and Lead Conversion KPIs.
 - Upgraded Chat Widget to automatically capture UTM parameters from URL/localStorage and trigger Stripe Checkout or Custom Link redirection.
+
 - **2026-06-26**
 - Fixed React rendering crash ("This page couldn't load") in the Chat Widget configuration dashboard caused by FastAPI returning 422 validation errors as an array instead of a string, and safely normalized `rules_config` JSON string to array.
 - Fixed public Chat Widget CORS blocking ("El chat no está disponible ahora mismo") by injecting a custom `WidgetCORSMiddleware` to bypass the restrictive global FastAPI `CORSMiddleware`, allowing the widget to be embedded on any external website.
+
+- **2026-06-27**
+- Implemented Multi-LLM support in `chat_engine.py` (OpenAI GPT-4o Mini, Anthropic Claude 3.5 Haiku, Gemini 2.0 Flash) and enforced a strict Bring Your Own Key (BYOK) policy.
+- Integrated AES-256 encryption using `cryptography.fernet` to securely store user API keys in PostgreSQL.
+- Updated `dashboard/app/dashboard/chat-widget/page.tsx` with a secure UI to input and manage the AI Provider and API Key, including visual indicators (`✓ Configurada`) and blocked inputs to prevent accidental overwrites.
+- Rebranded the entire application from "GMaker" to "QSS" (Quant System Sales) and "Chat Widget" to "Leads Widget", replacing textual references and logos across the frontend and backend.
+- Updated hardcoded CORS origins and Google OAuth redirect URIs from `gmaker.thequantpartners.com` to `qss.thequantpartners.com`.
+- Updated Railway `FRONTEND_ORIGINS` environment variable to accept the new `qss` domain via CLI.
+- Fixed 401 session expiration errors when resuming the app after 24 hours: Extended FastAPI backend JWT validity to 30 days to match the NextAuth session, and added an automatic logout interceptor in the Next.js dashboard layout to securely redirect to the login page upon encountering any 401 response.
+## 2026-06-29
+- Added Manychat WhatsApp conversion webhook with native gclid split and Upsert logic in ackend/routers/webhooks.py.
+- Added Manychat conversational bridge endpoint /manychat/chat with LLM integration to act as Dumb Router.

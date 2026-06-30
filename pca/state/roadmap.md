@@ -48,5 +48,8 @@
 - [x] Fixed project name capitalization to GMAKER in README.md.
 - [x] Added delete option for saved strategies.
 - [x] Upgraded AI Competitor Auto-Find to perform real web scraping using DuckDuckGo search to extract direct competitors.
-- [x] Convert GMaker into QSS: Integrated Lightweight CRM, Google Ads lead tracking, and dynamic Payment Providers (Stripe, Custom).
 - [x] Fixed React rendering crashes in the Chat Widget configuration dashboard and resolved global CORS blocking issues for the public widget API.
+- [x] Integrated Multi-LLM support (OpenAI, Anthropic, Gemini) with strict BYOK (Bring Your Own Key) enforcement for the Chat Widget.
+- [x] Rebranded Chat Widget to Leads Widget and GMaker to QSS.
+- [x] Fixed 401 session expiration errors by extending backend JWT validity and adding a frontend automatic logout interceptor.
+- [x] Integrate WhatsApp-First Manychat Conversion & Chat Bridge (2026-06-29)

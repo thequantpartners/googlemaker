@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-Fix CORS issue for widget chat start
+Integrate WhatsApp-First flows via Manychat as source for Google Ads Offline Conversions API
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
+- [general] docs: close task and update context logs (2026-06-29T22:27:44.512Z)
+- [general] docs: close task and update context logs (2026-06-28T03:07:48.810Z)
 - [general] docs: close task and update context logs (2026-06-27T02:30:58.401Z)
-- [general] docs: update active decisions to closed registration (2026-06-25T22:50:10.659Z)
-- [general] docs: close task and update context logs (2026-06-25T22:19:41.524Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.
