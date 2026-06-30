@@ -95,5 +95,6 @@
 - Updated Railway `FRONTEND_ORIGINS` environment variable to accept the new `qss` domain via CLI.
 - Fixed 401 session expiration errors when resuming the app after 24 hours: Extended FastAPI backend JWT validity to 30 days to match the NextAuth session, and added an automatic logout interceptor in the Next.js dashboard layout to securely redirect to the login page upon encountering any 401 response.
 ## 2026-06-29
-- Added Manychat WhatsApp conversion webhook with native gclid split and Upsert logic in ackend/routers/webhooks.py.
+- Added Manychat WhatsApp conversion webhook with native gclid split and Upsert logic in  ackend/routers/webhooks.py.
 - Added Manychat conversational bridge endpoint /manychat/chat with LLM integration to act as Dumb Router.
+- Built independent WhatsApp Sales System UI section in Dashboard allowing users to connect Manychat via API Token in a 1-click modal simulation.
