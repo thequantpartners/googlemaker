@@ -21,7 +21,7 @@ load_dotenv()
 
 JWT_SECRET: str = os.getenv("JWT_SECRET", "dev-jwt-secret-change-me")
 JWT_ALGORITHM = "HS256"
-JWT_EXPIRATION_HOURS = 24
+JWT_EXPIRATION_HOURS = 720  # 30 days to match NextAuth session
 
 GOOGLE_CLIENT_ID: str = os.getenv("GOOGLE_CLIENT_ID", "")
 

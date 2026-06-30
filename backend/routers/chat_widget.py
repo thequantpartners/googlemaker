@@ -162,6 +162,7 @@ async def get_payment_config(
         custom_payment_link=config.custom_payment_link,
         generic_webhook_secret=config.generic_webhook_secret,
         consultation_fee=config.consultation_fee,
+        manychat_api_token=keys.get("manychat_api_token"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,
@@ -195,6 +196,8 @@ async def update_payment_config(
         keys["paypal_client_id"] = data["paypal_client_id"]
     if data.get("paypal_client_secret") is not None:
         keys["paypal_client_secret"] = data["paypal_client_secret"]
+    if data.get("manychat_api_token") is not None:
+        keys["manychat_api_token"] = data["manychat_api_token"]
     config.provider_keys = keys
 
     config.updated_at = _now()
@@ -208,6 +211,7 @@ async def update_payment_config(
         custom_payment_link=config.custom_payment_link,
         generic_webhook_secret=config.generic_webhook_secret,
         consultation_fee=config.consultation_fee,
+        manychat_api_token=keys.get("manychat_api_token"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,
