@@ -249,7 +249,7 @@ export default function WhatsAppPage() {
                 Secreto de Autenticación
               </h3>
               <p className="text-sm text-gray-400 mb-6">
-                Agrega este Header en todos tus bloques de "External Request" para autenticar las peticiones hacia QSS.
+                Agrega este Custom Header en la configuración del Webhook de YCloud para autenticar las peticiones hacia QSS.
               </p>
 
               <div className="space-y-4">
