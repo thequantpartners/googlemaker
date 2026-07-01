@@ -233,7 +233,7 @@ export default function WhatsAppPage() {
                       type="text"
                       readOnly
                       value={masterWebhookUrl}
-                      className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
+                      className="flex-1 min-w-0 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
                     />
                     <button
                       onClick={() => copyToClip(masterWebhookUrl)}
@@ -274,7 +274,7 @@ export default function WhatsAppPage() {
                         type="password"
                         readOnly
                         value="••••••••••••••••••••••••••••••••"
-                        className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-500 font-mono outline-none"
+                        className="flex-1 min-w-0 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-500 font-mono outline-none"
                       />
                       <button
                         onClick={() => {
@@ -293,7 +293,7 @@ export default function WhatsAppPage() {
                         value={ycloudWebhookSecret}
                         onChange={(e) => setYcloudWebhookSecret(e.target.value)}
                         placeholder="Pega el Webhook Secret aquí..."
-                        className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none focus:border-neon-pink/50 transition-colors"
+                        className="flex-1 min-w-0 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none focus:border-neon-pink/50 transition-colors"
                       />
                       <button
                         onClick={async () => {
