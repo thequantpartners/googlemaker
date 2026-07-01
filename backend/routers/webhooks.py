@@ -196,9 +196,18 @@ async def ycloud_conversion_webhook(
 
     # 2. Parseo del Payload de YCloud
     try:
-        message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
-        wa_id = message["from"]
-        text_body = message.get("text", {}).get("body", "")
+        # El webhook de YCloud tiene la estructura: payload["data"]["messages"][0]
+        if "data" in payload and "messages" in payload["data"]:
+            message = payload["data"]["messages"][0]
+            wa_id = message["from"]
+            text_body = message.get("text", {}).get("body", "")
+        # Fallback a Meta WABA original por si acaso
+        elif "entry" in payload:
+            message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
+            wa_id = message["from"]
+            text_body = message.get("text", {}).get("body", "")
+        else:
+            return {"ok": True, "detail": "Formato de payload no reconocido."}
     except (KeyError, IndexError, TypeError):
         return {"ok": True, "detail": "No text message found to process."}
 
@@ -286,9 +295,16 @@ async def ycloud_chat_webhook(
 
     # 3. Parsear mensaje entrante de YCloud
     try:
-        message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
-        wa_id = message["from"]
-        text_body = message.get("text", {}).get("body", "")
+        if "data" in payload and "messages" in payload["data"]:
+            message = payload["data"]["messages"][0]
+            wa_id = message["from"]
+            text_body = message.get("text", {}).get("body", "")
+        elif "entry" in payload:
+            message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
+            wa_id = message["from"]
+            text_body = message.get("text", {}).get("body", "")
+        else:
+            return {"ok": True, "detail": "Formato de payload no reconocido."}
     except (KeyError, IndexError, TypeError):
         return {"ok": True, "detail": "No text message found."}
 
