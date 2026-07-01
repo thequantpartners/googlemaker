@@ -98,3 +98,9 @@
 - Added Manychat WhatsApp conversion webhook with native gclid split and Upsert logic in  ackend/routers/webhooks.py.
 - Added Manychat conversational bridge endpoint /manychat/chat with LLM integration to act as Dumb Router.
 - Built independent WhatsApp Sales System UI section in Dashboard allowing users to connect Manychat via API Token in a 1-click modal simulation.
+
+## 2026-07-01
+- Migrated WhatsApp integration from Manychat to YCloud (direct WhatsApp Business API).
+- Refactored backend /webhooks/ycloud/conversion to parse GCLIDs directly via Regex from the standard WABA JSON payload, removing the dependency on Manychat Custom User Fields.
+- Refactored backend /webhooks/ycloud/chat to act as LLM brain receiving YCloud payloads and sending responses to YCloud's /messages/send API.
+- Updated frontend Dashboard (\/dashboard/whatsapp\) to securely handle \ycloud_api_key\ instead of \manychat_api_token\, and formatted Webhook URLs to include the \client_id\ query parameter for dynamic multi-tenant routing.

@@ -53,3 +53,4 @@
 - [x] Rebranded Chat Widget to Leads Widget and GMaker to QSS.
 - [x] Fixed 401 session expiration errors by extending backend JWT validity and adding a frontend automatic logout interceptor.
 - [x] Integrate WhatsApp-First Manychat Conversion & Chat Bridge (2026-06-29)
+- [x] Migrate WhatsApp Integration from Manychat to YCloud (2026-07-01)
