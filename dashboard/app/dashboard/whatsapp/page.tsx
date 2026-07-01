@@ -240,25 +240,56 @@ export default function WhatsAppPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                    YCloud Webhook Secret
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={ycloudWebhookSecret}
-                      onChange={(e) => setYcloudWebhookSecret(e.target.value)}
-                      placeholder="Pega el Webhook Secret aquí..."
-                      className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none focus:border-neon-pink/50 transition-colors"
-                    />
-                    <button
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="bg-neon-pink/10 text-neon-pink hover:bg-neon-pink/20 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
-                    >
-                      {saving ? "Guardando..." : "Guardar"}
-                    </button>
+                  <div className="flex items-center gap-3 mb-2">
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      YCloud Webhook Secret
+                    </label>
+                    {config?.ycloud_webhook_secret && !isEditingSecret && (
+                      <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-500/20">
+                        Configurada
+                      </span>
+                    )}
                   </div>
+                  
+                  {config?.ycloud_webhook_secret && !isEditingSecret ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        readOnly
+                        value="••••••••••••••••••••••••••••••••"
+                        className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-500 font-mono outline-none"
+                      />
+                      <button
+                        onClick={() => {
+                          setIsEditingSecret(true);
+                          setYcloudWebhookSecret("");
+                        }}
+                        className="bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-4 py-2 rounded-lg font-medium text-sm transition-colors border border-white/[0.06]"
+                      >
+                        Cambiar clave
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={ycloudWebhookSecret}
+                        onChange={(e) => setYcloudWebhookSecret(e.target.value)}
+                        placeholder="Pega el Webhook Secret aquí..."
+                        className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none focus:border-neon-pink/50 transition-colors"
+                      />
+                      <button
+                        onClick={async () => {
+                          await handleSave();
+                          setIsEditingSecret(false);
+                        }}
+                        disabled={saving}
+                        className="bg-neon-pink/10 text-neon-pink hover:bg-neon-pink/20 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                      >
+                        {saving ? "Guardando..." : "Guardar"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
