@@ -196,9 +196,10 @@ export default function WhatsAppPage() {
                 <ExternalLink size={18} className="text-neon-purple" />
                 Endpoints de Webhook
               </h3>
-              <p className="text-sm text-gray-400 mb-6">
-                Configura estos URLs como endpoints de tus webhooks en YCloud.
-              </p>
+              <div className="text-sm text-gray-400 mb-6 space-y-2">
+                <p>Crea 2 webhooks separados en YCloud pegando estas URLs en "Endpoint URL".</p>
+                <p>En ambos webhooks, marca <strong>únicamente</strong> el evento: <code className="text-neon-purple bg-neon-purple/10 px-1.5 py-0.5 rounded">whatsapp.inbound_message.received</code></p>
+              </div>
 
               <div className="space-y-4">
                 <div>
@@ -248,9 +249,10 @@ export default function WhatsAppPage() {
                 <Lock className="text-neon-pink" />
                 Secreto de Autenticación
               </h3>
-              <p className="text-sm text-gray-400 mb-6">
-                Agrega este Custom Header en la configuración del Webhook de YCloud para autenticar las peticiones hacia QSS.
-              </p>
+              <div className="text-sm text-gray-400 mb-6 space-y-2">
+                <p>Busca la sección de "Custom Headers" (Cabeceras) en la configuración de ambos Webhooks de YCloud.</p>
+                <p>Agrega el Name y Value exactos de abajo para que QSS valide las peticiones de forma segura.</p>
+              </div>
 
               <div className="space-y-4">
                 <div>
@@ -309,9 +311,14 @@ export default function WhatsAppPage() {
               ✕
             </button>
             <h2 className="text-xl font-bold text-white mb-2">Conectar YCloud</h2>
-            <p className="text-sm text-gray-400 mb-6">
-              Ingresa el API Key de YCloud (obtenlo en Developers {">"} API Key).
-            </p>
+            <div className="text-sm text-gray-400 mb-6 space-y-2">
+              <p>Para obtener tu API Key en YCloud:</p>
+              <ol className="list-decimal pl-5 space-y-1">
+                <li>Inicia sesión en YCloud.</li>
+                <li>Ve al menú izquierdo y haz clic en <strong>Developers &gt; API Key</strong>.</li>
+                <li>Genera o copia tu clave secreta y pégala aquí.</li>
+              </ol>
+            </div>
 
             <div className="space-y-4 mb-8">
               <div>
