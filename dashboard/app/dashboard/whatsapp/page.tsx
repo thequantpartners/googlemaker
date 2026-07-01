@@ -220,7 +220,7 @@ export default function WhatsAppPage() {
               </h3>
               <div className="text-sm text-gray-400 mb-6 space-y-2">
                 <p>Crea 1 solo webhook en YCloud pegando esta URL en "Endpoint URL".</p>
-                <p>Marca <strong>únicamente</strong> el evento: <code className="text-neon-purple bg-neon-purple/10 px-1.5 py-0.5 rounded">whatsapp.inbound_message.received</code></p>
+                <p>Marca <strong>únicamente</strong> el evento: <code className="text-neon-purple bg-neon-purple/10 px-1.5 py-0.5 rounded break-all">whatsapp.inbound_message.received</code></p>
               </div>
 
               <div className="space-y-4">
@@ -257,7 +257,7 @@ export default function WhatsAppPage() {
 
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider">
                       YCloud Webhook Secret
                     </label>
@@ -269,7 +269,7 @@ export default function WhatsAppPage() {
                   </div>
                   
                   {config?.ycloud_webhook_secret && !isEditingSecret ? (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="password"
                         readOnly
@@ -281,13 +281,13 @@ export default function WhatsAppPage() {
                           setIsEditingSecret(true);
                           setYcloudWebhookSecret("");
                         }}
-                        className="bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-4 py-2 rounded-lg font-medium text-sm transition-colors border border-white/[0.06]"
+                        className="w-full sm:w-auto whitespace-nowrap bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-4 py-2 rounded-lg font-medium text-sm transition-colors border border-white/[0.06]"
                       >
                         Cambiar clave
                       </button>
                     </div>
                   ) : (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         value={ycloudWebhookSecret}
@@ -301,7 +301,7 @@ export default function WhatsAppPage() {
                           setIsEditingSecret(false);
                         }}
                         disabled={saving}
-                        className="bg-neon-pink/10 text-neon-pink hover:bg-neon-pink/20 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                        className="w-full sm:w-auto whitespace-nowrap bg-neon-pink/10 text-neon-pink hover:bg-neon-pink/20 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
                       >
                         {saving ? "Guardando..." : "Guardar"}
                       </button>
