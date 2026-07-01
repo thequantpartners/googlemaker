@@ -198,6 +198,8 @@ async def update_payment_config(
         keys["paypal_client_secret"] = data["paypal_client_secret"]
     if data.get("ycloud_api_key") is not None:
         keys["ycloud_api_key"] = data["ycloud_api_key"]
+    if data.get("ycloud_webhook_secret") is not None:
+        keys["ycloud_webhook_secret"] = data["ycloud_webhook_secret"]
     config.provider_keys = keys
 
     config.updated_at = _now()
@@ -212,6 +214,7 @@ async def update_payment_config(
         generic_webhook_secret=config.generic_webhook_secret,
         consultation_fee=config.consultation_fee,
         ycloud_api_key=keys.get("ycloud_api_key"),
+        ycloud_webhook_secret=keys.get("ycloud_webhook_secret"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,

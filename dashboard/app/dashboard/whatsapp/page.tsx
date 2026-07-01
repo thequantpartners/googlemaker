@@ -25,6 +25,7 @@ interface WhatsAppConfig {
   user_id: string;
   generic_webhook_secret: string | null;
   ycloud_api_key: string | null;
+  ycloud_webhook_secret: string | null;
 }
 
 const inputCls =
@@ -45,10 +46,11 @@ export default function WhatsAppPage() {
   
   // Form State
   const [ycloudKey, setYcloudKey] = useState("");
+  const [ycloudWebhookSecret, setYcloudWebhookSecret] = useState("");
+  const [isEditingSecret, setIsEditingSecret] = useState(false);
 
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
-  const conversionWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/conversion${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
-  const chatWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/chat${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
+  const masterWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/webhook${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
 
   useEffect(() => {
     if (!session?.backendToken) return;
@@ -65,6 +67,7 @@ export default function WhatsAppPage() {
         const data = await res.json();
         setConfig(data);
         setYcloudKey(data.ycloud_api_key ?? "");
+        setYcloudWebhookSecret(data.ycloud_webhook_secret ?? "");
       }
     } catch (e) {
       console.error(e);
@@ -85,6 +88,7 @@ export default function WhatsAppPage() {
         },
         body: JSON.stringify({
           ycloud_api_key: ycloudKey || null,
+          ycloud_webhook_secret: ycloudWebhookSecret || null,
         }),
       });
       if (!res.ok) throw new Error("Failed to save configuration");
@@ -102,6 +106,7 @@ export default function WhatsAppPage() {
   function handleDisconnect() {
     if (!confirm("¿Estás seguro de desconectar YCloud? Se perderá el enrutamiento de IA.")) return;
     setYcloudKey("");
+    setYcloudWebhookSecret("");
     handleSave();
   }
 
@@ -194,47 +199,27 @@ export default function WhatsAppPage() {
             <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6">
               <h3 className="text-white font-medium mb-4 flex items-center gap-2">
                 <ExternalLink size={18} className="text-neon-purple" />
-                Endpoints de Webhook
+                Webhook Endpoint
               </h3>
               <div className="text-sm text-gray-400 mb-6 space-y-2">
-                <p>Crea 2 webhooks separados en YCloud pegando estas URLs en "Endpoint URL".</p>
-                <p>En ambos webhooks, marca <strong>únicamente</strong> el evento: <code className="text-neon-purple bg-neon-purple/10 px-1.5 py-0.5 rounded">whatsapp.inbound_message.received</code></p>
+                <p>Crea 1 solo webhook en YCloud pegando esta URL en "Endpoint URL".</p>
+                <p>Marca <strong>únicamente</strong> el evento: <code className="text-neon-purple bg-neon-purple/10 px-1.5 py-0.5 rounded">whatsapp.inbound_message.received</code></p>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                    Webhook de Conversión (Upsert)
+                    Master Webhook (Chat + Conversiones)
                   </label>
                   <div className="flex">
                     <input
                       type="text"
                       readOnly
-                      value={conversionWebhookUrl}
+                      value={masterWebhookUrl}
                       className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
                     />
                     <button
-                      onClick={() => copyToClip(conversionWebhookUrl)}
-                      className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors"
-                    >
-                      <Copy size={16} className="text-gray-400" />
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                    Webhook de Chat (LLM Brain)
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      readOnly
-                      value={chatWebhookUrl}
-                      className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
-                    />
-                    <button
-                      onClick={() => copyToClip(chatWebhookUrl)}
+                      onClick={() => copyToClip(masterWebhookUrl)}
                       className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors"
                     >
                       <Copy size={16} className="text-gray-400" />
@@ -247,50 +232,31 @@ export default function WhatsAppPage() {
             <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6">
               <h3 className="text-white font-medium mb-4 flex items-center gap-2">
                 <Lock className="text-neon-pink" />
-                Secreto de Autenticación
+                Secreto del Webhook
               </h3>
               <div className="text-sm text-gray-400 mb-6 space-y-2">
-                <p>Busca la sección de "Custom Headers" (Cabeceras) en la configuración de ambos Webhooks de YCloud.</p>
-                <p>Agrega el Name y Value exactos de abajo para que QSS valide las peticiones de forma segura.</p>
+                <p>YCloud te proporcionará un <strong>Webhook Secret</strong> al crear el webhook. Pégalo aquí para asegurar tus peticiones.</p>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                    Header Name
+                    YCloud Webhook Secret
                   </label>
-                  <div className="flex">
+                  <div className="flex gap-2">
                     <input
                       type="text"
-                      readOnly
-                      value="x-ycloud-secret"
-                      className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
+                      value={ycloudWebhookSecret}
+                      onChange={(e) => setYcloudWebhookSecret(e.target.value)}
+                      placeholder="Pega el Webhook Secret aquí..."
+                      className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none focus:border-neon-pink/50 transition-colors"
                     />
                     <button
-                      onClick={() => copyToClip("x-ycloud-secret")}
-                      className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors"
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="bg-neon-pink/10 text-neon-pink hover:bg-neon-pink/20 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
                     >
-                      <Copy size={16} className="text-gray-400" />
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                    Header Value
-                  </label>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      readOnly
-                      value={config?.generic_webhook_secret || ""}
-                      className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
-                    />
-                    <button
-                      onClick={() => copyToClip(config?.generic_webhook_secret || "")}
-                      className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors"
-                    >
-                      <Copy size={16} className="text-gray-400" />
+                      {saving ? "Guardando..." : "Guardar"}
                     </button>
                   </div>
                 </div>

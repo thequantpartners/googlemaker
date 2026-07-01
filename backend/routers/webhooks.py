@@ -169,131 +169,59 @@ async def generic_webhook(
 
 # ── YCloud ─────────────────────────────────────────────────────────────────
 
-@router.post("/ycloud/conversion")
-async def ycloud_conversion_webhook(
+@router.post("/ycloud/webhook")
+async def ycloud_master_webhook(
     request: Request,
     client_id: str,
-    x_ycloud_secret: str | None = Header(None, alias="x-ycloud-secret"),
+    ycloud_signature: str | None = Header(None, alias="YCloud-Signature"),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    YCloud webhook for offline conversions (Upsert).
-    Parses the GCLID from the incoming WhatsApp message text.
+    YCloud master webhook for Chat and Conversions.
+    Verifies HMAC-SHA256 signature, then processes the incoming message.
     """
+    raw_body = await request.body()
     payload = await request.json()
     
-    # 1. Validación de Seguridad Multi-tenant
+    # 1. Validación de Seguridad Multi-tenant y Firma
     result = await db.execute(
         select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
     )
     pay_cfg = result.scalar_one_or_none()
     
-    if not pay_cfg or not pay_cfg.generic_webhook_secret:
+    if not pay_cfg:
         raise HTTPException(status_code=404, detail="Webhook no configurado.")
         
-    if not x_ycloud_secret or not hmac.compare_digest(x_ycloud_secret, pay_cfg.generic_webhook_secret):
-        raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
-
-    # 2. Parseo del Payload de YCloud
-    try:
-        # El webhook de YCloud tiene la estructura: payload["data"]["messages"][0]
-        if "data" in payload and "messages" in payload["data"]:
-            message = payload["data"]["messages"][0]
-            wa_id = message["from"]
-            text_body = message.get("text", {}).get("body", "")
-        # Fallback a Meta WABA original por si acaso
-        elif "entry" in payload:
-            message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
-            wa_id = message["from"]
-            text_body = message.get("text", {}).get("body", "")
-        else:
-            return {"ok": True, "detail": "Formato de payload no reconocido."}
-    except (KeyError, IndexError, TypeError):
-        return {"ok": True, "detail": "No text message found to process."}
-
-    # Buscar GCLID usando regex o split basico (ej. Ref: GCLID--SOURCE--CAMPAIGN)
-    import re
-    match = re.search(r'Ref:\s*([^\s]+)', text_body)
-    if not match:
-        return {"ok": True, "detail": "No GCLID reference found in message."}
-        
-    cuf_qss_payload = match.group(1)
-    payload_parts = cuf_qss_payload.split('--')
-    gclid_value = payload_parts[0] if len(payload_parts) > 0 else ""
-    utm_source = payload_parts[1] if len(payload_parts) > 1 else ""
-    utm_campaign = payload_parts[2] if len(payload_parts) > 2 else ""
-
-    if not gclid_value:
-        raise HTTPException(status_code=400, detail="GCLID vacío.")
-
-    # 3. Lógica de Upsert del Lead
-    lead_result = await db.execute(
-        select(Lead).where(
-            Lead.gclid == gclid_value, 
-            Lead.client_id == client_id
-        )
-    )
-    lead = lead_result.scalar_one_or_none()
-    
-    if not lead:
-        # El lead no existe (flujo directo a WhatsApp sin form web). Lo creamos.
-        lead = Lead(
-            id=str(uuid.uuid4()),
-            client_id=client_id,
-            gclid=gclid_value,
-            utm_source=utm_source,
-            utm_campaign=utm_campaign,
-            name=f"WA Lead {wa_id}",
-            email="no-email@whatsapp.local"
-        )
-        db.add(lead)
-
-    # 4. Marcar como venta real (Simulada por conversión)
-    lead.full_case_paid = True
-    lead.full_case_amount = 150.00  # Default or extractable
-    
-    await db.commit()
-    
-    return {
-        "ok": True, 
-        "lead_id": lead.id, 
-        "action": "upsert_and_convert",
-        "gclid": gclid_value
-    }
-
-
-@router.post("/ycloud/chat")
-async def ycloud_chat_webhook(
-    request: Request,
-    client_id: str,
-    x_ycloud_secret: str | None = Header(None, alias="x-ycloud-secret"),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    YCloud conversational bridge.
-    Acts as LLM brain to process messages and reply via YCloud API.
-    """
-    payload = await request.json()
-
-    result = await db.execute(
-        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
-    )
-    pay_cfg = result.scalar_one_or_none()
-    
-    if not pay_cfg or not pay_cfg.generic_webhook_secret:
-        raise HTTPException(status_code=404, detail="Webhook no configurado.")
-        
-    if not x_ycloud_secret or not hmac.compare_digest(x_ycloud_secret, pay_cfg.generic_webhook_secret):
-        raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
-    
-    # 2. Recuperar la configuración de YCloud
     keys = pay_cfg.provider_keys or {}
+    ycloud_webhook_secret = keys.get("ycloud_webhook_secret")
     ycloud_api_key = keys.get("ycloud_api_key")
 
-    if not ycloud_api_key:
-        raise HTTPException(status_code=400, detail="YCloud API Key no configurado.")
+    if not ycloud_webhook_secret or not ycloud_api_key:
+        raise HTTPException(status_code=400, detail="YCloud secrets no configurados.")
 
-    # 3. Parsear mensaje entrante de YCloud
+    if not ycloud_signature:
+        raise HTTPException(status_code=401, detail="Firma de YCloud requerida.")
+
+    # Parsear t=timestamp, s=signature
+    sig_parts = dict(kv.split("=") for kv in ycloud_signature.split(","))
+    req_timestamp = sig_parts.get("t")
+    req_sig = sig_parts.get("s")
+
+    if not req_timestamp or not req_sig:
+        raise HTTPException(status_code=401, detail="Firma de YCloud mal formada.")
+
+    # Calcular HMAC
+    signed_payload = f"{req_timestamp}.{raw_body.decode('utf-8')}"
+    expected_sig = hmac.new(
+        key=ycloud_webhook_secret.encode("utf-8"),
+        msg=signed_payload.encode("utf-8"),
+        digestmod="sha256"
+    ).hexdigest()
+
+    if not hmac.compare_digest(req_sig, expected_sig):
+        raise HTTPException(status_code=401, detail="Secreto de webhook YCloud inválido.")
+
+    # 2. Parseo del Payload de YCloud
     try:
         if "data" in payload and "messages" in payload["data"]:
             message = payload["data"]["messages"][0]
@@ -308,13 +236,47 @@ async def ycloud_chat_webhook(
     except (KeyError, IndexError, TypeError):
         return {"ok": True, "detail": "No text message found."}
 
-    # 4. Llamada simulada al LLM
+    # 3. Lógica Combinada (Conversión Upsert + Chat)
+    
+    # 3a. Buscar GCLID usando regex (Conversión)
+    import re
+    match = re.search(r'Ref:\s*([^\s]+)', text_body)
+    if match:
+        cuf_qss_payload = match.group(1)
+        payload_parts = cuf_qss_payload.split('--')
+        gclid_value = payload_parts[0] if len(payload_parts) > 0 else ""
+        utm_source = payload_parts[1] if len(payload_parts) > 1 else ""
+        utm_campaign = payload_parts[2] if len(payload_parts) > 2 else ""
+
+        if gclid_value:
+            lead_result = await db.execute(
+                select(Lead).where(Lead.gclid == gclid_value, Lead.client_id == client_id)
+            )
+            lead = lead_result.scalar_one_or_none()
+            
+            if not lead:
+                lead = Lead(
+                    id=str(uuid.uuid4()),
+                    client_id=client_id,
+                    gclid=gclid_value,
+                    utm_source=utm_source,
+                    utm_campaign=utm_campaign,
+                    name=f"WA Lead {wa_id}",
+                    email="no-email@whatsapp.local"
+                )
+                db.add(lead)
+
+            lead.full_case_paid = True
+            lead.full_case_amount = 150.00
+            await db.commit()
+
+    # 3b. Llamada simulada al LLM (Chat Brain)
     try:
         llm_reply_text = f"[QSS AI Brain] Entendido. Recibí tu mensaje vía YCloud: '{text_body}'"
     except Exception:
         llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
 
-    # 5. Enviar la respuesta de vuelta a WhatsApp vía API de YCloud
+    # 4. Enviar la respuesta de vuelta a WhatsApp vía API de YCloud
     ycloud_url = "https://api.ycloud.com/v2/whatsapp/messages/send"
     
     headers = {
@@ -335,4 +297,4 @@ async def ycloud_chat_webhook(
         if yc_res.status_code >= 400:
             print(f"YCloud API Error: {yc_res.text}")
 
-    return {"ok": True, "status": "message_dispatched"}
+    return {"ok": True, "status": "processed"}
