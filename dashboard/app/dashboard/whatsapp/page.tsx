@@ -195,6 +195,23 @@ export default function WhatsAppPage() {
             </button>
           </div>
 
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6 relative overflow-hidden">
+            <div className="flex gap-4 z-10 relative">
+              <div className="text-blue-400 mt-1">
+                <AlertCircle size={20} />
+              </div>
+              <div>
+                <h3 className="text-white font-medium mb-1">¿Cómo configuro el Chatbot de WhatsApp?</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-3">
+                  WhatsApp utiliza exactamente la misma configuración, reglas y proveedor de IA que tu <strong>Leads Widget</strong> web. No necesitas crear un bot por separado.
+                </p>
+                <a href="/dashboard/chat-widget" className="text-blue-400 text-sm font-medium hover:text-blue-300 transition-colors flex items-center gap-1">
+                  Ir a configurar el Leads Widget →
+                </a>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6">
               <h3 className="text-white font-medium mb-4 flex items-center gap-2">
