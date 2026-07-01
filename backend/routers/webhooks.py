@@ -20,7 +20,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
-from models import ClientPaymentConfig, Lead
+from models import ClientPaymentConfig, Lead, ChatSession, ChatWidgetConfig, User
+from services.chat_engine import process_chat_message
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
@@ -270,10 +271,62 @@ async def ycloud_master_webhook(
             lead.full_case_amount = 150.00
             await db.commit()
 
-    # 3b. Llamada simulada al LLM (Chat Brain)
+    # 3b. Llamada real al LLM (Chat Brain) usando chat_engine.py
     try:
-        llm_reply_text = f"[QSS AI Brain] Entendido. Recibí tu mensaje vía YCloud: '{text_body}'"
-    except Exception:
+        # Recuperar o crear la sesión de chat atada al número de teléfono
+        session_result = await db.execute(
+            select(ChatSession).where(
+                ChatSession.session_id == wa_id,
+                ChatSession.client_id == client_id,
+            )
+        )
+        chat_session = session_result.scalar_one_or_none()
+        if not chat_session:
+            chat_session = ChatSession(
+                id=str(uuid.uuid4()),
+                session_id=wa_id,
+                client_id=client_id,
+                origin="whatsapp"
+            )
+            db.add(chat_session)
+            await db.commit()
+            await db.refresh(chat_session)
+
+        # Recuperar la configuración del bot del cliente
+        config_result = await db.execute(
+            select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id)
+        )
+        chat_config = config_result.scalar_one_or_none()
+        
+        # Recuperar el Client User para desencriptar llaves
+        user_result = await db.execute(select(User).where(User.id == client_id))
+        client_user = user_result.scalar_one_or_none()
+
+        if chat_config and chat_config.is_enabled and client_user:
+            # Enviar el mensaje al cerebro QSS (Reglas + IA)
+            engine_result = await process_chat_message(
+                session=chat_session,
+                config=chat_config,
+                user_message=text_body,
+                db=db,
+                client_user=client_user
+            )
+            
+            # WhatsApp es texto plano, así que concatenamos todos los mensajes generados
+            reply_lines = []
+            for msg in engine_result.messages:
+                reply_lines.append(msg["content"])
+                if msg.get("options"):
+                    reply_lines.append("") # Espaciador
+                    for opt in msg["options"]:
+                        reply_lines.append(f"• {opt}")
+            
+            llm_reply_text = "\n".join(reply_lines)
+        else:
+            llm_reply_text = "El asistente virtual no está activado en este momento."
+            
+    except Exception as e:
+        print(f"Error procesando mensaje en chat_engine: {e}")
         llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
 
     # 4. Enviar la respuesta de vuelta a WhatsApp vía API de YCloud
