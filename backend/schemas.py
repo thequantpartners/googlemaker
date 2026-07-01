@@ -287,7 +287,7 @@ class ClientPaymentConfigUpdate(BaseModel):
     paypal_client_secret: str | None = None
     custom_payment_link: str | None = None
     consultation_fee: float | None = Field(None, ge=0)
-    manychat_api_token: str | None = None
+    ycloud_api_key: str | None = None
 
 
 class ClientPaymentConfigOut(BaseModel):
@@ -297,7 +297,7 @@ class ClientPaymentConfigOut(BaseModel):
     custom_payment_link: str | None = None
     generic_webhook_secret: str | None = None
     consultation_fee: float | None = None
-    manychat_api_token: str | None = None
+    ycloud_api_key: str | None = None
     has_stripe_key: bool = False
     has_paypal_key: bool = False
     created_at: datetime

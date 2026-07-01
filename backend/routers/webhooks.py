@@ -167,51 +167,61 @@ async def generic_webhook(
         "full_case_paid": lead.full_case_paid,
     }
 
-# ── Manychat ─────────────────────────────────────────────────────────────────
+# ── YCloud ─────────────────────────────────────────────────────────────────
 
-class ManychatConversionPayload(BaseModel):
-    client_id: str
-    manychat_user_id: str
-    cuf_qss_payload: str  # e.g., "EAIaIQob...--google--promo-verano"
-    conversion_value: float
-    currency: str = "PEN"
-
-@router.post("/manychat/conversion")
-async def manychat_conversion_webhook(
-    payload: ManychatConversionPayload,
-    x_manychat_secret: str | None = Header(None, alias="x-manychat-secret"),
+@router.post("/ycloud/conversion")
+async def ycloud_conversion_webhook(
+    request: Request,
+    client_id: str,
+    x_ycloud_secret: str | None = Header(None, alias="x-ycloud-secret"),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Manychat webhook for offline conversions (Upsert).
-    Parses the concatenated GCLID and creates the lead if it doesn't exist.
+    YCloud webhook for offline conversions (Upsert).
+    Parses the GCLID from the incoming WhatsApp message text.
     """
+    payload = await request.json()
+    
     # 1. Validación de Seguridad Multi-tenant
     result = await db.execute(
-        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == payload.client_id)
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
     )
     pay_cfg = result.scalar_one_or_none()
     
     if not pay_cfg or not pay_cfg.generic_webhook_secret:
         raise HTTPException(status_code=404, detail="Webhook no configurado.")
         
-    if not x_manychat_secret or not hmac.compare_digest(x_manychat_secret, pay_cfg.generic_webhook_secret):
+    if not x_ycloud_secret or not hmac.compare_digest(x_ycloud_secret, pay_cfg.generic_webhook_secret):
         raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
 
-    # 2. Parseo Nativo del Payload
-    payload_parts = payload.cuf_qss_payload.split('--')
+    # 2. Parseo del Payload de YCloud
+    try:
+        message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
+        wa_id = message["from"]
+        text_body = message.get("text", {}).get("body", "")
+    except (KeyError, IndexError, TypeError):
+        return {"ok": True, "detail": "No text message found to process."}
+
+    # Buscar GCLID usando regex o split basico (ej. Ref: GCLID--SOURCE--CAMPAIGN)
+    import re
+    match = re.search(r'Ref:\s*([^\s]+)', text_body)
+    if not match:
+        return {"ok": True, "detail": "No GCLID reference found in message."}
+        
+    cuf_qss_payload = match.group(1)
+    payload_parts = cuf_qss_payload.split('--')
     gclid_value = payload_parts[0] if len(payload_parts) > 0 else ""
     utm_source = payload_parts[1] if len(payload_parts) > 1 else ""
     utm_campaign = payload_parts[2] if len(payload_parts) > 2 else ""
 
     if not gclid_value:
-        raise HTTPException(status_code=400, detail="GCLID no encontrado en el payload.")
+        raise HTTPException(status_code=400, detail="GCLID vacío.")
 
     # 3. Lógica de Upsert del Lead
     lead_result = await db.execute(
         select(Lead).where(
             Lead.gclid == gclid_value, 
-            Lead.client_id == payload.client_id
+            Lead.client_id == client_id
         )
     )
     lead = lead_result.scalar_one_or_none()
@@ -220,18 +230,18 @@ async def manychat_conversion_webhook(
         # El lead no existe (flujo directo a WhatsApp sin form web). Lo creamos.
         lead = Lead(
             id=str(uuid.uuid4()),
-            client_id=payload.client_id,
+            client_id=client_id,
             gclid=gclid_value,
             utm_source=utm_source,
             utm_campaign=utm_campaign,
-            name=f"WA Lead {payload.manychat_user_id}",
+            name=f"WA Lead {wa_id}",
             email="no-email@whatsapp.local"
         )
         db.add(lead)
 
-    # 4. Marcar como venta real
+    # 4. Marcar como venta real (Simulada por conversión)
     lead.full_case_paid = True
-    lead.full_case_amount = payload.conversion_value
+    lead.full_case_amount = 150.00  # Default or extractable
     
     await db.commit()
     
@@ -243,75 +253,70 @@ async def manychat_conversion_webhook(
     }
 
 
-class ManychatChatPayload(BaseModel):
-    client_id: str
-    manychat_user_id: str
-    message_text: str
-
-@router.post("/manychat/chat")
-async def manychat_chat_webhook(
-    payload: ManychatChatPayload,
-    x_manychat_secret: str | None = Header(None, alias="x-manychat-secret"),
+@router.post("/ycloud/chat")
+async def ycloud_chat_webhook(
+    request: Request,
+    client_id: str,
+    x_ycloud_secret: str | None = Header(None, alias="x-ycloud-secret"),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Manychat conversational bridge.
-    Acts as LLM brain to process messages and reply via Manychat API.
+    YCloud conversational bridge.
+    Acts as LLM brain to process messages and reply via YCloud API.
     """
+    payload = await request.json()
+
     result = await db.execute(
-        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == payload.client_id)
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
     )
     pay_cfg = result.scalar_one_or_none()
     
     if not pay_cfg or not pay_cfg.generic_webhook_secret:
         raise HTTPException(status_code=404, detail="Webhook no configurado.")
         
-    if not x_manychat_secret or not hmac.compare_digest(x_manychat_secret, pay_cfg.generic_webhook_secret):
+    if not x_ycloud_secret or not hmac.compare_digest(x_ycloud_secret, pay_cfg.generic_webhook_secret):
         raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
     
-    # 2. Recuperar la configuración LLM del cliente
-    llm_keys = pay_cfg.provider_keys or {}
-    # openai_api_key = llm_keys.get("openai_api_key")
-    manychat_api_token = llm_keys.get("manychat_api_token")
+    # 2. Recuperar la configuración de YCloud
+    keys = pay_cfg.provider_keys or {}
+    ycloud_api_key = keys.get("ycloud_api_key")
 
-    if not manychat_api_token:
-        # Log this internally but don't fail for the user, maybe we just echo?
-        # For this implementation, we require the token.
-        raise HTTPException(status_code=400, detail="Token de Manychat API no configurado.")
+    if not ycloud_api_key:
+        raise HTTPException(status_code=400, detail="YCloud API Key no configurado.")
 
-    # 3. Llamada simulada al LLM
+    # 3. Parsear mensaje entrante de YCloud
     try:
-        llm_reply_text = f"[QSS AI Brain] Entendido. Recibí tu mensaje: '{payload.message_text}'"
+        message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
+        wa_id = message["from"]
+        text_body = message.get("text", {}).get("body", "")
+    except (KeyError, IndexError, TypeError):
+        return {"ok": True, "detail": "No text message found."}
+
+    # 4. Llamada simulada al LLM
+    try:
+        llm_reply_text = f"[QSS AI Brain] Entendido. Recibí tu mensaje vía YCloud: '{text_body}'"
     except Exception:
         llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
 
-    # 4. Enviar la respuesta de vuelta a WhatsApp vía API de Manychat
-    manychat_url = "https://api.manychat.com/fb/sending/sendContent"
+    # 5. Enviar la respuesta de vuelta a WhatsApp vía API de YCloud
+    ycloud_url = "https://api.ycloud.com/v2/whatsapp/messages/send"
     
     headers = {
-        "Authorization": f"Bearer {manychat_api_token}",
+        "X-API-Key": ycloud_api_key,
         "Content-Type": "application/json"
     }
     
-    mc_payload = {
-        "subscriber_id": payload.manychat_user_id,
-        "data": {
-            "version": "v2",
-            "content": {
-                "messages": [
-                    {
-                        "type": "text",
-                        "text": llm_reply_text
-                    }
-                ]
-            }
+    yc_payload = {
+        "to": wa_id,
+        "type": "text",
+        "text": {
+            "body": llm_reply_text
         }
     }
     
     async with httpx.AsyncClient() as client:
-        mc_res = await client.post(manychat_url, headers=headers, json=mc_payload)
-        # Log output for debugging if needed, ignoring failures for this PoC
-        if mc_res.status_code != 200:
-            print(f"Manychat API Error: {mc_res.text}")
+        yc_res = await client.post(ycloud_url, headers=headers, json=yc_payload)
+        if yc_res.status_code >= 400:
+            print(f"YCloud API Error: {yc_res.text}")
 
     return {"ok": True, "status": "message_dispatched"}

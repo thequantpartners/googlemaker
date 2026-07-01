@@ -22,8 +22,9 @@ function Skeleton({ className = "" }: { className?: string }) {
 
 interface WhatsAppConfig {
   id: string;
+  user_id: string;
   generic_webhook_secret: string | null;
-  manychat_api_token: string | null;
+  ycloud_api_key: string | null;
 }
 
 const inputCls =
@@ -43,11 +44,11 @@ export default function WhatsAppPage() {
   const [showToken, setShowToken] = useState(false);
   
   // Form State
-  const [manychatToken, setManychatToken] = useState("");
+  const [ycloudKey, setYcloudKey] = useState("");
 
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
-  const conversionWebhookUrl = `${webhookBaseUrl}/api/webhooks/manychat/conversion`;
-  const chatWebhookUrl = `${webhookBaseUrl}/api/webhooks/manychat/chat`;
+  const conversionWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/conversion${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
+  const chatWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/chat${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
 
   useEffect(() => {
     if (!session?.backendToken) return;
@@ -63,7 +64,7 @@ export default function WhatsAppPage() {
       if (res.ok) {
         const data = await res.json();
         setConfig(data);
-        setManychatToken(data.manychat_api_token ?? "");
+        setYcloudKey(data.ycloud_api_key ?? "");
       }
     } catch (e) {
       console.error(e);
@@ -83,7 +84,7 @@ export default function WhatsAppPage() {
           Authorization: `Bearer ${session!.backendToken}`,
         },
         body: JSON.stringify({
-          manychat_api_token: manychatToken || null,
+          ycloud_api_key: ycloudKey || null,
         }),
       });
       if (!res.ok) throw new Error("Failed to save configuration");
@@ -99,8 +100,8 @@ export default function WhatsAppPage() {
   }
 
   function handleDisconnect() {
-    if (!confirm("¿Estás seguro de desconectar Manychat? Se perderá el enrutamiento de IA.")) return;
-    setManychatToken("");
+    if (!confirm("¿Estás seguro de desconectar YCloud? Se perderá el enrutamiento de IA.")) return;
+    setYcloudKey("");
     handleSave();
   }
 
@@ -120,7 +121,7 @@ export default function WhatsAppPage() {
     );
   }
 
-  const isConnected = !!config?.manychat_api_token;
+  const isConnected = !!config?.ycloud_api_key;
 
   return (
     <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -133,7 +134,7 @@ export default function WhatsAppPage() {
             WhatsApp Sales System
           </h1>
           <p className="text-gray-400 mt-1">
-            Conecta tu cuenta de Manychat para habilitar el motor IA "Dumb Router" y capturar conversiones offline.
+            Conecta tu cuenta de YCloud para habilitar el motor IA "Dumb Router" y capturar conversiones offline.
           </p>
         </div>
       </div>
@@ -158,14 +159,14 @@ export default function WhatsAppPage() {
           </div>
           <h2 className="text-xl font-semibold text-white mb-2">Conecta tu WhatsApp</h2>
           <p className="text-gray-400 max-w-md mb-8">
-            Vincula tu cuenta de Manychat para permitir que el cerebro LLM interactúe directamente con tus leads y sincronice conversiones en tiempo real.
+            Vincula tu cuenta de YCloud para permitir que el cerebro LLM interactúe directamente con tus leads y sincronice conversiones en tiempo real.
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-xl hover:bg-gray-100 transition-colors"
           >
             <Link2 size={18} />
-            Conectar Manychat
+            Conectar YCloud
           </button>
         </div>
       ) : (
@@ -177,8 +178,8 @@ export default function WhatsAppPage() {
                 <CheckCircle2 size={24} className="text-green-500" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-white">Manychat Conectado</h2>
-                <p className="text-gray-400 text-sm">El motor IA tiene acceso a la API de Manychat.</p>
+                <h2 className="text-lg font-semibold text-white">YCloud Conectado</h2>
+                <p className="text-gray-400 text-sm">El motor IA tiene acceso a la API de YCloud.</p>
               </div>
             </div>
             <button
@@ -196,7 +197,7 @@ export default function WhatsAppPage() {
                 Endpoints de Webhook
               </h3>
               <p className="text-sm text-gray-400 mb-6">
-                Configura estos URLs en el bloque "External Request" de tus flujos de Manychat.
+                Configura estos URLs como endpoints de tus webhooks en YCloud.
               </p>
 
               <div className="space-y-4">
@@ -260,11 +261,11 @@ export default function WhatsAppPage() {
                     <input
                       type="text"
                       readOnly
-                      value="x-manychat-secret"
+                      value="x-ycloud-secret"
                       className="flex-1 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
                     />
                     <button
-                      onClick={() => copyToClip("x-manychat-secret")}
+                      onClick={() => copyToClip("x-ycloud-secret")}
                       className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors"
                     >
                       <Copy size={16} className="text-gray-400" />
@@ -307,22 +308,22 @@ export default function WhatsAppPage() {
             >
               ✕
             </button>
-            <h2 className="text-xl font-bold text-white mb-2">Conectar Manychat</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Conectar YCloud</h2>
             <p className="text-sm text-gray-400 mb-6">
-              Ingresa el API Token de Manychat (obtenlo en Settings {">"} API).
+              Ingresa el API Key de YCloud (obtenlo en Developers {">"} API Key).
             </p>
 
             <div className="space-y-4 mb-8">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Manychat API Token
+                  YCloud API Key
                 </label>
                 <div className="relative">
                   <input
                     type={showToken ? "text" : "password"}
-                    value={manychatToken}
-                    onChange={(e) => setManychatToken(e.target.value)}
-                    placeholder="1234567890:AAH..."
+                    value={ycloudKey}
+                    onChange={(e) => setYcloudKey(e.target.value)}
+                    placeholder="363f84..."
                     className={inputCls}
                   />
                   <button
@@ -345,7 +346,7 @@ export default function WhatsAppPage() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={saving || !manychatToken}
+                disabled={saving || !ycloudKey}
                 className="flex items-center gap-2 px-6 py-2 bg-white text-black text-sm font-semibold rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
               >
                 {saving ? <Skeleton className="h-5 w-5 rounded-full" /> : <Save size={16} />}
