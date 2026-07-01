@@ -163,6 +163,7 @@ async def get_payment_config(
         generic_webhook_secret=config.generic_webhook_secret,
         consultation_fee=config.consultation_fee,
         ycloud_api_key=keys.get("ycloud_api_key"),
+        ycloud_webhook_secret=keys.get("ycloud_webhook_secret"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,
