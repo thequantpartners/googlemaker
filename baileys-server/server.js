@@ -120,6 +120,7 @@ async function connectToWhatsApp() {
 }
 
 // Iniciar conexión automáticamente si el servidor se reinicia
+console.log("Iniciando servidor de Baileys con pausas humanas de 4 a 15 segundos...");
 connectToWhatsApp();
 
 app.get('/api/status', (req, res) => {
