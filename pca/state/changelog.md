@@ -105,3 +105,8 @@
 - Refactored backend /webhooks/ycloud/chat to act as LLM brain receiving YCloud payloads and sending responses to YCloud's /messages/send API.
 - Updated frontend Dashboard (\/dashboard/whatsapp\) to securely handle \ycloud_api_key\ instead of \manychat_api_token\, and formatted Webhook URLs to include the \client_id\ query parameter for dynamic multi-tenant routing.
 - Refactored YCloud integration to use a single unified Webhook endpoint and implemented strict HMAC-SHA256 signature verification matching YCloud's security model.
+- Integrated standalone WhatsApp Microservice using Baileys to eliminate YCloud dependency, including custom backend Node.js QR polling, deployment to Railway, and React frontend integration with live status indicators.
+- Implemented WhatsApp Anti-Ban Mechanisms: Addressed rapid response detection by injecting a minimum 4-second + dynamic length-based delay in `baileys-server/server.js`, and forced `available` presence right before `composing` to ensure the WhatsApp typing indicator actually displays on the client side.
+- Fixed Rules Engine skipping the first message in WhatsApp by explicitly checking for empty `session.history` in `backend/services/chat_engine.py`.
+- Auto-captured WhatsApp phone numbers for leads when no phone is provided by extracting the JID directly from the `session_id`.
+- Handled Baileys Railway deployment failures by strictly configuring `railway.toml` to use `builder = "DOCKERFILE"` instead of `DOCKER`, resolving volume mount and continuous deployment issues.
