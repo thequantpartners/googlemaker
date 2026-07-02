@@ -1,0 +1,4 @@
+node_modules
+.git
+auth_info_baileys
+.env
