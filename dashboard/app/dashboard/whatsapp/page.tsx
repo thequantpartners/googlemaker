@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Phone,
   MessageCircle,
@@ -48,6 +49,13 @@ export default function WhatsAppPage() {
   const [ycloudKey, setYcloudKey] = useState("");
   const [ycloudWebhookSecret, setYcloudWebhookSecret] = useState("");
   const [isEditingSecret, setIsEditingSecret] = useState(false);
+
+  // Baileys Modal State
+  const [isBaileysModalOpen, setIsBaileysModalOpen] = useState(false);
+  const [baileysUrl, setBaileysUrl] = useState("");
+  const [baileysStatus, setBaileysStatus] = useState("disconnected");
+  const [baileysQr, setBaileysQr] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
 
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
   const masterWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/webhook${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
@@ -112,6 +120,46 @@ export default function WhatsAppPage() {
 
   function copyToClip(text: string) {
     navigator.clipboard.writeText(text);
+  }
+
+  useEffect(() => {
+    const savedUrl = localStorage.getItem("baileysUrl");
+    if (savedUrl) setBaileysUrl(savedUrl);
+  }, []);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isBaileysModalOpen && baileysUrl && isPolling) {
+        interval = setInterval(async () => {
+            try {
+                const res = await fetch(`${baileysUrl}/api/status`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setBaileysStatus(data.status);
+                    setBaileysQr(data.qr);
+                    if (data.status === 'connected') {
+                        setIsPolling(false);
+                    }
+                }
+            } catch (e) {
+                console.error("Polling error", e);
+            }
+        }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isBaileysModalOpen, baileysUrl, isPolling]);
+
+  async function handleConnectBaileys() {
+    if (!baileysUrl) return;
+    localStorage.setItem("baileysUrl", baileysUrl);
+    setBaileysStatus("connecting");
+    setBaileysQr(null);
+    setIsPolling(true);
+    try {
+        await fetch(`${baileysUrl}/api/connect`, { method: "POST" });
+    } catch (e) {
+        console.error("Error triggering connect", e);
+    }
   }
 
   if (loading) {
@@ -313,67 +361,30 @@ export default function WhatsAppPage() {
           </div>
 
           {/* Experimental Baileys Section */}
-          <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl p-6 relative overflow-hidden mt-8">
+          <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl p-6 relative overflow-hidden mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
             
-            <h3 className="text-white font-medium mb-4 flex items-center gap-2 z-10 relative">
-              <AlertCircle size={18} className="text-orange-500" />
-              Modo Experimental: Conexión No Oficial (Baileys)
-            </h3>
-            
-            <div className="text-sm text-gray-400 mb-6 space-y-2 z-10 relative">
-              <p className="text-orange-400 font-medium">⚠️ No recomendado para clientes finales.</p>
-              <p>
-                Esta conexión está diseñada para uso interno o demostraciones utilizando <strong>@whiskeysockets/baileys</strong>. 
-                Envía peticiones POST al siguiente webhook síncrono.
-              </p>
-            </div>
-
-            <div className="space-y-4 z-10 relative">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                  Webhook URL (Baileys Request-Reply)
-                </label>
-                <div className="flex">
-                  <input
-                    type="text"
-                    readOnly
-                    value={`${webhookBaseUrl}/api/webhooks/baileys?client_id=${config?.user_id}`}
-                    className="flex-1 min-w-0 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
-                  />
-                  <button
-                    onClick={() => copyToClip(`${webhookBaseUrl}/api/webhooks/baileys?client_id=${config?.user_id}`)}
-                    className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors"
-                  >
-                    <Copy size={16} className="text-gray-400" />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                  Generic Webhook Secret (Header: x-webhook-secret)
-                </label>
-                <div className="flex">
-                  <input
-                    type={showToken ? "text" : "password"}
-                    readOnly
-                    value={config?.generic_webhook_secret || "No configurado en Pagos"}
-                    className="flex-1 min-w-0 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-500 font-mono outline-none"
-                  />
-                  <button
-                    onClick={() => copyToClip(config?.generic_webhook_secret || "")}
-                    disabled={!config?.generic_webhook_secret}
-                    className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors disabled:opacity-50"
-                  >
-                    <Copy size={16} className="text-gray-400" />
-                  </button>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Si no tienes secreto, debes configurarlo en la sección de Pagos/Integraciones de QSS primero.
-                </p>
+            <div className="z-10 relative">
+              <h3 className="text-white font-medium mb-2 flex items-center gap-2">
+                <AlertCircle size={18} className="text-orange-500" />
+                Modo Experimental: Conexión vía Baileys
+              </h3>
+              <div className="text-sm text-gray-400 space-y-1">
+                <p className="text-orange-400 font-medium text-xs">⚠️ No recomendado para clientes finales.</p>
+                <p>Usa tu propio servidor en Railway para vincular tu WhatsApp escaneando un código QR.</p>
               </div>
             </div>
+
+            <button
+              onClick={() => {
+                  setIsBaileysModalOpen(true);
+                  setBaileysStatus("disconnected");
+                  setBaileysQr(null);
+              }}
+              className="z-10 px-6 py-3 bg-orange-500/10 border border-orange-500/30 text-orange-400 font-semibold rounded-xl hover:bg-orange-500/20 transition-colors whitespace-nowrap"
+            >
+              Conectar Baileys
+            </button>
           </div>
         </div>
       )}
@@ -438,6 +449,78 @@ export default function WhatsAppPage() {
                 Conectar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Baileys Connection Modal */}
+      {isBaileysModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col items-center">
+            <button
+              onClick={() => { setIsBaileysModalOpen(false); setIsPolling(false); }}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2 w-full">
+              <AlertCircle className="text-orange-500" size={24} /> Conectar Baileys
+            </h2>
+            <p className="text-sm text-gray-400 mb-6 text-left w-full">
+              Ingresa la URL de tu microservicio desplegado en Railway para generar el código QR.
+            </p>
+
+            <div className="w-full space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-2">URL del Microservicio en Railway</label>
+                <input
+                  type="text"
+                  value={baileysUrl}
+                  onChange={(e) => setBaileysUrl(e.target.value)}
+                  placeholder="https://baileys-production.up.railway.app"
+                  className={inputCls}
+                />
+              </div>
+              
+              <div className="text-xs text-gray-500 bg-white/[0.02] p-3 rounded-xl border border-white/[0.05]">
+                <strong>Importante:</strong> Configura en tu Railway las variables <code>QSS_CLIENT_ID={config?.user_id}</code> y <code>QSS_WEBHOOK_SECRET={config?.generic_webhook_secret || '...'}</code> para que funcione.
+              </div>
+            </div>
+
+            {baileysStatus === "disconnected" && (
+              <button
+                onClick={handleConnectBaileys}
+                className="w-full py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors"
+              >
+                Generar QR de WhatsApp
+              </button>
+            )}
+
+            {(baileysStatus === "connecting" || (baileysStatus === "qr_ready" && !baileysQr)) && (
+              <div className="flex flex-col items-center py-8">
+                <Skeleton className="w-48 h-48 rounded-xl mb-4" />
+                <p className="text-orange-400 text-sm animate-pulse">Solicitando QR al servidor...</p>
+              </div>
+            )}
+
+            {baileysStatus === "qr_ready" && baileysQr && (
+              <div className="flex flex-col items-center py-4">
+                <div className="bg-white p-4 rounded-2xl shadow-xl mb-4">
+                   <QRCodeSVG value={baileysQr} size={200} />
+                </div>
+                <p className="text-gray-300 text-sm text-center">Abre WhatsApp en tu celular y escanea el código para vincular.</p>
+              </div>
+            )}
+
+            {baileysStatus === "connected" && (
+              <div className="flex flex-col items-center py-8 text-center">
+                <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle2 size={32} className="text-emerald-500" />
+                </div>
+                <h3 className="text-emerald-400 font-bold text-lg mb-1">¡Conectado!</h3>
+                <p className="text-gray-400 text-sm">Tu WhatsApp está enlazado a QSS vía Baileys.</p>
+              </div>
+            )}
           </div>
         </div>
       )}
