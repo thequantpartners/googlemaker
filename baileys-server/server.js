@@ -83,7 +83,7 @@ async function connectToWhatsApp() {
 
             try {
                 const response = await axios.post(
-                    `${QSS_API_URL}/api/webhooks/baileys?client_id=${QSS_CLIENT_ID}`, 
+                    `${QSS_API_URL}/webhooks/baileys?client_id=${QSS_CLIENT_ID}`, 
                     { wa_id: senderId, text: text, name: senderName },
                     { headers: { 'x-webhook-secret': QSS_WEBHOOK_SECRET, 'Content-Type': 'application/json' } }
                 );
