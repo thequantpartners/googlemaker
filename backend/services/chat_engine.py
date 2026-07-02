@@ -312,26 +312,33 @@ async def _handle_rules_mode(
     rules: list[dict] = config.rules_config or []
     history: list = list(session.history or [])
 
+    is_first_message = len(history) == 0
+
     # 1. Record the user's answer
     history = _push(history, "user", user_message)
 
     # 2. Score the user's answer
     idx = session.current_rule_index
-    if idx < len(rules):
-        current_rule = rules[idx]
-        rtype = current_rule.get("response_type", "options")
-        
-        if rtype == "options":
-            for opt in current_rule.get("options", []):
-                if opt.get("text", "").strip() == user_message.strip():
-                    session.current_score += int(opt.get("points", 0))
-                    break
-        else:
-            # text, textarea, number, etc.
-            if user_message.strip():
-                session.current_score += int(current_rule.get("points_if_answered", 0))
-                
-        session.current_rule_index = idx + 1
+    if not is_first_message:
+        if idx < len(rules):
+            current_rule = rules[idx]
+            rtype = current_rule.get("response_type", "options")
+            
+            if rtype == "options":
+                options_list = current_rule.get("options", [])
+                for i, opt in enumerate(options_list, 1):
+                    opt_text = opt.get("text", "").strip()
+                    if user_message.strip().lower() == opt_text.lower() or user_message.strip() == str(i):
+                        session.current_score += int(opt.get("points", 0))
+                        # Update history with canonical text so LLM context is clear
+                        history[-1]["content"] = opt_text
+                        break
+            else:
+                # text, textarea, number, etc.
+                if user_message.strip():
+                    session.current_score += int(current_rule.get("points_if_answered", 0))
+                    
+            session.current_rule_index = idx + 1
 
     next_idx = session.current_rule_index
 
@@ -354,6 +361,10 @@ async def _handle_rules_mode(
     if next_idx < len(rules):
         next_rule = rules[next_idx]
         bot_reply = next_rule["question"]
+        
+        if is_first_message and config.welcome_message:
+            bot_reply = config.welcome_message + "\n\n" + bot_reply
+            
         rtype = next_rule.get("response_type", "options")
         
         if rtype == "options":

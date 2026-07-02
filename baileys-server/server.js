@@ -89,7 +89,24 @@ async function connectToWhatsApp() {
                 );
 
                 if (response.data && response.data.ok && response.data.reply) {
-                    await sock.sendMessage(msg.key.remoteJid, { text: response.data.reply });
+                    const remoteJid = msg.key.remoteJid;
+                    const replyText = response.data.reply;
+                    
+                    // 1. Marcar como leído
+                    await sock.readMessages([msg.key]);
+
+                    // 2. Estado de "escribiendo..."
+                    await sock.sendPresenceUpdate('composing', remoteJid);
+
+                    // 3. Simular tiempo de escritura humano (1.5s + 50ms por letra, máximo 10s)
+                    const delayMs = Math.min(1500 + (replyText.length * 50), 10000);
+                    await new Promise(resolve => setTimeout(resolve, delayMs));
+
+                    // 4. Detener estado "escribiendo..."
+                    await sock.sendPresenceUpdate('paused', remoteJid);
+
+                    // 5. Enviar respuesta final
+                    await sock.sendMessage(remoteJid, { text: replyText });
                 }
             } catch (error) {
                 console.error(`[X] Error QSS API:`, error.message);

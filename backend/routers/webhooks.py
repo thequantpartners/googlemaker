@@ -425,8 +425,8 @@ async def baileys_webhook(
                 reply_lines.append(msg["content"])
                 if msg.get("options"):
                     reply_lines.append("")
-                    for opt in msg["options"]:
-                        reply_lines.append(f"• {opt}")
+                    for i, opt in enumerate(msg["options"], 1):
+                        reply_lines.append(f"{i}. {opt}")
             
             llm_reply_text = "\n".join(reply_lines)
         else:
