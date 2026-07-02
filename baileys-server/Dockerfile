@@ -1,4 +1,4 @@
-FROM node:18-bullseye-slim
+FROM node:20-bullseye-slim
 
 # Instalar dependencias del sistema requeridas por Baileys para multimedia (ffmpeg para audio/video)
 RUN apt-get update && \
