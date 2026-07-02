@@ -52,7 +52,7 @@ export default function WhatsAppPage() {
 
   // Baileys Modal State
   const [isBaileysModalOpen, setIsBaileysModalOpen] = useState(false);
-  const [baileysUrl, setBaileysUrl] = useState("");
+  const [baileysUrl] = useState("https://qss-baileys-server-production.up.railway.app");
   const [baileysStatus, setBaileysStatus] = useState("disconnected");
   const [baileysQr, setBaileysQr] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
@@ -123,8 +123,7 @@ export default function WhatsAppPage() {
   }
 
   useEffect(() => {
-    const savedUrl = localStorage.getItem("baileysUrl");
-    if (savedUrl) setBaileysUrl(savedUrl);
+    // URL is now hardcoded for simplicity
   }, []);
 
   useEffect(() => {
@@ -151,7 +150,6 @@ export default function WhatsAppPage() {
 
   async function handleConnectBaileys() {
     if (!baileysUrl) return;
-    localStorage.setItem("baileysUrl", baileysUrl);
     setBaileysStatus("connecting");
     setBaileysQr(null);
     setIsPolling(true);
@@ -467,21 +465,10 @@ export default function WhatsAppPage() {
               <AlertCircle className="text-orange-500" size={24} /> Conectar Baileys
             </h2>
             <p className="text-sm text-gray-400 mb-6 text-left w-full">
-              Ingresa la URL de tu microservicio desplegado en Railway para generar el código QR.
+              Genera tu código QR para conectar tu número telefónico a QSS.
             </p>
 
             <div className="w-full space-y-4 mb-6">
-              <div>
-                <label className="block text-xs font-medium text-gray-400 mb-2">URL del Microservicio en Railway</label>
-                <input
-                  type="text"
-                  value={baileysUrl}
-                  onChange={(e) => setBaileysUrl(e.target.value)}
-                  placeholder="https://baileys-production.up.railway.app"
-                  className={inputCls}
-                />
-              </div>
-              
               <div className="text-xs text-gray-500 bg-white/[0.02] p-3 rounded-xl border border-white/[0.05]">
                 <strong>Importante:</strong> Configura en tu Railway las variables <code>QSS_CLIENT_ID={config?.user_id}</code> y <code>QSS_WEBHOOK_SECRET={config?.generic_webhook_secret || '...'}</code> para que funcione.
               </div>
