@@ -33,6 +33,7 @@ async function connectToWhatsApp() {
             version,
             auth: state,
             printQRInTerminal: true,
+            markOnlineOnConnect: true,
             logger: pino({ level: 'silent' })
         });
 
@@ -96,6 +97,7 @@ async function connectToWhatsApp() {
                     await sock.readMessages([msg.key]);
 
                     // 2. Estado de "escribiendo..."
+                    await sock.sendPresenceUpdate('available', remoteJid);
                     await sock.sendPresenceUpdate('composing', remoteJid);
 
                     // 3. Simular tiempo de escritura humano MUCHo más lento
