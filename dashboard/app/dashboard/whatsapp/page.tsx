@@ -311,6 +311,71 @@ export default function WhatsAppPage() {
               </div>
             </div>
           </div>
+          </div>
+
+          {/* Experimental Baileys Section */}
+          <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl p-6 relative overflow-hidden mt-8">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
+            
+            <h3 className="text-white font-medium mb-4 flex items-center gap-2 z-10 relative">
+              <AlertCircle size={18} className="text-orange-500" />
+              Modo Experimental: Conexión No Oficial (Baileys)
+            </h3>
+            
+            <div className="text-sm text-gray-400 mb-6 space-y-2 z-10 relative">
+              <p className="text-orange-400 font-medium">⚠️ No recomendado para clientes finales.</p>
+              <p>
+                Esta conexión está diseñada para uso interno o demostraciones utilizando <strong>@whiskeysockets/baileys</strong>. 
+                Envía peticiones POST al siguiente webhook síncrono.
+              </p>
+            </div>
+
+            <div className="space-y-4 z-10 relative">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                  Webhook URL (Baileys Request-Reply)
+                </label>
+                <div className="flex">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${webhookBaseUrl}/api/webhooks/baileys?client_id=${config?.user_id}`}
+                    className="flex-1 min-w-0 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-300 font-mono outline-none"
+                  />
+                  <button
+                    onClick={() => copyToClip(`${webhookBaseUrl}/api/webhooks/baileys?client_id=${config?.user_id}`)}
+                    className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors"
+                  >
+                    <Copy size={16} className="text-gray-400" />
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                  Generic Webhook Secret (Header: x-webhook-secret)
+                </label>
+                <div className="flex">
+                  <input
+                    type={showToken ? "text" : "password"}
+                    readOnly
+                    value={config?.generic_webhook_secret || "No configurado en Pagos"}
+                    className="flex-1 min-w-0 bg-white/[0.02] border border-white/[0.06] rounded-l-lg px-3 py-2 text-sm text-gray-500 font-mono outline-none"
+                  />
+                  <button
+                    onClick={() => copyToClip(config?.generic_webhook_secret || "")}
+                    disabled={!config?.generic_webhook_secret}
+                    className="bg-white/[0.05] border border-l-0 border-white/[0.06] rounded-r-lg px-3 hover:bg-white/[0.1] transition-colors disabled:opacity-50"
+                  >
+                    <Copy size={16} className="text-gray-400" />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Si no tienes secreto, debes configurarlo en la sección de Pagos/Integraciones de QSS primero.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

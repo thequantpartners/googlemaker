@@ -54,3 +54,4 @@
 - [x] Fixed 401 session expiration errors by extending backend JWT validity and adding a frontend automatic logout interceptor.
 - [x] Integrate WhatsApp-First Manychat Conversion & Chat Bridge (2026-06-29)
 - [x] Migrate WhatsApp Integration from Manychat to YCloud (2026-07-01)
+- [x] Refactor YCloud integration to use a single unified Webhook endpoint and implement strict HMAC-SHA256 signature verification (2026-07-01)

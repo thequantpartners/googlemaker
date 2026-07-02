@@ -351,3 +351,92 @@ async def ycloud_master_webhook(
             print(f"YCloud API Error: {yc_res.text}")
 
     return {"ok": True, "status": "processed"}
+
+
+# ── Baileys (Experimental) ──────────────────────────────────────────────────
+
+class BaileysPayload(BaseModel):
+    wa_id: str
+    text: str
+    name: str | None = None
+
+@router.post("/baileys")
+async def baileys_webhook(
+    payload: BaileysPayload,
+    client_id: str,
+    x_webhook_secret: str | None = Header(None, alias="x-webhook-secret"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Experimental Webhook for Baileys (Synchronous Request-Reply).
+    Returns the LLM generated response directly in the HTTP body.
+    """
+    # 1. Validación de Seguridad usando el generic_webhook_secret
+    result = await db.execute(
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
+    )
+    pay_cfg = result.scalar_one_or_none()
+    
+    if not pay_cfg or not pay_cfg.generic_webhook_secret:
+        raise HTTPException(status_code=404, detail="Webhook genérico no configurado.")
+
+    if not x_webhook_secret or not hmac.compare_digest(
+        x_webhook_secret, pay_cfg.generic_webhook_secret
+    ):
+        raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
+
+    # 2. Llamada al Cerebro LLM
+    try:
+        session_result = await db.execute(
+            select(ChatSession).where(
+                ChatSession.session_id == payload.wa_id,
+                ChatSession.client_id == client_id,
+            )
+        )
+        chat_session = session_result.scalar_one_or_none()
+        if not chat_session:
+            chat_session = ChatSession(
+                id=str(uuid.uuid4()),
+                session_id=payload.wa_id,
+                client_id=client_id,
+                origin="whatsapp_baileys"
+            )
+            db.add(chat_session)
+            await db.commit()
+            await db.refresh(chat_session)
+
+        config_result = await db.execute(
+            select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id)
+        )
+        chat_config = config_result.scalar_one_or_none()
+        
+        user_result = await db.execute(select(User).where(User.id == client_id))
+        client_user = user_result.scalar_one_or_none()
+
+        if chat_config and chat_config.is_enabled and client_user:
+            engine_result = await process_chat_message(
+                session=chat_session,
+                config=chat_config,
+                user_message=payload.text,
+                db=db,
+                client_user=client_user
+            )
+            
+            reply_lines = []
+            for msg in engine_result.messages:
+                reply_lines.append(msg["content"])
+                if msg.get("options"):
+                    reply_lines.append("")
+                    for opt in msg["options"]:
+                        reply_lines.append(f"• {opt}")
+            
+            llm_reply_text = "\n".join(reply_lines)
+        else:
+            llm_reply_text = "El asistente virtual no está activado en este momento."
+            
+    except Exception as e:
+        print(f"Error procesando mensaje en chat_engine (Baileys): {e}")
+        llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
+
+    # 3. Retornar la respuesta síncrona
+    return {"ok": True, "reply": llm_reply_text}
