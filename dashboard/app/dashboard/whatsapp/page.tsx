@@ -311,7 +311,6 @@ export default function WhatsAppPage() {
               </div>
             </div>
           </div>
-          </div>
 
           {/* Experimental Baileys Section */}
           <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl p-6 relative overflow-hidden mt-8">
