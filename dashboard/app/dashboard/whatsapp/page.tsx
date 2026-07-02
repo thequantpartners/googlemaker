@@ -111,11 +111,34 @@ export default function WhatsAppPage() {
     }
   }
 
-  function handleDisconnect() {
+  async function handleDisconnect() {
     if (!confirm("¿Estás seguro de desconectar YCloud? Se perderá el enrutamiento de IA.")) return;
-    setYcloudKey("");
-    setYcloudWebhookSecret("");
-    handleSave();
+    
+    setSaving(true);
+    setMsg(null);
+    try {
+      const res = await fetch(`${API}/clients/me/payment-config`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session!.backendToken}`,
+        },
+        body: JSON.stringify({
+          ycloud_api_key: null,
+          ycloud_webhook_secret: null,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to disconnect configuration");
+      setMsg({ type: "ok", text: "YCloud desconectado exitosamente." });
+      setYcloudKey("");
+      setYcloudWebhookSecret("");
+      fetchConfig();
+    } catch (e: any) {
+      setMsg({ type: "err", text: e.message || "Error al desconectar" });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMsg(null), 5000);
+    }
   }
 
   function copyToClip(text: string) {
