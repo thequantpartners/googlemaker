@@ -150,6 +150,24 @@ export default function WhatsAppPage() {
   }, []);
 
   useEffect(() => {
+    // Check initial Baileys status
+    async function checkBaileysStatus() {
+      try {
+        const res = await fetch(`${baileysUrl}/api/status`);
+        if (res.ok) {
+          const data = await res.json();
+          setBaileysStatus(data.status);
+        }
+      } catch (e) {
+        console.error("Failed to fetch initial Baileys status", e);
+      }
+    }
+    if (baileysUrl) {
+      checkBaileysStatus();
+    }
+  }, [baileysUrl]);
+
+  useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isBaileysModalOpen && baileysUrl && isPolling) {
         interval = setInterval(async () => {
@@ -391,6 +409,11 @@ export default function WhatsAppPage() {
           <h3 className="text-white font-medium mb-2 flex items-center gap-2">
             <AlertCircle size={18} className="text-orange-500" />
             Modo Experimental: Conexión vía Baileys
+            {baileysStatus === "connected" && (
+                <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-500/20 ml-2">
+                  Conectado
+                </span>
+            )}
           </h3>
           <div className="text-sm text-gray-400 space-y-1">
             <p className="text-orange-400 font-medium text-xs">⚠️ No recomendado para clientes finales.</p>
@@ -401,12 +424,18 @@ export default function WhatsAppPage() {
         <button
           onClick={() => {
               setIsBaileysModalOpen(true);
-              setBaileysStatus("disconnected");
-              setBaileysQr(null);
+              if (baileysStatus !== "connected") {
+                setBaileysStatus("disconnected");
+                setBaileysQr(null);
+              }
           }}
-          className="z-10 px-6 py-3 bg-orange-500/10 border border-orange-500/30 text-orange-400 font-semibold rounded-xl hover:bg-orange-500/20 transition-colors whitespace-nowrap"
+          className={`z-10 px-6 py-3 font-semibold rounded-xl transition-colors whitespace-nowrap border ${
+            baileysStatus === "connected" 
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20" 
+              : "bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
+          }`}
         >
-          Conectar Baileys
+          {baileysStatus === "connected" ? "Ver Estado" : "Conectar Baileys"}
         </button>
       </div>
 
