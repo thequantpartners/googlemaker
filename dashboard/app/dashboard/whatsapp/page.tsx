@@ -380,35 +380,35 @@ export default function WhatsAppPage() {
               </div>
             </div>
           </div>
-
-          {/* Experimental Baileys Section */}
-          <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl p-6 relative overflow-hidden mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
-            
-            <div className="z-10 relative">
-              <h3 className="text-white font-medium mb-2 flex items-center gap-2">
-                <AlertCircle size={18} className="text-orange-500" />
-                Modo Experimental: Conexión vía Baileys
-              </h3>
-              <div className="text-sm text-gray-400 space-y-1">
-                <p className="text-orange-400 font-medium text-xs">⚠️ No recomendado para clientes finales.</p>
-                <p>Usa tu propio servidor en Railway para vincular tu WhatsApp escaneando un código QR.</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                  setIsBaileysModalOpen(true);
-                  setBaileysStatus("disconnected");
-                  setBaileysQr(null);
-              }}
-              className="z-10 px-6 py-3 bg-orange-500/10 border border-orange-500/30 text-orange-400 font-semibold rounded-xl hover:bg-orange-500/20 transition-colors whitespace-nowrap"
-            >
-              Conectar Baileys
-            </button>
-          </div>
         </div>
       )}
+
+      {/* Experimental Baileys Section */}
+      <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl p-6 relative overflow-hidden mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
+        
+        <div className="z-10 relative">
+          <h3 className="text-white font-medium mb-2 flex items-center gap-2">
+            <AlertCircle size={18} className="text-orange-500" />
+            Modo Experimental: Conexión vía Baileys
+          </h3>
+          <div className="text-sm text-gray-400 space-y-1">
+            <p className="text-orange-400 font-medium text-xs">⚠️ No recomendado para clientes finales.</p>
+            <p>Usa tu propio servidor en Railway para vincular tu WhatsApp escaneando un código QR.</p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+              setIsBaileysModalOpen(true);
+              setBaileysStatus("disconnected");
+              setBaileysQr(null);
+          }}
+          className="z-10 px-6 py-3 bg-orange-500/10 border border-orange-500/30 text-orange-400 font-semibold rounded-xl hover:bg-orange-500/20 transition-colors whitespace-nowrap"
+        >
+          Conectar Baileys
+        </button>
+      </div>
 
       {/* Connection Modal */}
       {isModalOpen && (
