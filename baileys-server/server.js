@@ -33,8 +33,7 @@ async function connectToWhatsApp() {
             version,
             auth: state,
             printQRInTerminal: true,
-            logger: pino({ level: 'silent' }),
-            browser: ['QSS Microservice', 'Chrome', '1.0']
+            logger: pino({ level: 'silent' })
         });
 
         sock.ev.on('connection.update', (update) => {
