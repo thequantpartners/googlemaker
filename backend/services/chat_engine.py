@@ -242,12 +242,17 @@ async def _call_ai_provider(
             # Pull UTM attribution from the session (set during /start)
             tracking: dict = session.tracking_data or {}
 
+            # If phone is not provided but the session_id looks like a WhatsApp number (all digits), auto-fill it
+            extracted_phone = lead_data.get("phone")
+            if not extracted_phone and session.session_id and session.session_id.isdigit():
+                extracted_phone = "+" + session.session_id
+
             new_lead = Lead(
                 client_id=session.client_id,
                 session_id=session.session_id,
                 name=lead_data.get("name") or None,
                 email=lead_data.get("email") or None,
-                phone=lead_data.get("phone") or None,
+                phone=extracted_phone or None,
                 source="chat_widget",
                 chat_transcript=_push(history, "bot", clean_reply),
                 gclid=tracking.get("gclid"),
