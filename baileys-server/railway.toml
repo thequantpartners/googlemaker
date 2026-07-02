@@ -1,0 +1,10 @@
+[build]
+builder = "DOCKER"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "ON_FAILURE"
+
+[volumes]
+auth_data = "/app/auth_info_baileys"
