@@ -396,10 +396,8 @@ async def baileys_webhook(
         chat_session = session_result.scalar_one_or_none()
         if not chat_session:
             chat_session = ChatSession(
-                id=str(uuid.uuid4()),
                 session_id=payload.wa_id,
-                client_id=client_id,
-                origin="whatsapp_baileys"
+                client_id=client_id
             )
             db.add(chat_session)
             await db.commit()
