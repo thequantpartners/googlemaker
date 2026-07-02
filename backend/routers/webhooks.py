@@ -394,6 +394,14 @@ async def baileys_webhook(
             )
         )
         chat_session = session_result.scalar_one_or_none()
+        
+        # --- COMANDO DE RESET PARA PRUEBAS ---
+        if payload.text.strip().lower() in ["/reset", "/reiniciar"]:
+            if chat_session:
+                await db.delete(chat_session)
+                await db.commit()
+            return {"ok": True, "reply": "🔄 Tu sesión ha sido reiniciada. Envía un 'hola' para empezar desde cero."}
+
         if not chat_session:
             chat_session = ChatSession(
                 session_id=payload.wa_id,
