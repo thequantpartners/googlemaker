@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { makeWASocket, useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import axios from 'axios';
 
@@ -26,9 +26,11 @@ async function connectToWhatsApp() {
     currentQR = null;
 
     try {
+        const { version } = await fetchLatestBaileysVersion();
         const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
         
         sock = makeWASocket({
+            version,
             auth: state,
             printQRInTerminal: true,
             logger: pino({ level: 'silent' }),
