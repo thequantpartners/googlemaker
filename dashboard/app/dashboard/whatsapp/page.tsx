@@ -95,8 +95,8 @@ export default function WhatsAppPage() {
           Authorization: `Bearer ${session!.backendToken}`,
         },
         body: JSON.stringify({
-          ycloud_api_key: ycloudKey || null,
-          ycloud_webhook_secret: ycloudWebhookSecret || null,
+          ycloud_api_key: ycloudKey || "",
+          ycloud_webhook_secret: ycloudWebhookSecret || "",
         }),
       });
       if (!res.ok) throw new Error("Failed to save configuration");
@@ -124,8 +124,8 @@ export default function WhatsAppPage() {
           Authorization: `Bearer ${session!.backendToken}`,
         },
         body: JSON.stringify({
-          ycloud_api_key: null,
-          ycloud_webhook_secret: null,
+          ycloud_api_key: "",
+          ycloud_webhook_secret: "",
         }),
       });
       if (!res.ok) throw new Error("Failed to disconnect configuration");
