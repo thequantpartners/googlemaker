@@ -650,13 +650,18 @@ export default function WhatsAppPage() {
                 Cerrar
               </button>
               <a
-                href={API ? API.replace("/api", "") + ":2785" : "http://localhost:2785"}
+                href={process.env.NEXT_PUBLIC_OPENWA_DASHBOARD_URL || "http://localhost:2785"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors text-center"
               >
                 Abrir Dashboard OpenWA
               </a>
+              {!process.env.NEXT_PUBLIC_OPENWA_DASHBOARD_URL && (
+                 <p className="text-[10px] text-gray-500 mt-2 text-center w-full">
+                   (Configura NEXT_PUBLIC_OPENWA_DASHBOARD_URL en tu frontend para apuntar a tu servidor)
+                 </p>
+              )}
             </div>
           </div>
         </div>
