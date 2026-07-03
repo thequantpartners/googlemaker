@@ -57,3 +57,4 @@
 - [x] Refactor YCloud integration to use a single unified Webhook endpoint and implement strict HMAC-SHA256 signature verification (2026-07-01)
 - [x] Integrate standalone WhatsApp Microservice using Baileys to eliminate YCloud dependency (2026-07-01)
 - [x] Implement WhatsApp Anti-Baneo mechanisms (human typing delays, read receipts) and fix Rules Engine first-message skip bug (2026-07-01)
+- [x] Resolve Baileys Railway persistent volume detachment issue and rename project to QSS (2026-07-02)

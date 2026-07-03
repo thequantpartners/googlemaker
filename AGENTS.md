@@ -59,3 +59,6 @@ Posteriormente, registrar el hito de cierre del contexto ejecutando:
 ```bash
 pca commit "docs: close task and update context logs"
 ```
+
+## Project Naming
+The project is officially named **QSS (Quant Sales System)**. Do not refer to it as GMaker.

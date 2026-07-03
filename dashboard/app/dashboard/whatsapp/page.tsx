@@ -57,6 +57,9 @@ export default function WhatsAppPage() {
   const [baileysQr, setBaileysQr] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
 
+  // OpenWA Modal State
+  const [isOpenWaModalOpen, setIsOpenWaModalOpen] = useState(false);
+
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
   const masterWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/webhook${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
 
@@ -198,6 +201,21 @@ export default function WhatsAppPage() {
         await fetch(`${baileysUrl}/api/connect`, { method: "POST" });
     } catch (e) {
         console.error("Error triggering connect", e);
+    }
+  }
+
+  async function handleDisconnectBaileys() {
+    if (!confirm("¿Seguro que deseas eliminar la conexión de Baileys?")) return;
+    // Lógica para desconectar del servidor Baileys
+    try {
+      // Intentamos llamar a un endpoint de disconnect si existe, de lo contrario solo actualizamos estado local
+      await fetch(`${baileysUrl}/api/disconnect`, { method: "POST" }).catch(() => {});
+      setBaileysStatus("disconnected");
+      setBaileysQr(null);
+      setMsg({ type: "ok", text: "Conexión de Baileys eliminada." });
+    } catch (e) {
+      console.error(e);
+      setBaileysStatus("disconnected");
     }
   }
 
@@ -421,21 +439,54 @@ export default function WhatsAppPage() {
           </div>
         </div>
 
+        <div className="z-10 flex flex-col sm:flex-row gap-3">
+          {baileysStatus === "connected" && (
+            <button
+              onClick={handleDisconnectBaileys}
+              className="px-6 py-3 font-semibold rounded-xl transition-colors whitespace-nowrap border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+            >
+              Eliminar Conexión
+            </button>
+          )}
+          <button
+            onClick={() => {
+                setIsBaileysModalOpen(true);
+                if (baileysStatus !== "connected") {
+                  setBaileysStatus("disconnected");
+                  setBaileysQr(null);
+                }
+            }}
+            className={`px-6 py-3 font-semibold rounded-xl transition-colors whitespace-nowrap border ${
+              baileysStatus === "connected" 
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20" 
+                : "bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
+            }`}
+          >
+            {baileysStatus === "connected" ? "Ver Estado" : "Conectar Baileys"}
+          </button>
+        </div>
+      </div>
+
+      {/* OpenWA Section */}
+      <div className="bg-[#0a0c10] border border-blue-500/30 rounded-2xl p-6 relative overflow-hidden mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl" />
+        
+        <div className="z-10 relative">
+          <h3 className="text-white font-medium mb-2 flex items-center gap-2">
+            <Phone size={18} className="text-blue-500" />
+            Conexión vía OpenWA Gateway
+          </h3>
+          <div className="text-sm text-gray-400 space-y-1">
+            <p className="text-blue-400 font-medium text-xs">✨ Nueva Arquitectura Recomendada.</p>
+            <p>Conéctate utilizando tu servidor OpenWA auto-alojado para mayor estabilidad y soporte nativo.</p>
+          </div>
+        </div>
+
         <button
-          onClick={() => {
-              setIsBaileysModalOpen(true);
-              if (baileysStatus !== "connected") {
-                setBaileysStatus("disconnected");
-                setBaileysQr(null);
-              }
-          }}
-          className={`z-10 px-6 py-3 font-semibold rounded-xl transition-colors whitespace-nowrap border ${
-            baileysStatus === "connected" 
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20" 
-              : "bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
-          }`}
+          onClick={() => setIsOpenWaModalOpen(true)}
+          className="z-10 px-6 py-3 font-semibold rounded-xl transition-colors whitespace-nowrap border bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
         >
-          {baileysStatus === "connected" ? "Ver Estado" : "Conectar Baileys"}
+          Conectar OpenWA
         </button>
       </div>
 
@@ -560,6 +611,42 @@ export default function WhatsAppPage() {
                 <p className="text-gray-400 text-sm">Tu WhatsApp está enlazado a QSS vía Baileys.</p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* OpenWA Connection Modal */}
+      {isOpenWaModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#0a0c10] border border-blue-500/30 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setIsOpenWaModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+              <Phone className="text-blue-500" size={24} /> Conectar OpenWA
+            </h2>
+            <div className="text-sm text-gray-400 mb-6 space-y-2">
+              <p>Para configurar tu instancia de OpenWA, asegúrate de añadir las siguientes variables en tu entorno de despliegue (Docker/Railway):</p>
+              
+              <div className="bg-white/[0.02] p-3 rounded-xl border border-white/[0.05] mt-2 text-xs font-mono break-all text-gray-300">
+                <p className="text-blue-400 mb-1 font-sans font-medium">Webhook URL de QSS:</p>
+                <p>{webhookBaseUrl}/api/webhooks/openwa?client_id={config?.user_id}</p>
+                <p className="text-blue-400 mt-2 mb-1 font-sans font-medium">Webhook Secret:</p>
+                <p>{config?.generic_webhook_secret || 'Configura tu Webhook Secret genérico primero'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                onClick={() => setIsOpenWaModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-500/20 border border-blue-500/40 rounded-lg hover:bg-blue-500/30 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -1,7 +1,7 @@
-# PCA Index — GMaker
+# PCA Index — QSS (Quant System Sales)
 
 ## Project Metadata
-- Name: GMaker
+- Name: QSS (Quant System Sales)
 - Type: [unknown]
 - Stage: greenfield
 - Active Objective: [Define active objective]

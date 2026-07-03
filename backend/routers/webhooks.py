@@ -446,3 +446,154 @@ async def baileys_webhook(
 
     # 3. Retornar la respuesta síncrona
     return {"ok": True, "reply": llm_reply_text}
+
+
+# ── OpenWA ──────────────────────────────────────────────────────────────────
+import os
+import asyncio
+
+@router.post("/openwa")
+async def openwa_webhook(
+    request: Request,
+    client_id: str,
+    x_webhook_secret: str | None = Header(None, alias="x-webhook-secret"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Webhook para integración con OpenWA API Gateway.
+    """
+    # 1. Validación de Seguridad usando el generic_webhook_secret
+    result = await db.execute(
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
+    )
+    pay_cfg = result.scalar_one_or_none()
+    
+    if not pay_cfg or not pay_cfg.generic_webhook_secret:
+        raise HTTPException(status_code=404, detail="Webhook genérico no configurado.")
+
+    if not x_webhook_secret or not hmac.compare_digest(
+        x_webhook_secret, pay_cfg.generic_webhook_secret
+    ):
+        raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
+
+    try:
+        payload = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    event_type = payload.get("event")
+    # Ignorar eventos que no sean mensajes
+    if event_type not in ["message", "message.any"]:
+        return {"ok": True, "detail": "Evento ignorado"}
+
+    msg_data = payload.get("data", {})
+    if msg_data.get("fromMe"):
+        return {"ok": True, "detail": "Mensaje propio ignorado"}
+
+    # Extraer ID y texto
+    raw_from = msg_data.get("from", "")
+    wa_id = raw_from.replace("@c.us", "").replace("@s.whatsapp.net", "")
+    text_body = msg_data.get("body", "")
+    session_id = payload.get("session", "default")
+
+    if not wa_id or not text_body:
+        return {"ok": True, "detail": "Mensaje inválido o vacío"}
+
+    # 2. Llamada al Cerebro LLM
+    try:
+        session_result = await db.execute(
+            select(ChatSession).where(
+                ChatSession.session_id == wa_id,
+                ChatSession.client_id == client_id,
+            )
+        )
+        chat_session = session_result.scalar_one_or_none()
+        
+        if text_body.strip().lower() in ["/reset", "/reiniciar"]:
+            if chat_session:
+                await db.delete(chat_session)
+                await db.commit()
+            llm_reply_text = "🔄 Tu sesión ha sido reiniciada. Envía un 'hola' para empezar desde cero."
+        else:
+            if not chat_session:
+                chat_session = ChatSession(
+                    session_id=wa_id,
+                    client_id=client_id,
+                    origin="whatsapp"
+                )
+                db.add(chat_session)
+                await db.commit()
+                await db.refresh(chat_session)
+
+            config_result = await db.execute(
+                select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id)
+            )
+            chat_config = config_result.scalar_one_or_none()
+            
+            user_result = await db.execute(select(User).where(User.id == client_id))
+            client_user = user_result.scalar_one_or_none()
+
+            if chat_config and chat_config.is_enabled and client_user:
+                engine_result = await process_chat_message(
+                    session=chat_session,
+                    config=chat_config,
+                    user_message=text_body,
+                    db=db,
+                    client_user=client_user
+                )
+                
+                reply_lines = []
+                for msg in engine_result.messages:
+                    reply_lines.append(msg["content"])
+                    if msg.get("options"):
+                        reply_lines.append("")
+                        for i, opt in enumerate(msg["options"], 1):
+                            reply_lines.append(f"{i}. {opt}")
+                
+                llm_reply_text = "\n".join(reply_lines)
+            else:
+                llm_reply_text = "El asistente virtual no está activado en este momento."
+                
+    except Exception as e:
+        print(f"Error procesando mensaje en chat_engine (OpenWA): {e}")
+        llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
+
+    # 3. Enviar respuesta asíncrona a OpenWA
+    openwa_url = os.getenv("OPENWA_API_URL", "http://openwa:2785")
+    openwa_key = os.getenv("OPENWA_API_KEY", "")
+    
+    headers = {
+        "x-api-key": openwa_key,
+        "Content-Type": "application/json"
+    }
+
+    async def send_reply_with_typing(reply_text: str):
+        try:
+            async with httpx.AsyncClient() as client:
+                # 3a. Simular que está escribiendo
+                typing_payload = {"chatId": raw_from, "state": "composing"}
+                await client.post(f"{openwa_url}/api/sessions/{session_id}/chats/typing", json=typing_payload, headers=headers)
+                
+                # Pausa humana (como en baileys-server)
+                delay_ms = min(4000 + (len(reply_text) * 80), 15000)
+                await asyncio.sleep(delay_ms / 1000.0)
+                
+                # Detener escritura
+                typing_payload["state"] = "paused"
+                await client.post(f"{openwa_url}/api/sessions/{session_id}/chats/typing", json=typing_payload, headers=headers)
+
+                # 3b. Enviar el mensaje final
+                msg_payload = {
+                    "chatId": raw_from,
+                    "text": reply_text
+                }
+                res = await client.post(f"{openwa_url}/api/sessions/{session_id}/messages/text", json=msg_payload, headers=headers)
+                if res.status_code >= 400:
+                    print(f"OpenWA API Error: {res.text}")
+        except Exception as e:
+            print(f"Excepción llamando a OpenWA: {e}")
+
+    # Lanzamos el envío en background para liberar el webhook inmediatamente
+    asyncio.create_task(send_reply_with_typing(llm_reply_text))
+
+    return {"ok": True, "status": "processing"}

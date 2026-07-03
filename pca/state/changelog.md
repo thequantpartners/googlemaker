@@ -110,3 +110,8 @@
 - Fixed Rules Engine skipping the first message in WhatsApp by explicitly checking for empty `session.history` in `backend/services/chat_engine.py`.
 - Auto-captured WhatsApp phone numbers for leads when no phone is provided by extracting the JID directly from the `session_id`.
 - Handled Baileys Railway deployment failures by strictly configuring `railway.toml` to use `builder = "DOCKERFILE"` instead of `DOCKER`, resolving volume mount and continuous deployment issues.
+
+## 2026-07-02
+- Resolved Baileys microservice persistent session disconnection issue on Railway by migrating from Nixpacks to Dockerfile builder and manually attaching a Railway Volume to /app/auth_info_baileys.
+- Updated aileys-server/server.js to use a relative uth_info_baileys path instead of absolute /app/... to support hybrid local/Docker execution.
+- Formally renamed the project from GMaker to QSS (Quant System Sales) across documentation (README.md, PCA_INDEX.md).

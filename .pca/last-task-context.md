@@ -1,16 +1,16 @@
 # PCA Task Context
 
 ## Task
-whatsapp manychat connection
+evaluar si open wa crm es mejor que el sistema de whatsapp actual
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
 
 ## Project Memory
-# PCA Index — GMaker
+# PCA Index — QSS (Quant System Sales)
 
 ## Project Metadata
-- Name: GMaker
+- Name: QSS (Quant System Sales)
 - Type: [unknown]
 - Stage: greenfield
 - Active Objective: [Define active objective]
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
-- [general] docs: close task and update context logs (2026-06-30T03:22:47.545Z)
-- [general] docs: close task and update context logs (2026-06-30T02:46:36.689Z)
-- [general] docs: close task and update context logs (2026-06-29T22:27:44.512Z)
+- [general] docs: close task and update context logs (2026-07-02T23:02:36.850Z)
+- [general] docs: close task and update context logs (2026-07-02T04:08:57.462Z)
+- [general] docs: close task and update context logs with baileys microservice integration (2026-07-02T02:59:30.764Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

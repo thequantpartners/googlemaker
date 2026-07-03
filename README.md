@@ -1,6 +1,8 @@
 > [!IMPORTANT]
 > **AI AGENT NOTICE**: If you are an AI agent, you **MUST** read AGENTS.md first to understand the workspace operating rules and context requirements.
-# QSS (Quant SaaS System)
+# QSS (Quant Sales System)
+
+QSS (antes GMaker) es el sistema operativo central (Core OS) diseñado exclusivamente para **The Quant Partners**.
 
 This repository uses PCA (Persistent Context Architecture).
 
