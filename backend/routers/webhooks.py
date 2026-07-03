@@ -455,31 +455,44 @@ import asyncio
 @router.post("/openwa")
 async def openwa_webhook(
     request: Request,
-    client_id: str,
+    client_id: str | None = None,
     x_webhook_secret: str | None = Header(None, alias="x-webhook-secret"),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Webhook para integración con OpenWA API Gateway.
+    Puede recibir client_id por query string, o extraerlo del nombre de la sesión (session_id).
     """
-    # 1. Validación de Seguridad usando el generic_webhook_secret
-    result = await db.execute(
-        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
-    )
-    pay_cfg = result.scalar_one_or_none()
-    
-    if not pay_cfg or not pay_cfg.generic_webhook_secret:
-        raise HTTPException(status_code=404, detail="Webhook genérico no configurado.")
-
-    if not x_webhook_secret or not hmac.compare_digest(
-        x_webhook_secret, pay_cfg.generic_webhook_secret
-    ):
-        raise HTTPException(status_code=401, detail="Secreto de webhook inválido.")
-
     try:
         payload = await request.json()
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON body")
+
+    session_id = payload.get("session", "default")
+    if not client_id:
+        client_id = session_id
+
+    if not client_id or client_id == "default":
+        return {"ok": True, "detail": "Missing client_id and invalid session"}
+
+    # 1. Validación de Seguridad
+    master_secret = os.getenv("OPENWA_WEBHOOK_SECRET")
+    is_authorized = False
+
+    if master_secret and x_webhook_secret and hmac.compare_digest(x_webhook_secret, master_secret):
+        is_authorized = True
+    else:
+        result = await db.execute(
+            select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
+        )
+        pay_cfg = result.scalar_one_or_none()
+        
+        if pay_cfg and pay_cfg.generic_webhook_secret and x_webhook_secret:
+            if hmac.compare_digest(x_webhook_secret, pay_cfg.generic_webhook_secret):
+                is_authorized = True
+
+    if not is_authorized:
+        raise HTTPException(status_code=401, detail="Secreto de webhook inválido o no configurado.")
 
     event_type = payload.get("event")
     # Ignorar eventos que no sean mensajes
@@ -494,7 +507,6 @@ async def openwa_webhook(
     raw_from = msg_data.get("from", "")
     wa_id = raw_from.replace("@c.us", "").replace("@s.whatsapp.net", "")
     text_body = msg_data.get("body", "")
-    session_id = payload.get("session", "default")
 
     if not wa_id or not text_body:
         return {"ok": True, "detail": "Mensaje inválido o vacío"}

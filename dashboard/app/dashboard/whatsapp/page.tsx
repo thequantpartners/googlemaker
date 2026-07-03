@@ -628,24 +628,35 @@ export default function WhatsAppPage() {
             <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
               <Phone className="text-blue-500" size={24} /> Conectar OpenWA
             </h2>
-            <div className="text-sm text-gray-400 mb-6 space-y-2">
-              <p>Para configurar tu instancia de OpenWA, asegúrate de añadir las siguientes variables en tu entorno de despliegue (Docker/Railway):</p>
-              
-              <div className="bg-white/[0.02] p-3 rounded-xl border border-white/[0.05] mt-2 text-xs font-mono break-all text-gray-300">
-                <p className="text-blue-400 mb-1 font-sans font-medium">Webhook URL de QSS:</p>
-                <p>{webhookBaseUrl}/api/webhooks/openwa?client_id={config?.user_id}</p>
-                <p className="text-blue-400 mt-2 mb-1 font-sans font-medium">Webhook Secret:</p>
-                <p>{config?.generic_webhook_secret || 'Configura tu Webhook Secret genérico primero'}</p>
-              </div>
+            <div className="text-sm text-gray-400 mb-6 space-y-3">
+              <p>Tu instancia de OpenWA ya está configurada internamente en tu infraestructura.</p>
+              <p>Para conectar tu WhatsApp:</p>
+              <ol className="list-decimal pl-5 space-y-2 text-gray-300">
+                <li>Abre el <strong>Dashboard de OpenWA</strong>.</li>
+                <li>Crea una nueva sesión y nomérala <strong>exactamente</strong> con tu Client ID: <br/>
+                  <code className="text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded break-all select-all mt-1 block">
+                    {config?.user_id}
+                  </code>
+                </li>
+                <li>Escanea el código QR generado.</li>
+              </ol>
             </div>
 
-            <div className="flex items-center justify-end gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 mt-6">
               <button
                 onClick={() => setIsOpenWaModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-500/20 border border-blue-500/40 rounded-lg hover:bg-blue-500/30 transition-colors"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors"
               >
                 Cerrar
               </button>
+              <a
+                href={API ? API.replace("/api", "") + ":2785" : "http://localhost:2785"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors text-center"
+              >
+                Abrir Dashboard OpenWA
+              </a>
             </div>
           </div>
         </div>
