@@ -256,7 +256,7 @@ export default function ClientCampaigns() {
           <h1 className="text-3xl font-bold text-white mb-2">Connected Accounts</h1>
           <p className="text-gray-400">Manage your Google Ads connections.</p>
         </div>
-        {!headerLoading && statusData?.connected_accounts?.length < (statusData?.plan_limit || 1) && (
+        {(!headerLoading && (statusData?.plan_limit === null || (statusData?.connected_accounts?.length || 0) < (statusData?.plan_limit || 0))) && (
           <button 
             onClick={() => {
               window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials?token=${session?.backendToken}`;
