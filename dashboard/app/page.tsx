@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Search, Play, TrendingUp, ShieldCheck, Copy, ArrowRight, PlayCircle, Globe, CheckCircle2, ChevronDown, Zap, BarChart3, Clock, Menu, X, MessageCircle } from "lucide-react";
-import PricingCards from "./components/PricingCards";
+import RoiCalculator from "./components/RoiCalculator";
 import { AnimatedTestimonials } from "../components/ui/animated-testimonials";
 
 const testimonials = [
@@ -61,9 +61,9 @@ export default function LandingPage() {
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-          <Link href="#features" className="hover:text-white transition-colors">Features</Link>
-          <Link href="#how-it-works" className="hover:text-white transition-colors">How it Works</Link>
-          <Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link>
+          <Link href="#features" className="hover:text-white transition-colors">Características</Link>
+          <Link href="#how-it-works" className="hover:text-white transition-colors">Cómo Funciona</Link>
+          <Link href="#calculator" className="hover:text-white transition-colors">Calculadora</Link>
           <Link href="#faq" className="hover:text-white transition-colors">FAQ</Link>
         </div>
 
@@ -87,9 +87,9 @@ export default function LandingPage() {
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="md:hidden absolute top-20 left-6 right-6 bg-dark-card border border-dark-card-border rounded-2xl p-6 shadow-2xl z-50 flex flex-col gap-6 backdrop-blur-xl">
-          <Link href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Features</Link>
-          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">How it Works</Link>
-          <Link href="#pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Pricing</Link>
+          <Link href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Características</Link>
+          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Cómo Funciona</Link>
+          <Link href="#calculator" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Calculadora</Link>
           <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">FAQ</Link>
           <hr className="border-dark-card-border" />
           <div className="flex justify-center">
@@ -339,13 +339,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="relative z-10 py-32">
+      {/* ROI Calculator Section */}
+      <section id="calculator" className="relative z-10 py-32">
         <div className="max-w-6xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Inversión Transparente</h2>
-          <p className="text-gray-400 text-lg mb-16 max-w-2xl mx-auto">Una tarifa plana que cuesta menos que un caso ganado.</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Proyecta tus Resultados</h2>
+          <p className="text-gray-400 text-lg mb-16 max-w-2xl mx-auto">Descubre cuántos casos puedes conseguir al mes y cuál sería tu retorno de inversión.</p>
           
-          <PricingCards isLandingPage={true} />
+          <RoiCalculator />
         </div>
       </section>
 
