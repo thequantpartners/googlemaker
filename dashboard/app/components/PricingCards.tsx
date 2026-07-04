@@ -20,8 +20,8 @@ export default function PricingCards({
     if (tier === "elite") {
       return {
         isLink: true,
-        href: "mailto:partners@thequantpartners.com",
-        text: "Contact Sales",
+        href: "https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas",
+        text: "Hablar con un Asesor",
         disabled: false,
       };
     }
@@ -29,8 +29,8 @@ export default function PricingCards({
     if (isLandingPage) {
       return {
         isLink: true,
-        href: "/login",
-        text: "Start 14-Day Free Trial",
+        href: "https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas",
+        text: "Hablar con un Asesor",
         disabled: false,
       };
     }
@@ -85,7 +85,7 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Up to $1,000/mo in<br/>Ad Spend.</p>
           <ul className="space-y-4 mb-8 text-gray-300 text-sm">
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#3B82F6] shrink-0" /> Full Autopilot</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#3B82F6] shrink-0" /> Immigration Templates</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#3B82F6] shrink-0" /> Plantillas Penales</li>
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#3B82F6] shrink-0" /> Unlimited Accounts</li>
           </ul>
         </div>
@@ -103,7 +103,7 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Up to $5,000/mo in<br/>Ad Spend.</p>
           <ul className="space-y-4 mb-8 text-gray-300 text-sm">
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#A855F7] shrink-0" /> Full Autopilot</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#A855F7] shrink-0" /> Immigration Templates</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#A855F7] shrink-0" /> Plantillas Penales</li>
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#A855F7] shrink-0" /> Unlimited Accounts</li>
           </ul>
         </div>
@@ -123,7 +123,7 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Up to $25,000/mo in<br/>Ad Spend.</p>
           <ul className="space-y-4 mb-8 text-gray-300 text-sm">
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#10B981] shrink-0" /> Full Autopilot</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#10B981] shrink-0" /> Immigration Templates</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#10B981] shrink-0" /> Plantillas Penales</li>
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#10B981] shrink-0" /> Unlimited Accounts</li>
           </ul>
         </div>
@@ -143,7 +143,7 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Personalized Ad<br/>Spend.</p>
           <ul className="space-y-4 mb-8 text-gray-300 text-sm">
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#F59E0B] shrink-0" /> Full Autopilot</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#F59E0B] shrink-0" /> Immigration Templates</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#F59E0B] shrink-0" /> Plantillas Penales</li>
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-[#F59E0B] shrink-0" /> Unlimited Accounts</li>
           </ul>
         </div>

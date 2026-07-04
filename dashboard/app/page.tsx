@@ -8,33 +8,33 @@ import { AnimatedTestimonials } from "../components/ui/animated-testimonials";
 
 const testimonials = [
   {
-    quote: "We used to spend $10,000 a month on Google and half were calls looking for free help. Since we turned on QSS's Autopilot, our cost per case dropped 40% and the consultation quality is excellent.",
-    name: "Carlos Rodriguez",
-    designation: "Founding Partner, GrowthX Law",
+    quote: "Gastábamos miles de soles al mes en Google Ads y la mitad llamaba por temas de familia. Desde que conectamos el sistema, la IA filtra y solo recibimos casos penales complejos.",
+    name: "Dr. Carlos Rodríguez",
+    designation: "Socio Fundador, Estudio Penal Rodríguez",
     src: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2070&auto=format&fit=crop"
   },
   {
-    quote: "I don't have time to log into Google Ads. The Telegram bot sends me instant notifications when we get a new lead, and the Autopilot handles the rest. It's like having a specialist working 24/7.",
-    name: "Sarah Thompson",
-    designation: "Marketing Director, US Legal Ads",
+    quote: "No tengo tiempo para estar revisando WhatsApp todo el día. El bot califica al cliente en tiempo real y solo me avisa por Telegram cuando hay un detenido o un caso que vale la pena.",
+    name: "Dra. Sara Thompson",
+    designation: "Abogada Especialista en Lavado de Activos",
     src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1888&auto=format&fit=crop"
   },
   {
-    quote: "The AI Strategist is mind-blowing. It analyzed our website and created complete, high-converting Google Ads campaigns in minutes. It saved us weeks of copywriting work.",
-    name: "Elena Martinez",
-    designation: "Managing Partner, Martinez Law Group",
+    quote: "Es como tener un asistente trabajando 24/7. Una madrugada detuvieron a un cliente por TID, el Widget lo perfiló a las 3 AM y al despertar ya tenía el resumen del caso en mi WhatsApp listo para cobrar.",
+    name: "Dra. Elena Martínez",
+    designation: "Directora, Martínez Abogados Penalistas",
     src: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1888&auto=format&fit=crop"
   },
   {
-    quote: "The interface is incredibly intuitive. I connected our Google Ads account in 2 minutes, set our CPA for asylum cases, and the engine did the rest. Our caseload has doubled.",
-    name: "David Chen",
-    designation: "Immigration Attorney, Chen & Associates",
+    quote: "La plataforma es súper intuitiva. Conectamos nuestra cuenta publicitaria, pusimos nuestro presupuesto y el algoritmo bloqueó todos los clics basura. Nuestra carga de casos de alto valor se duplicó.",
+    name: "Dr. David Salazar",
+    designation: "Defensa Penal Corporativa",
     src: "https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=1887&auto=format&fit=crop"
   },
   {
-    quote: "We fired our expensive ad agency and switched entirely to QSS. Not only did we save $3,000/mo, but our actual cost per client dropped by 35%. Best legal tech investment of the year.",
-    name: "Fatima Al-Jamil",
-    designation: "Managing Director, Apex Legal",
+    quote: "Despedimos a la agencia de marketing que nos cobraba caro por traernos casos de alimentos y deudas. QSS nos consigue defensas penales directas y ahorramos un 35% del presupuesto.",
+    name: "Dra. Fátima Al-Jamil",
+    designation: "Litigante Suprema",
     src: "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?q=80&w=1887&auto=format&fit=crop"
   }
 ];
@@ -69,10 +69,11 @@ export default function LandingPage() {
 
         <div className="flex items-center gap-4">
           <Link 
-            href="/login" 
+            href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas" 
+            target="_blank"
             className="hidden md:inline-flex px-5 py-2.5 rounded-full bg-dark-card border border-dark-card-border text-sm font-medium hover:bg-white/10 transition-all hover:shadow-[0_0_15px_rgba(168,85,247,0.4)]"
           >
-            Sign In
+            Agendar Demo
           </Link>
           <button 
             className="md:hidden p-2 text-gray-300 hover:text-white"
@@ -93,10 +94,11 @@ export default function LandingPage() {
           <hr className="border-dark-card-border" />
           <div className="flex justify-center">
             <Link 
-              href="/login" 
+              href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas" 
+              target="_blank"
               className="px-8 py-3 rounded-full bg-gradient-to-r from-neon-blue to-neon-purple text-base font-bold text-white text-center shadow-[0_0_15px_rgba(168,85,247,0.4)] w-full"
             >
-              Sign In
+              Agendar Demo
             </Link>
           </div>
         </div>
@@ -113,43 +115,44 @@ export default function LandingPage() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-blue opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-blue"></span>
               </span>
-              Google Ads API v31 Supported
+              Sistema Optimizado para Firmas Legales en Perú
             </div>
             <div className="space-y-4">
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
-                Stop Burning Money on Junk Clicks.<br />
+                Deja de Perder Casos Penales.<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue via-neon-purple to-pink-500">
-                  Get Cases on Autopilot.
+                  Consigue Clientes 24/7.
                 </span>
               </h1>
             </div>
             
             <p className="text-lg text-gray-400 leading-relaxed max-w-xl">
-              The first AI autopilot built exclusively for US Immigration Law Firms. We protect your ad budget from irrelevant clicks, automate your campaign strategies, and send real-time leads directly to your Telegram. You focus on winning cases, we bring the leads.
+              El primer sistema de adquisición con IA exclusivo para Abogados Penalistas en Perú. Filtramos a los curiosos, protegemos tu presupuesto en Google Ads de clics irrelevantes, y te enviamos casos de alto valor directamente a tu WhatsApp listos para cerrar.
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
               <Link 
-                href="/login" 
+                href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas" 
+                target="_blank"
                 className="group relative px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-full font-semibold text-white overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.5)] hover:shadow-[0_0_40px_rgba(168,85,247,0.6)] transition-all flex items-center justify-center gap-2"
               >
                 <span className="relative z-10 flex items-center gap-2">
-                  Start 14-Day Free Trial
+                  Hablar con un Asesor
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
-              <button className="px-6 py-4 rounded-full font-medium text-gray-300 hover:text-white flex items-center justify-center gap-2 transition-colors border border-white/10 sm:border-transparent">
+              <Link href="#features" className="px-6 py-4 rounded-full font-medium text-gray-300 hover:text-white flex items-center justify-center gap-2 transition-colors border border-white/10 sm:border-transparent">
                 <PlayCircle size={20} className="text-neon-purple" />
-                See How It Works
-              </button>
+                Ver Cómo Funciona
+              </Link>
             </div>
             
             <div className="pt-8 border-t border-dark-card-border mt-4">
-              <p className="text-sm text-gray-500 font-medium mb-4 text-center lg:text-left">TRUSTED BY 50+ IMMIGRATION LAW FIRMS ACROSS THE US</p>
+              <p className="text-sm text-gray-500 font-medium mb-4 text-center lg:text-left">CON LA CONFIANZA DE ESTUDIOS PENALES EN TODO EL PERÚ</p>
               <div className="flex flex-wrap justify-center lg:justify-start gap-6 md:gap-8 opacity-50 grayscale">
-                <div className="font-bold text-lg md:text-xl tracking-tighter">AGENCY<span className="text-neon-blue">PRO</span></div>
-                <div className="font-bold text-lg md:text-xl tracking-tighter">LATAM<span className="text-neon-purple">MARKETING</span></div>
-                <div className="font-bold text-lg md:text-xl tracking-tighter">GROWTH<span className="text-neon-green">X</span></div>
+                <div className="font-bold text-lg md:text-xl tracking-tighter">ESTUDIO<span className="text-neon-blue">JURÍDICO</span></div>
+                <div className="font-bold text-lg md:text-xl tracking-tighter">PENALISTAS<span className="text-neon-purple">ASOCIADOS</span></div>
+                <div className="font-bold text-lg md:text-xl tracking-tighter">LEX<span className="text-neon-green">PERÚ</span></div>
               </div>
             </div>
           </div>
@@ -230,26 +233,26 @@ export default function LandingPage() {
       {/* The Problem Section */}
       <section className="relative z-10 py-24 bg-black/40 border-y border-dark-card-border">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Google Ads is Devouring Your Margins.</h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-6">Google Ads y los curiosos están consumiendo tus márgenes.</h2>
           <p className="text-gray-400 max-w-2xl mx-auto mb-16 text-lg">
-            Immigration firms pay up to $50 per click. You lose thousands of dollars on people searching for 'free lawyers' or calling after hours, while your best campaigns run out of budget.
+            Los clics son caros. Pierdes miles de soles al mes en personas buscando "abogado gratis", casos civiles que no te interesan, o emergencias de madrugada que no pudiste contestar.
           </p>
 
           <div className="grid md:grid-cols-3 gap-8 text-left">
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-red-500 mb-4 bg-red-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Clock size={24} /></div>
-              <h3 className="text-xl font-bold mb-2">Constant Junk Clicks</h3>
-              <p className="text-gray-400">People looking for free asylum help or out-of-state services drain your budget by noon. QSS blocks them 24/7.</p>
+              <h3 className="text-xl font-bold mb-2">Emergencias a las 3 AM</h3>
+              <p className="text-gray-400">Las detenciones ocurren de madrugada. Si un familiar busca abogado y no respondes en 5 minutos, se va con la competencia. Nuestro Widget IA atiende 24/7.</p>
             </div>
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-orange-500 mb-4 bg-orange-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><BarChart3 size={24} /></div>
-              <h3 className="text-xl font-bold mb-2">Slow & Expensive Agencies</h3>
-              <p className="text-gray-400">You pay thousands a month to agencies that check your account once a week. Our algorithm optimizes your campaigns every single hour, no days off.</p>
+              <h3 className="text-xl font-bold mb-2">Filtro de Casos Rentables</h3>
+              <p className="text-gray-400">Pagar por clics de gente buscando "casos civiles" agota tu presupuesto. La IA califica a los leads para que solo hables con defensas que valen la pena.</p>
             </div>
             <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-yellow-500 mb-4 bg-yellow-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Zap size={24} /></div>
-              <h3 className="text-xl font-bold mb-2">Lack of Time</h3>
-              <p className="text-gray-400">You're an attorney, not a marketing expert. Adjusting bids and analyzing metrics takes away valuable time you should be dedicating to your clients.</p>
+              <h3 className="text-xl font-bold mb-2">Falta de Tiempo</h3>
+              <p className="text-gray-400">Estás en audiencias o litigando, no puedes perder 30 minutos al teléfono descubriendo que el prospecto no tiene presupuesto. Nosotros te pasamos el resumen.</p>
             </div>
           </div>
         </div>
@@ -259,8 +262,8 @@ export default function LandingPage() {
       <section id="how-it-works" className="relative z-10 py-32">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Your Case-Generating Machine in 3 Steps</h2>
-            <p className="text-gray-400 text-lg">No coding or confusing setups. Connect your account and turn on the autopilot.</p>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">Tu Máquina de Casos Penales en 3 Pasos</h2>
+            <p className="text-gray-400 text-lg">Nos encargamos de toda la tecnología. Tú solo atiende a los clientes listos para pagar.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-12 relative">
@@ -269,20 +272,20 @@ export default function LandingPage() {
             
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-blue flex items-center justify-center text-2xl font-bold text-neon-blue mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)]">1</div>
-              <h3 className="text-xl font-bold mb-3">Connect Your Accounts</h3>
-              <p className="text-gray-400">Securely link your Google Ads account and connect our Telegram Bot. QSS reads your history and prepares your notification channels.</p>
+              <h3 className="text-xl font-bold mb-3">Tráfico de Alta Intención</h3>
+              <p className="text-gray-400">Conectamos tus campañas de Google Ads y nuestro Autopilot asegura que tu presupuesto solo se gaste en búsquedas penales urgentes y rentables.</p>
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-purple flex items-center justify-center text-2xl font-bold text-neon-purple mb-6 shadow-[0_0_20px_rgba(168,85,247,0.3)]">2</div>
-              <h3 className="text-xl font-bold mb-3">Generate AI Strategy</h3>
-              <p className="text-gray-400">Input your website URL and let our AI Marketing Strategist automatically craft high-converting campaigns and ad copy tailored for your firm.</p>
+              <h3 className="text-xl font-bold mb-3">Filtrado por Inteligencia Artificial</h3>
+              <p className="text-gray-400">El Chat Widget pre-califica al visitante en tiempo real. Si no tiene presupuesto o es un caso civil menor, le ofrece un recurso gratuito o lo rechaza amablemente.</p>
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-green flex items-center justify-center text-2xl font-bold text-neon-green mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">3</div>
-              <h3 className="text-xl font-bold mb-3">Autopilot Takes Over</h3>
-              <p className="text-gray-400">The algorithm shuts down ads that only spend and scales winners. You get real-time lead notifications directly to your phone via Telegram.</p>
+              <h3 className="text-xl font-bold mb-3">Cierre Directo en WhatsApp</h3>
+              <p className="text-gray-400">Recibes en tu teléfono únicamente a los prospectos calificados, con un resumen detallado del caso y listos para pagar sus honorarios.</p>
             </div>
           </div>
         </div>
@@ -291,8 +294,8 @@ export default function LandingPage() {
       {/* Features Section */}
       <section id="features" className="relative z-10 px-6 lg:px-12 max-w-7xl mx-auto pb-32">
         <div className="text-center mb-20">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">Advanced LegalTech Technology</h2>
-          <p className="text-gray-400 text-lg">The only software suite built specifically for immigration attorneys.</p>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">Tecnología Legal Avanzada</h2>
+          <p className="text-gray-400 text-lg">El único sistema construido específicamente para Abogados Penalistas.</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -331,7 +334,7 @@ export default function LandingPage() {
       {/* Testimonials (Social Proof) */}
       <section className="relative z-10 py-24 bg-[#0B0E14] border-y border-dark-card-border overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <h2 className="text-3xl font-bold mb-12 text-center">Built for Attorneys Who Want to Grow</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">Construido para Estudios que Quieren Crecer</h2>
           <AnimatedTestimonials testimonials={testimonials} />
         </div>
       </section>
@@ -339,8 +342,8 @@ export default function LandingPage() {
       {/* Pricing Section */}
       <section id="pricing" className="relative z-10 py-32">
         <div className="max-w-6xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Transparent Investment</h2>
-          <p className="text-gray-400 text-lg mb-16 max-w-2xl mx-auto">A flat rate that costs less than one hour of your billable time.</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Inversión Transparente</h2>
+          <p className="text-gray-400 text-lg mb-16 max-w-2xl mx-auto">Una tarifa plana que cuesta menos que un caso ganado.</p>
           
           <PricingCards isLandingPage={true} />
         </div>
@@ -349,33 +352,33 @@ export default function LandingPage() {
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 py-24 bg-black/40 border-t border-dark-card-border">
         <div className="max-w-3xl mx-auto px-6 lg:px-12">
-          <h2 className="text-3xl font-bold mb-12 text-center">Frequently Asked Questions for Attorneys</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">Preguntas Frecuentes</h2>
           <div className="space-y-4">
             <details className="group bg-dark-card border border-dark-card-border rounded-2xl p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
               <summary className="flex items-center justify-between font-semibold text-lg text-white">
-                Do you have access to my clients' confidential information?
+                ¿Tienen acceso a los datos confidenciales de mis casos?
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                No. QSS only connects to the Google Ads API to read click, cost, and conversion metrics. We have absolutely no access to your CRM, emails, or client names. Everything is 100% confidential and secure.
+                No. El Widget gestiona la pre-calificación basándose en preguntas clave y te envía el resumen por WhatsApp. No guardamos expedientes ni nombres sensibles. Todo es 100% confidencial.
               </p>
             </details>
             <details className="group bg-dark-card border border-dark-card-border rounded-2xl p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
               <summary className="flex items-center justify-between font-semibold text-lg text-white">
-                What happens if Google Ads changes something, will I be notified?
+                ¿Qué pasa si el cliente no tiene dinero para pagar mis honorarios?
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                You don't have to worry. The autopilot adapts to market fluctuations. Our Telegram Bot integration will send you immediate alerts if budgets are exceeded or if critical ad issues arise.
+                La IA detecta su presupuesto en tiempo real. Si no califica, le ofrecemos un link secundario (downsell) hacia recursos gratuitos o lo rechazamos amablemente, sin que tú pierdas tiempo.
               </p>
             </details>
             <details className="group bg-dark-card border border-dark-card-border rounded-2xl p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer">
               <summary className="flex items-center justify-between font-semibold text-lg text-white">
-                Does it work if my campaign is in Spanish and English?
+                ¿Ustedes también manejan las campañas de Google Ads?
                 <ChevronDown className="transition duration-300 group-open:-rotate-180 text-gray-400" />
               </summary>
               <p className="mt-4 text-gray-400 leading-relaxed">
-                Absolutely. QSS's algorithm doesn't judge the language, it judges the math. It will quickly identify which campaigns are bringing you cases at the best price, regardless of language.
+                Sí. The Quant Partners se encarga de estructurar la pauta en Google Ads. Nuestro algoritmo se conecta a tu cuenta y se asegura de comprar solo palabras clave con intención penal.
               </p>
             </details>
           </div>
@@ -386,13 +389,14 @@ export default function LandingPage() {
       <footer className="relative z-10 py-24 text-center border-t border-dark-card-border overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-neon-blue/20 blur-[150px] pointer-events-none" />
         <div className="relative z-10 max-w-2xl mx-auto px-6">
-          <h2 className="text-4xl font-bold mb-6">Ready to fill your calendar with paying clients?</h2>
-          <p className="text-xl text-gray-400 mb-10">Join the smartest immigration law firms already automating their case acquisition.</p>
+          <h2 className="text-4xl font-bold mb-6">¿Listo para llenar tu agenda con casos rentables?</h2>
+          <p className="text-xl text-gray-400 mb-10">Únete a los estudios penales que ya están automatizando su adquisición de clientes.</p>
           <Link 
-            href="/login" 
+            href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas"
+            target="_blank" 
             className="inline-flex px-10 py-5 bg-white text-black rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.3)]"
           >
-            Activate My Autopilot
+            Reservar mi Zona (Cupos Limitados)
           </Link>
           <div className="mt-16 border-t border-dark-card-border/50 pt-8 flex flex-col md:flex-row items-center justify-between text-gray-500 text-sm">
             <div className="mb-4 md:mb-0">
