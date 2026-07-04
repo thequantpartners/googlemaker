@@ -27,6 +27,7 @@ interface WhatsAppConfig {
   generic_webhook_secret: string | null;
   ycloud_api_key: string | null;
   ycloud_webhook_secret: string | null;
+  wa_delay_mode: string | null;
 }
 
 const inputCls =
@@ -49,6 +50,7 @@ export default function WhatsAppPage() {
   const [ycloudKey, setYcloudKey] = useState("");
   const [ycloudWebhookSecret, setYcloudWebhookSecret] = useState("");
   const [isEditingSecret, setIsEditingSecret] = useState(false);
+  const [waDelayMode, setWaDelayMode] = useState("human");
 
   // Baileys Modal State
   const [isBaileysModalOpen, setIsBaileysModalOpen] = useState(false);
@@ -78,6 +80,7 @@ export default function WhatsAppPage() {
         setConfig(data);
         setYcloudKey(data.ycloud_api_key ?? "");
         setYcloudWebhookSecret(data.ycloud_webhook_secret ?? "");
+        setWaDelayMode(data.wa_delay_mode ?? "human");
       }
     } catch (e) {
       console.error(e);
@@ -99,6 +102,7 @@ export default function WhatsAppPage() {
         body: JSON.stringify({
           ycloud_api_key: ycloudKey || "",
           ycloud_webhook_secret: ycloudWebhookSecret || "",
+          wa_delay_mode: waDelayMode || "human",
         }),
       });
       if (!res.ok) throw new Error("Failed to save configuration");
@@ -470,7 +474,44 @@ export default function WhatsAppPage() {
         </div>
       </div>
 
+      {/* Bot Behavior Section */}
+      <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6 mt-8">
+        <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+          <MessageCircle size={18} className="text-neon-purple" />
+          Comportamiento del Bot (WhatsApp)
+        </h3>
+        <div className="text-sm text-gray-400 mb-6">
+          <p>Configura la velocidad con la que el bot responde a los mensajes en WhatsApp.</p>
+        </div>
 
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+              Velocidad de Respuesta
+            </label>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <select
+                value={waDelayMode}
+                onChange={(e) => setWaDelayMode(e.target.value)}
+                className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
+              >
+                <option value="human">Simulación Humana (4 a 15 segundos)</option>
+                <option value="medium">Media (2 a 8 segundos)</option>
+                <option value="fast">Rápida (1 a 4 segundos)</option>
+                <option value="instant">Instantánea (Sin retraso)</option>
+              </select>
+              
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="whitespace-nowrap bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
+              >
+                {saving ? "Guardando..." : "Guardar Velocidad"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Connection Modal */}
       {isModalOpen && (

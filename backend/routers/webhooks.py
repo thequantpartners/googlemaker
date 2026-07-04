@@ -444,8 +444,24 @@ async def baileys_webhook(
         print(f"Error procesando mensaje en chat_engine (Baileys): {e}")
         llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
 
-    # 3. Retornar la respuesta síncrona
-    return {"ok": True, "reply": llm_reply_text}
+    # Determinar delays según configuración
+    wa_delay_mode = pay_cfg.provider_keys.get("wa_delay_mode", "human") if pay_cfg.provider_keys else "human"
+    if wa_delay_mode == "instant":
+        base_delay, char_delay, max_delay = 0, 0, 0
+    elif wa_delay_mode == "fast":
+        base_delay, char_delay, max_delay = 1000, 20, 4000
+    elif wa_delay_mode == "medium":
+        base_delay, char_delay, max_delay = 2000, 40, 8000
+    else: # human
+        base_delay, char_delay, max_delay = 4000, 80, 15000
 
+    # 3. Retornar la respuesta síncrona
+    return {
+        "ok": True, 
+        "reply": llm_reply_text,
+        "base_delay": base_delay,
+        "char_delay": char_delay,
+        "max_delay": max_delay
+    }
 
 

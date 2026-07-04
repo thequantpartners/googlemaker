@@ -100,9 +100,12 @@ async function connectToWhatsApp() {
                     await sock.sendPresenceUpdate('available', remoteJid);
                     await sock.sendPresenceUpdate('composing', remoteJid);
 
-                    // 3. Simular tiempo de escritura humano MUCHo más lento
-                    // 4 segundos base + 80ms por letra (máximo 15 segundos)
-                    const delayMs = Math.min(4000 + (replyText.length * 80), 15000);
+                    // 3. Simular tiempo de escritura (dinámico desde el backend o fallback a humano)
+                    const baseDelay = response.data.base_delay !== undefined ? response.data.base_delay : 4000;
+                    const charDelay = response.data.char_delay !== undefined ? response.data.char_delay : 80;
+                    const maxDelay = response.data.max_delay !== undefined ? response.data.max_delay : 15000;
+                    
+                    const delayMs = Math.min(baseDelay + (replyText.length * charDelay), maxDelay);
                     await new Promise(resolve => setTimeout(resolve, delayMs));
 
                     // 4. Detener estado "escribiendo..."

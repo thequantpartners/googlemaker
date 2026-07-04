@@ -119,3 +119,4 @@
 ## 2026-07-03
 - Explored integrating OpenWA Gateway natively into the QSS backend as a robust alternative to Baileys.
 - Implemented and subsequently reverted the native OpenWA backend proxy and frontend dashboard UI (rolled back due to preference for maintaining the lightweight, already-working Baileys architecture for end-clients).
+- Reorganized the Leads Widget configuration UI (`/dashboard/chat-widget`) for improved UX, logically grouping visual settings (Apariencia), AI Provider/API Keys (Intención IA), and Allowed Domains (Instalación).

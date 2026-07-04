@@ -289,6 +289,7 @@ class ClientPaymentConfigUpdate(BaseModel):
     consultation_fee: float | None = Field(None, ge=0)
     ycloud_api_key: str | None = None
     ycloud_webhook_secret: str | None = None
+    wa_delay_mode: str | None = None
 
 
 class ClientPaymentConfigOut(BaseModel):
@@ -300,6 +301,7 @@ class ClientPaymentConfigOut(BaseModel):
     consultation_fee: float | None = None
     ycloud_api_key: str | None = None
     ycloud_webhook_secret: str | None = None
+    wa_delay_mode: str | None = None
     has_stripe_key: bool = False
     has_paypal_key: bool = False
     created_at: datetime

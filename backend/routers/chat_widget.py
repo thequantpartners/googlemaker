@@ -164,6 +164,7 @@ async def get_payment_config(
         consultation_fee=config.consultation_fee,
         ycloud_api_key=keys.get("ycloud_api_key"),
         ycloud_webhook_secret=keys.get("ycloud_webhook_secret"),
+        wa_delay_mode=keys.get("wa_delay_mode"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,
@@ -201,6 +202,8 @@ async def update_payment_config(
         keys["ycloud_api_key"] = data["ycloud_api_key"]
     if data.get("ycloud_webhook_secret") is not None:
         keys["ycloud_webhook_secret"] = data["ycloud_webhook_secret"]
+    if data.get("wa_delay_mode") is not None:
+        keys["wa_delay_mode"] = data["wa_delay_mode"]
     config.provider_keys = keys
 
     config.updated_at = _now()
@@ -216,6 +219,7 @@ async def update_payment_config(
         consultation_fee=config.consultation_fee,
         ycloud_api_key=keys.get("ycloud_api_key"),
         ycloud_webhook_secret=keys.get("ycloud_webhook_secret"),
+        wa_delay_mode=keys.get("wa_delay_mode"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,
