@@ -3,39 +3,65 @@ import { ArrowLeft } from "lucide-react";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#0B0E14] text-white py-20 px-6">
-      <div className="max-w-3xl mx-auto bg-dark-card border border-dark-card-border p-10 rounded-2xl">
-        <Link href="/" className="inline-flex items-center text-gray-400 hover:text-white mb-8 transition-colors">
-          <ArrowLeft size={20} className="mr-2" /> Back to Home
-        </Link>
-        <h1 className="text-3xl font-bold mb-6 text-white">Terms of Service</h1>
-        <div className="space-y-4 text-gray-300 leading-relaxed">
-          <p>Last updated: June 2026</p>
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">1. Agreement to Terms</h2>
-          <p>By accessing or using QSS, you agree to be bound by these Terms of Service. If you are using QSS on behalf of a law firm, agency, or other entity, you represent that you have the authority to bind such entity.</p>
-          
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">2. Description of Service & No Guarantee of Results</h2>
-          <p>QSS provides automated Google Ads management software. Advertising is inherently unpredictable. We <strong>DO NOT</strong> guarantee specific advertising results, a specific Cost Per Acquisition (CPA), or Return on Investment (ROI). The tool operates algorithmically based on the parameters you define.</p>
-          
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">3. Assumption of Risk and Ad Spend Liability</h2>
-          <p>You acknowledge that algorithms, AI models, and APIs are subject to latency, bugs, and unpredictable behavior. <strong>YOU ARE SOLELY RESPONSIBLE FOR YOUR GOOGLE ADS SPEND.</strong> QSS is not liable for any unintended ad spend, budget overruns, or erroneous campaign pauses/scalings. You agree to monitor your own ad accounts regularly.</p>
-
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">4. Indemnification</h2>
-          <p>You agree to defend, indemnify, and hold harmless QSS and TheQuantPartners from any claims, damages, or lawsuits arising from your use of the Service, including but not limited to claims from your clients, malpractice allegations, or violations of advertising regulations (e.g., Bar Association advertising rules).</p>
-
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">5. Limitation of Liability</h2>
-          <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL GMAKER BE LIABLE FOR ANY INDIRECT, PUNITIVE, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF PROFITS, LOSS OF AD SPEND, OR BUSINESS INTERRUPTION. IN NO EVENT SHALL OUR TOTAL CUMULATIVE LIABILITY EXCEED THE AMOUNT PAID BY YOU TO US IN THE THREE (3) MONTHS PRECEDING THE CLAIM, OR $100 USD, WHICHEVER IS GREATER.</p>
-
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">6. Mandatory Arbitration and Class Action Waiver</h2>
-          <p>Any dispute arising out of or relating to these Terms shall be resolved through binding arbitration in the State of Delaware, rather than in court. You agree to waive any right to participate in a class action lawsuit or class-wide arbitration.</p>
-
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">7. Subscriptions and Payments</h2>
-          <p>QSS is billed on a subscription basis. Our order process is conducted by our online reseller Lemon Squeezy, which is the Merchant of Record for all orders.</p>
-
-          <h2 className="text-xl font-semibold text-white mt-8 mb-4">8. Contact Us</h2>
-          <p>If you have any questions about these Terms, please contact us at partners@thequantpartners.com.</p>
+    <div className="min-h-screen bg-[#0B0E14] text-white flex flex-col font-sans selection:bg-neon-blue/30 selection:text-neon-blue">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0B0E14]/80 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <ArrowLeft size={20} />
+            <span>Volver al Inicio</span>
+          </Link>
+          <div className="font-bold tracking-tighter text-xl">QSS Legals</div>
         </div>
-      </div>
+      </nav>
+
+      <main className="flex-1 max-w-3xl mx-auto px-6 pt-32 pb-24 prose prose-invert prose-headings:text-white prose-a:text-neon-blue hover:prose-a:text-neon-purple">
+        <h1 className="text-4xl md:text-5xl font-bold mb-8 tracking-tight">Términos de Servicio</h1>
+        <p className="text-gray-400 mb-12">Última actualización: Julio 2026</p>
+
+        <section className="mb-12 space-y-6 text-gray-300 leading-relaxed">
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">1. Naturaleza del Servicio</h2>
+          <p>
+            QSS (Quant Sales System), operado por TheQuantPartners, proporciona una infraestructura tecnológica de marketing y filtrado de prospectos orientada a firmas legales. Nuestro servicio atrae tráfico mediante plataformas publicitarias de terceros (ej. Google Ads) y utiliza un widget automatizado para aplicar un filtro pre-establecido a los visitantes.
+          </p>
+          <p>
+            <strong>Importante:</strong> La funcionalidad de chat y transferencia a WhatsApp de QSS actúa estrictamente como una fase de filtro unidireccional y de pre-calificación. No está diseñada para operar como un asistente conversacional avanzado, sino para recopilar información clave del prospecto de manera rápida y eficiente antes del contacto humano.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">2. Definición Contractual de "Lead Calificado"</h2>
+          <p>
+            Para efectos de este acuerdo, el trabajo y responsabilidad de QSS se considera cumplido exitosamente en el momento en que se entrega un "Lead Calificado" a la firma legal. 
+          </p>
+          <p>
+            Un <strong>Lead Calificado</strong> se define estrictamente como un prospecto que ha interactuado con nuestros anuncios, ha pasado por nuestro filtro automatizado indicando poseer un problema legal dentro del área de práctica acordada, y cuyos datos de contacto e historial de interacción han sido transferidos al canal de comunicación (WhatsApp/CRM) del cliente.
+          </p>
+          <p className="p-4 bg-dark-card border border-dark-card-border rounded-xl text-gray-400 text-sm mt-4">
+            QSS no garantiza en ningún momento el cierre de la venta, la contratación de los servicios de la firma legal, ni el retorno de inversión (ROI). El porcentaje de conversión final depende 100% de la velocidad de respuesta de la firma, la calidad de su atención comercial y sus honorarios. QSS se exime expresamente de cualquier responsabilidad si la firma falla en convertir al lead por demoras (ej. respuestas tardías mayores a 15 minutos), falta de seguimiento o estrategias de precios inadecuadas.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">3. Ausencia de Asesoría Legal</h2>
+          <p>
+            QSS y sus tecnologías proporcionan única y exclusivamente servicios de software y filtrado de marketing. En ningún caso nuestras herramientas emiten, sugieren o reemplazan el consejo legal profesional. La firma cliente es la única responsable de verificar los hechos del prospecto y brindar la asesoría correspondiente. QSS no asumirá responsabilidad alguna por negligencias legales, mala praxis o malentendidos generados entre el prospecto y la firma.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">4. Plataformas de Terceros (Google Ads, Meta/WhatsApp)</h2>
+          <p>
+            Nuestros servicios dependen del funcionamiento ininterrumpido de plataformas de terceros. QSS no se hace responsable por cambios en los algoritmos, políticas publicitarias, bloqueos de cuentas, suspensiones de números de WhatsApp o cualquier otra interrupción causada por Google, Meta o entidades similares. En el eventual caso de una suspensión de cuenta o restricción por parte de terceros, las obligaciones de pago del cliente por el uso del software hacia QSS permanecen vigentes.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-white mt-8 mb-4">5. Limitación de Responsabilidad e Indemnización</h2>
+          <p>
+            Bajo ninguna circunstancia la responsabilidad total acumulada de TheQuantPartners y QSS, ya sea por incumplimiento de contrato, agravio o de otro tipo, excederá el monto total pagado por el cliente por el servicio de software correspondiente a los tres (3) meses inmediatamente anteriores al evento que da lugar a la reclamación.
+          </p>
+          <p>
+            El cliente acepta indemnizar y mantener indemne a QSS frente a cualquier demanda, pérdida, daño o gasto (incluyendo honorarios de abogados) que surja del uso inadecuado del servicio por parte del cliente o de disputas de mala praxis legal iniciadas por los prospectos.
+          </p>
+        </section>
+      </main>
+
+      <footer className="py-8 border-t border-white/10 text-center text-sm text-gray-500">
+        © 2026 QSS. Built by TheQuantPartners. Todos los derechos reservados.
+      </footer>
     </div>
   );
 }
