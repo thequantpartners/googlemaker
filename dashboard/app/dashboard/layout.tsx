@@ -46,17 +46,32 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const hasPlan = tier && tier !== "free" && tier !== "none" && tier !== "";
 
-  const navItems = [
-    { name: "Setup Guide", href: "/onboarding", icon: ListChecks, locked: false },
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
-    { name: "Campaigns", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
-    { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity, locked: true },
-    { name: "My Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
-    { name: "Leads Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
-    { name: "WhatsApp Sales System", href: "/dashboard/whatsapp", icon: Phone, locked: true },
-    { name: "Calendar (IA)", href: "/dashboard/calendar", icon: Calendar, locked: true },
-    { name: "Payments", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
-    { name: "Settings", href: "/dashboard/configuracion", icon: Settings, locked: true },
+  const navGroups = [
+    {
+      title: "GENERAL",
+      items: [
+        { name: "Setup Guide", href: "/onboarding", icon: ListChecks, locked: false },
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
+        { name: "Campañas", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
+      ]
+    },
+    {
+      title: "CRM & AI AGENTS",
+      items: [
+        { name: "WhatsApp Sales System", href: "/dashboard/whatsapp", icon: Phone, locked: true },
+        { name: "Calendar (IA)", href: "/dashboard/calendar", icon: Calendar, locked: true },
+        { name: "Leads Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
+      ]
+    },
+    {
+      title: "CONFIGURATION",
+      items: [
+        { name: "Payments", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
+        { name: "My Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
+        { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity, locked: true },
+        { name: "Settings", href: "/dashboard/configuracion", icon: Settings, locked: true },
+      ]
+    }
   ];
 
   return (
@@ -86,41 +101,46 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const itemLocked = item.locked && tier !== null && !hasPlan;
+        <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+          {navGroups.map((group) => (
+            <div key={group.title} className="space-y-1">
+              <h3 className="px-4 text-[11px] font-bold text-gray-500 tracking-wider mb-2">{group.title}</h3>
+              {group.items.map((item) => {
+                const isActive = pathname === item.href;
+                const itemLocked = item.locked && tier !== null && !hasPlan;
 
-            if (itemLocked) {
-              return (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl font-medium text-gray-500 bg-white/[0.02] opacity-50 cursor-not-allowed"
-                >
-                  <div className="flex items-center gap-3">
-                    <item.icon size={20} className="text-gray-500" />
-                    {item.name}
-                  </div>
-                  <Lock size={14} className="text-gray-500" />
-                </div>
-              );
-            }
+                if (itemLocked) {
+                  return (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between px-4 py-2.5 rounded-xl font-medium text-gray-500 bg-white/[0.02] opacity-50 cursor-not-allowed"
+                    >
+                      <div className="flex items-center gap-3">
+                        <item.icon size={18} className="text-gray-500" />
+                        <span className="text-sm">{item.name}</span>
+                      </div>
+                      <Lock size={14} className="text-gray-500" />
+                    </div>
+                  );
+                }
 
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                  isActive 
-                  ? "bg-neon-green/10 text-neon-green border border-neon-green/20" 
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                <item.icon size={20} className={isActive ? "text-neon-green" : "text-gray-400"} />
-                {item.name}
-              </Link>
-            );
-          })}
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all ${
+                      isActive 
+                      ? "bg-neon-green/10 text-neon-green border border-neon-green/20" 
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <item.icon size={18} className={isActive ? "text-neon-green" : "text-gray-400"} />
+                    <span className="text-sm">{item.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* User / Bottom */}
@@ -150,7 +170,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               <Menu size={24} />
             </button>
             <h2 className="text-xl lg:text-2xl font-semibold text-white truncate max-w-[150px] sm:max-w-xs">
-              {navItems.find(i => i.href === pathname)?.name || "Dashboard"}
+              {navGroups.flatMap(g => g.items).find(i => i.href === pathname)?.name || "Dashboard"}
             </h2>
           </div>
           
