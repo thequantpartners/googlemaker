@@ -120,3 +120,6 @@
 - Explored integrating OpenWA Gateway natively into the QSS backend as a robust alternative to Baileys.
 - Implemented and subsequently reverted the native OpenWA backend proxy and frontend dashboard UI (rolled back due to preference for maintaining the lightweight, already-working Baileys architecture for end-clients).
 - Reorganized the Leads Widget configuration UI (`/dashboard/chat-widget`) for improved UX, logically grouping visual settings (Apariencia), AI Provider/API Keys (Intención IA), and Allowed Domains (Instalación).
+- Implemented dynamic bot behavior scheduling (Business Hours & Configurable Response Delays) to strictly mimic human interaction patterns and mitigate Meta bans on unofficial WhatsApp APIs.
+- Updated `chat_engine.py` to evaluate timezone-aware business hours exactly at the LLM transition point. Rules/qualification execute 24/7, but if out of hours, the bot captures the lead, sends a one-time "Out of Office" message, and safely goes silent.
+- Added comprehensive Business Hours Matrix (7-day toggle/time UI) to the WhatsApp settings dashboard.

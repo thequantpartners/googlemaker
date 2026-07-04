@@ -169,6 +169,8 @@ async def get_payment_config(
         wa_timezone=keys.get("wa_timezone"),
         wa_business_hours=keys.get("wa_business_hours"),
         wa_bhours_message=keys.get("wa_bhours_message"),
+        cal_api_key=keys.get("cal_api_key"),
+        cal_booking_link=keys.get("cal_booking_link"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,
@@ -216,6 +218,10 @@ async def update_payment_config(
         keys["wa_business_hours"] = data["wa_business_hours"]
     if data.get("wa_bhours_message") is not None:
         keys["wa_bhours_message"] = data["wa_bhours_message"]
+    if data.get("cal_api_key") is not None:
+        keys["cal_api_key"] = data["cal_api_key"]
+    if data.get("cal_booking_link") is not None:
+        keys["cal_booking_link"] = data["cal_booking_link"]
     config.provider_keys = keys
 
     config.updated_at = _now()
@@ -236,6 +242,8 @@ async def update_payment_config(
         wa_timezone=keys.get("wa_timezone"),
         wa_business_hours=keys.get("wa_business_hours"),
         wa_bhours_message=keys.get("wa_bhours_message"),
+        cal_api_key=keys.get("cal_api_key"),
+        cal_booking_link=keys.get("cal_booking_link"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,

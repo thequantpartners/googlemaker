@@ -40,10 +40,73 @@ async def _update_lead_payment(
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found.")
 
-    if payment_type == "consultation":
+    import httpx
+    import asyncio
+
+    if payment_type == "consultation" and lead.session_id:
         lead.consultation_paid = True
         if amount:
             lead.consultation_amount = amount
+
+        # Fetch session and trigger AI Agent
+        session_result = await db.execute(select(ChatSession).where(ChatSession.session_id == lead.session_id))
+        chat_session = session_result.scalar_one_or_none()
+        
+        user_result = await db.execute(select(User).where(User.id == client_id))
+        client_user = user_result.scalar_one_or_none()
+        
+        config_result = await db.execute(select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id))
+        chat_config = config_result.scalar_one_or_none()
+        
+        if chat_session and client_user and chat_config and chat_config.is_enabled:
+            # Check if this is a WhatsApp session (typically phone number format for YCloud)
+            # Not foolproof, but valid for our YCloud setup
+            is_whatsapp = chat_session.session_id.startswith("51") or len(chat_session.session_id) > 10
+
+            async def _background_ai_task():
+                # We need a new session context for the background task
+                from database import async_session_maker
+                async with async_session_maker() as bg_db:
+                    bg_session_result = await bg_db.execute(select(ChatSession).where(ChatSession.session_id == lead.session_id))
+                    bg_chat_session = bg_session_result.scalar_one_or_none()
+                    bg_user_result = await bg_db.execute(select(User).where(User.id == client_id))
+                    bg_client_user = bg_user_result.scalar_one_or_none()
+                    
+                    if bg_chat_session and bg_client_user:
+                        engine_result = await process_chat_message(
+                            session=bg_chat_session,
+                            config=chat_config,
+                            user_message="[SISTEMA] El usuario acaba de realizar el pago exitosamente. Felicítalo brevemente e inmediatamente ofrécele opciones de horarios leyendo tu disponibilidad con la API de Cal.com.",
+                            db=bg_db,
+                            client_user=bg_client_user
+                        )
+                        await bg_db.commit()
+                        
+                        if is_whatsapp and engine_result.messages:
+                            # Send via YCloud
+                            reply_lines = []
+                            for msg in engine_result.messages:
+                                reply_lines.append(msg["content"])
+                                if msg.get("options"):
+                                    reply_lines.append("")
+                                    for opt in msg["options"]:
+                                        reply_lines.append(f"• {opt}")
+                            llm_reply_text = "\n".join(reply_lines).strip()
+                            
+                            if llm_reply_text:
+                                pay_cfg_res = await bg_db.execute(select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id))
+                                pay_cfg = pay_cfg_res.scalar_one_or_none()
+                                if pay_cfg and pay_cfg.provider_keys:
+                                    ycloud_api_key = pay_cfg.provider_keys.get("ycloud_api_key")
+                                    if ycloud_api_key:
+                                        ycloud_url = "https://api.ycloud.com/v2/whatsapp/messages/send"
+                                        headers = {"X-API-Key": ycloud_api_key, "Content-Type": "application/json"}
+                                        yc_payload = {"to": bg_chat_session.session_id, "type": "text", "text": {"body": llm_reply_text}}
+                                        async with httpx.AsyncClient() as client:
+                                            await client.post(ycloud_url, headers=headers, json=yc_payload)
+            
+            asyncio.create_task(_background_ai_task())
+
     elif payment_type == "full_case":
         lead.full_case_paid = True
         if amount:

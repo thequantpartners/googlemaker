@@ -23,6 +23,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models import ChatSession, ChatSessionState, ChatWidgetConfig, Lead, User, ClientPaymentConfig
 from services.telegram_service import send_telegram_message
 from encryption import decrypt_value
+from services.ai_tools import (
+    execute_tool_call, get_openai_tools, get_anthropic_tools, get_gemini_tools
+)
 
 # Marker embedded by AI when it has collected lead data.
 # Format: [[LEAD:{"name":"...","email":"...","phone":"..."}]]
@@ -214,6 +217,14 @@ async def _call_ai_provider(
     raw_text = ""
 
     try:
+        cal_api_key = None
+        cal_booking_link = None
+        if pay_cfg and pay_cfg.provider_keys:
+            cal_api_key = pay_cfg.provider_keys.get("cal_api_key")
+            cal_booking_link = pay_cfg.provider_keys.get("cal_booking_link")
+            
+        enable_tools = bool(cal_api_key and cal_booking_link)
+
         if provider == "openai":
             import openai
             client = openai.AsyncOpenAI(api_key=api_key)
@@ -225,13 +236,40 @@ async def _call_ai_provider(
                 role = "assistant" if msg.get("role") == "bot" else "user"
                 oai_history.append({"role": role, "content": content})
                 
+            tools = get_openai_tools() if enable_tools else None
+            kwargs = {"tools": tools} if tools else {}
+            
             response = await client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=oai_history,
                 temperature=config.temperature,
                 max_tokens=config.max_tokens,
+                **kwargs
             )
-            raw_text = response.choices[0].message.content.strip()
+            msg = response.choices[0].message
+            if getattr(msg, "tool_calls", None):
+                # Append assistant message with tool_calls to history
+                oai_history.append(msg)
+                for tool_call in msg.tool_calls:
+                    func_name = tool_call.function.name
+                    args = json.loads(tool_call.function.arguments)
+                    result = await execute_tool_call(func_name, args, cal_api_key, cal_booking_link)
+                    oai_history.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": func_name,
+                        "content": result
+                    })
+                # Second call
+                response2 = await client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=oai_history,
+                    temperature=config.temperature,
+                    max_tokens=config.max_tokens
+                )
+                raw_text = response2.choices[0].message.content.strip()
+            else:
+                raw_text = msg.content.strip()
 
         elif provider == "anthropic":
             import anthropic
@@ -244,14 +282,40 @@ async def _call_ai_provider(
                 role = "assistant" if msg.get("role") == "bot" else "user"
                 ant_history.append({"role": role, "content": content})
                 
+            tools = get_anthropic_tools() if enable_tools else []
+            kwargs = {"tools": tools} if tools else {}
+            
             response = await client.messages.create(
                 model="claude-3-5-haiku-20241022",
                 system=system_prompt,
                 messages=ant_history,
                 temperature=config.temperature,
                 max_tokens=config.max_tokens,
+                **kwargs
             )
-            raw_text = response.content[0].text.strip()
+            
+            if response.stop_reason == "tool_use":
+                ant_history.append({"role": "assistant", "content": response.content})
+                tool_results = []
+                for block in response.content:
+                    if block.type == "tool_use":
+                        result = await execute_tool_call(block.name, block.input, cal_api_key, cal_booking_link)
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": result
+                        })
+                ant_history.append({"role": "user", "content": tool_results})
+                response2 = await client.messages.create(
+                    model="claude-3-5-haiku-20241022",
+                    system=system_prompt,
+                    messages=ant_history,
+                    temperature=config.temperature,
+                    max_tokens=config.max_tokens
+                )
+                raw_text = response2.content[0].text.strip()
+            else:
+                raw_text = response.content[0].text.strip()
 
         elif provider == "gemini":
             genai.configure(api_key=api_key)
@@ -264,6 +328,9 @@ async def _call_ai_provider(
                 current_message = "Hola"
                 prior_history = gemini_history
                 
+            tools = get_gemini_tools() if enable_tools else None
+            kwargs = {"tools": tools} if tools else {}
+                
             model = genai.GenerativeModel(
                 model_name="gemini-2.0-flash",
                 system_instruction=system_prompt,
@@ -271,10 +338,33 @@ async def _call_ai_provider(
                     temperature=config.temperature,
                     max_output_tokens=config.max_tokens,
                 ),
+                **kwargs
             )
             chat = model.start_chat(history=prior_history)
             resp = await chat.send_message_async(current_message)
-            raw_text = resp.text.strip()
+            
+            # Check if there is a function call
+            # In google-generativeai, resp.parts can contain function_call
+            fc = None
+            if resp.parts:
+                for part in resp.parts:
+                    if getattr(part, "function_call", None):
+                        fc = part.function_call
+                        break
+            
+            if fc:
+                args = type(fc.args).to_dict(fc.args) if hasattr(fc.args, "to_dict") else dict(fc.args)
+                result = await execute_tool_call(fc.name, args, cal_api_key, cal_booking_link)
+                
+                resp2 = await chat.send_message_async(
+                    genai.types.Part.from_function_response(
+                        name=fc.name,
+                        response={"result": result}
+                    )
+                )
+                raw_text = resp2.text.strip()
+            else:
+                raw_text = resp.text.strip()
 
         else:
             raw_text = "Proveedor de Inteligencia Artificial no soportado."
@@ -511,6 +601,10 @@ async def process_chat_message(
         return await _handle_ai_mode(session, config, user_message, db, client_user)
 
     # Already CLOSED
+    if user_message.startswith("[SISTEMA]"):
+        session.state = ChatSessionState.ai_mode
+        return await _handle_ai_mode(session, config, user_message, db, client_user)
+
     return EngineResult(
         messages=[{
             "content": "Esta conversación ya ha finalizado. ¡Gracias por tu interés!",
