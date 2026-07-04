@@ -261,6 +261,9 @@ export default function LandingPage() {
             Los clics son caros. Pierdes miles de soles al mes en personas buscando "abogado gratis", casos civiles que no te interesan, o emergencias de madrugada que no pudiste contestar.
           </p>
 
+          <div className="md:hidden flex items-center justify-center gap-2 text-gray-500 text-sm font-medium mb-4 animate-pulse">
+            Desliza para ver más <ArrowRight size={16} />
+          </div>
           <div className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide text-left">
             <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-red-500 mb-4 bg-red-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Clock size={24} /></div>
@@ -289,6 +292,9 @@ export default function LandingPage() {
             <p className="text-gray-400 text-lg">Nos encargamos de toda la tecnología. Tú solo atiende a los clientes listos para pagar.</p>
           </div>
 
+          <div className="md:hidden flex items-center justify-center gap-2 text-gray-500 text-sm font-medium mb-4 animate-pulse">
+            Desliza para ver más <ArrowRight size={16} />
+          </div>
           <div className="flex md:grid md:grid-cols-3 gap-8 md:gap-12 relative overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
             {/* Connecting line for desktop */}
             <div className="hidden md:block absolute top-[40px] left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-neon-blue via-neon-purple to-neon-green opacity-20" />
@@ -321,6 +327,9 @@ export default function LandingPage() {
           <p className="text-gray-400 text-lg">El único sistema construido específicamente para Abogados Penalistas.</p>
         </div>
 
+        <div className="md:hidden flex items-center justify-center gap-2 text-gray-500 text-sm font-medium mb-4 animate-pulse">
+          Desliza para ver más <ArrowRight size={16} />
+        </div>
         <div className="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
           <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card backdrop-blur-lg border border-dark-card-border p-8 rounded-[24px] hover:border-neon-purple/50 hover:bg-white/[0.03] transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-purple/20 to-transparent flex items-center justify-center mb-6 border border-neon-purple/20 group-hover:scale-110 transition-transform">
