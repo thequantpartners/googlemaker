@@ -330,25 +330,26 @@ async def ycloud_master_webhook(
         llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
 
     # 4. Enviar la respuesta de vuelta a WhatsApp vía API de YCloud
-    ycloud_url = "https://api.ycloud.com/v2/whatsapp/messages/send"
-    
-    headers = {
-        "X-API-Key": ycloud_api_key,
-        "Content-Type": "application/json"
-    }
-    
-    yc_payload = {
-        "to": wa_id,
-        "type": "text",
-        "text": {
-            "body": llm_reply_text
+    if llm_reply_text.strip():
+        ycloud_url = "https://api.ycloud.com/v2/whatsapp/messages/send"
+        
+        headers = {
+            "X-API-Key": ycloud_api_key,
+            "Content-Type": "application/json"
         }
-    }
-    
-    async with httpx.AsyncClient() as client:
-        yc_res = await client.post(ycloud_url, headers=headers, json=yc_payload)
-        if yc_res.status_code >= 400:
-            print(f"YCloud API Error: {yc_res.text}")
+        
+        yc_payload = {
+            "to": wa_id,
+            "type": "text",
+            "text": {
+                "body": llm_reply_text
+            }
+        }
+        
+        async with httpx.AsyncClient() as client:
+            yc_res = await client.post(ycloud_url, headers=headers, json=yc_payload)
+            if yc_res.status_code >= 400:
+                print(f"YCloud API Error: {yc_res.text}")
 
     return {"ok": True, "status": "processed"}
 

@@ -20,7 +20,7 @@ from datetime import datetime, timezone
 import google.generativeai as genai
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import ChatSession, ChatSessionState, ChatWidgetConfig, Lead, User
+from models import ChatSession, ChatSessionState, ChatWidgetConfig, Lead, User, ClientPaymentConfig
 from services.telegram_service import send_telegram_message
 from encryption import decrypt_value
 
@@ -125,6 +125,68 @@ async def _call_ai_provider(
     Send session.history to the selected AI provider (OpenAI, Anthropic, Gemini).
     """
     history: list = list(session.history or [])
+
+    # ── Business Hours Check ───────────────────────────────────────────────────
+    # Only applies to WhatsApp/YCloud channels (which use the payment config keys).
+    # We fetch ClientPaymentConfig to read the wa_business_hours properties.
+    from sqlalchemy import select
+    from zoneinfo import ZoneInfo
+    pay_cfg_res = await db.execute(select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_user.id))
+    pay_cfg = pay_cfg_res.scalar_one_or_none()
+    
+    if pay_cfg and pay_cfg.provider_keys:
+        keys = pay_cfg.provider_keys
+        if keys.get("wa_business_hours_enabled"):
+            tz_str = keys.get("wa_timezone") or "UTC"
+            try:
+                tz = ZoneInfo(tz_str)
+            except Exception:
+                tz = ZoneInfo("UTC")
+            
+            now = datetime.now(tz)
+            # e.g., "monday", "tuesday", etc.
+            day_name = now.strftime("%A").lower()
+            
+            b_hours = keys.get("wa_business_hours") or {}
+            day_config = b_hours.get(day_name) or {"enabled": False, "start": "09:00", "end": "18:00"}
+            
+            is_open = False
+            if day_config.get("enabled"):
+                start_str = day_config.get("start", "00:00")
+                end_str = day_config.get("end", "23:59")
+                try:
+                    start_time = datetime.strptime(start_str, "%H:%M").time()
+                    end_time = datetime.strptime(end_str, "%H:%M").time()
+                    if start_time <= now.time() <= end_time:
+                        is_open = True
+                except ValueError:
+                    pass
+            
+            if not is_open:
+                tracking = session.tracking_data or {}
+                # If we haven't sent the OOH message today, send it
+                today_str = now.strftime("%Y-%m-%d")
+                if tracking.get("ooh_sent_date") != today_str:
+                    tracking["ooh_sent_date"] = today_str
+                    session.tracking_data = tracking
+                    
+                    fallback = keys.get("wa_bhours_message") or "Estamos fuera de horario. Te contactaremos mañana."
+                    return {
+                        "reply": fallback,
+                        "updated_history": _push(history, "bot", fallback),
+                        "new_state": session.state,
+                        "lead_captured": False,
+                    }
+                else:
+                    # Silent mode: we already sent it, just return an empty reply (the webhook should ignore empty replies)
+                    # For safety, we return a special empty string that the caller handles, or just silent text.
+                    # Wait, if we return empty text, Baileys ignores it.
+                    return {
+                        "reply": "",
+                        "updated_history": history,
+                        "new_state": session.state,
+                        "lead_captured": False,
+                    }
 
     # Enforce BYOK (Bring Your Own Key)
     if not config.ai_api_key:

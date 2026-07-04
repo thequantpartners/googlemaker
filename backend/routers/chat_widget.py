@@ -165,6 +165,10 @@ async def get_payment_config(
         ycloud_api_key=keys.get("ycloud_api_key"),
         ycloud_webhook_secret=keys.get("ycloud_webhook_secret"),
         wa_delay_mode=keys.get("wa_delay_mode"),
+        wa_business_hours_enabled=keys.get("wa_business_hours_enabled"),
+        wa_timezone=keys.get("wa_timezone"),
+        wa_business_hours=keys.get("wa_business_hours"),
+        wa_bhours_message=keys.get("wa_bhours_message"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,
@@ -204,6 +208,14 @@ async def update_payment_config(
         keys["ycloud_webhook_secret"] = data["ycloud_webhook_secret"]
     if data.get("wa_delay_mode") is not None:
         keys["wa_delay_mode"] = data["wa_delay_mode"]
+    if data.get("wa_business_hours_enabled") is not None:
+        keys["wa_business_hours_enabled"] = data["wa_business_hours_enabled"]
+    if data.get("wa_timezone") is not None:
+        keys["wa_timezone"] = data["wa_timezone"]
+    if data.get("wa_business_hours") is not None:
+        keys["wa_business_hours"] = data["wa_business_hours"]
+    if data.get("wa_bhours_message") is not None:
+        keys["wa_bhours_message"] = data["wa_bhours_message"]
     config.provider_keys = keys
 
     config.updated_at = _now()
@@ -220,6 +232,10 @@ async def update_payment_config(
         ycloud_api_key=keys.get("ycloud_api_key"),
         ycloud_webhook_secret=keys.get("ycloud_webhook_secret"),
         wa_delay_mode=keys.get("wa_delay_mode"),
+        wa_business_hours_enabled=keys.get("wa_business_hours_enabled"),
+        wa_timezone=keys.get("wa_timezone"),
+        wa_business_hours=keys.get("wa_business_hours"),
+        wa_bhours_message=keys.get("wa_bhours_message"),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,

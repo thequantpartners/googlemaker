@@ -290,6 +290,10 @@ class ClientPaymentConfigUpdate(BaseModel):
     ycloud_api_key: str | None = None
     ycloud_webhook_secret: str | None = None
     wa_delay_mode: str | None = None
+    wa_business_hours_enabled: bool | None = None
+    wa_timezone: str | None = None
+    wa_business_hours: dict | None = None
+    wa_bhours_message: str | None = None
 
 
 class ClientPaymentConfigOut(BaseModel):
@@ -302,6 +306,10 @@ class ClientPaymentConfigOut(BaseModel):
     ycloud_api_key: str | None = None
     ycloud_webhook_secret: str | None = None
     wa_delay_mode: str | None = None
+    wa_business_hours_enabled: bool | None = None
+    wa_timezone: str | None = None
+    wa_business_hours: dict | None = None
+    wa_bhours_message: str | None = None
     has_stripe_key: bool = False
     has_paypal_key: bool = False
     created_at: datetime

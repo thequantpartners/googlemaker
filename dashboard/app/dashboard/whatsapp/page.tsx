@@ -28,6 +28,10 @@ interface WhatsAppConfig {
   ycloud_api_key: string | null;
   ycloud_webhook_secret: string | null;
   wa_delay_mode: string | null;
+  wa_business_hours_enabled: boolean | null;
+  wa_timezone: string | null;
+  wa_business_hours: any | null;
+  wa_bhours_message: string | null;
 }
 
 const inputCls =
@@ -51,6 +55,22 @@ export default function WhatsAppPage() {
   const [ycloudWebhookSecret, setYcloudWebhookSecret] = useState("");
   const [isEditingSecret, setIsEditingSecret] = useState(false);
   const [waDelayMode, setWaDelayMode] = useState("human");
+
+  // Business Hours State
+  const [bHoursEnabled, setBHoursEnabled] = useState(false);
+  const [timezone, setTimezone] = useState("America/Lima");
+  const [bHoursMsg, setBHoursMsg] = useState("¡Hola! En este momento nuestra oficina está cerrada. Por favor, déjanos tu consulta y te contactaremos a primera hora en nuestro próximo día laborable.");
+  const defaultSchedule = { enabled: true, start: "09:00", end: "18:00" };
+  const closedSchedule = { enabled: false, start: "09:00", end: "18:00" };
+  const [schedule, setSchedule] = useState({
+    monday: { ...defaultSchedule },
+    tuesday: { ...defaultSchedule },
+    wednesday: { ...defaultSchedule },
+    thursday: { ...defaultSchedule },
+    friday: { ...defaultSchedule },
+    saturday: { ...closedSchedule },
+    sunday: { ...closedSchedule },
+  });
 
   // Baileys Modal State
   const [isBaileysModalOpen, setIsBaileysModalOpen] = useState(false);
@@ -81,6 +101,10 @@ export default function WhatsAppPage() {
         setYcloudKey(data.ycloud_api_key ?? "");
         setYcloudWebhookSecret(data.ycloud_webhook_secret ?? "");
         setWaDelayMode(data.wa_delay_mode ?? "human");
+        setBHoursEnabled(data.wa_business_hours_enabled ?? false);
+        setTimezone(data.wa_timezone ?? "America/Lima");
+        if (data.wa_bhours_message) setBHoursMsg(data.wa_bhours_message);
+        if (data.wa_business_hours) setSchedule(data.wa_business_hours);
       }
     } catch (e) {
       console.error(e);
@@ -103,6 +127,10 @@ export default function WhatsAppPage() {
           ycloud_api_key: ycloudKey || "",
           ycloud_webhook_secret: ycloudWebhookSecret || "",
           wa_delay_mode: waDelayMode || "human",
+          wa_business_hours_enabled: bHoursEnabled,
+          wa_timezone: timezone,
+          wa_business_hours: schedule,
+          wa_bhours_message: bHoursMsg
         }),
       });
       if (!res.ok) throw new Error("Failed to save configuration");
@@ -511,6 +539,135 @@ export default function WhatsAppPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Business Hours Section */}
+      <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6 mt-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div>
+            <h3 className="text-white font-medium flex items-center gap-2">
+              <Phone size={18} className="text-neon-purple" />
+              Horario Comercial (Anti-Ban)
+            </h3>
+            <p className="text-sm text-gray-400 mt-1">
+              Configura cuándo el asistente IA debe guardar silencio. Las reglas seguirán capturando leads 24/7.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 bg-white/[0.02] px-4 py-2 rounded-xl border border-white/[0.05]">
+            <span className="text-sm font-medium text-gray-300">Activar Horario</span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="sr-only peer"
+                checked={bHoursEnabled}
+                onChange={(e) => setBHoursEnabled(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-purple"></div>
+            </label>
+          </div>
+        </div>
+
+        {bHoursEnabled && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Timezone */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Zona Horaria
+              </label>
+              <select
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="w-full sm:w-1/2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
+              >
+                <option value="America/Lima">America/Lima (Perú, Colombia)</option>
+                <option value="America/Mexico_City">America/Mexico_City</option>
+                <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
+                <option value="America/Santiago">America/Santiago (Chile)</option>
+                <option value="America/Bogota">America/Bogota</option>
+                <option value="America/Caracas">America/Caracas</option>
+                <option value="America/New_York">America/New_York (EST)</option>
+                <option value="Europe/Madrid">Europe/Madrid (España)</option>
+              </select>
+            </div>
+
+            {/* Matrix */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+                Días de Atención
+              </label>
+              <div className="grid gap-3">
+                {[
+                  { id: 'monday', label: 'Lunes' },
+                  { id: 'tuesday', label: 'Martes' },
+                  { id: 'wednesday', label: 'Miércoles' },
+                  { id: 'thursday', label: 'Jueves' },
+                  { id: 'friday', label: 'Viernes' },
+                  { id: 'saturday', label: 'Sábado' },
+                  { id: 'sunday', label: 'Domingo' }
+                ].map(day => (
+                  <div key={day.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/[0.02] p-3 rounded-xl border border-white/[0.05]">
+                    <div className="w-32 flex items-center gap-2">
+                      <input 
+                        type="checkbox" 
+                        checked={schedule[day.id as keyof typeof schedule]?.enabled || false}
+                        onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], enabled: e.target.checked } }))}
+                        className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-neon-purple focus:ring-neon-purple focus:ring-offset-gray-900"
+                      />
+                      <span className="text-sm text-gray-300 font-medium">{day.label}</span>
+                    </div>
+                    {schedule[day.id as keyof typeof schedule]?.enabled ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="time"
+                          value={schedule[day.id as keyof typeof schedule]?.start || "09:00"}
+                          onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], start: e.target.value } }))}
+                          className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-neon-purple/50"
+                        />
+                        <span className="text-gray-500 text-sm">a</span>
+                        <input
+                          type="time"
+                          value={schedule[day.id as keyof typeof schedule]?.end || "18:00"}
+                          onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], end: e.target.value } }))}
+                          className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-neon-purple/50"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-500 font-medium px-3 py-1.5 bg-gray-800/50 rounded-lg">Cerrado</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Out of hours message */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                Mensaje de Ausencia
+              </label>
+              <textarea
+                value={bHoursMsg}
+                onChange={(e) => setBHoursMsg(e.target.value)}
+                rows={3}
+                placeholder="Mensaje que se enviará cuando el lead complete las preguntas fuera de horario..."
+                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Este mensaje solo se enviará una vez por día a cada lead que interactúe fuera de horario.
+              </p>
+            </div>
+            
+            <div className="pt-2">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full sm:w-auto bg-neon-purple hover:bg-neon-purple/80 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                {saving ? <Skeleton className="w-5 h-5 rounded-full" /> : <Save size={16} />}
+                Guardar Horario Comercial
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Connection Modal */}
