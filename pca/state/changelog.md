@@ -113,5 +113,9 @@
 
 ## 2026-07-02
 - Resolved Baileys microservice persistent session disconnection issue on Railway by migrating from Nixpacks to Dockerfile builder and manually attaching a Railway Volume to /app/auth_info_baileys.
-- Updated aileys-server/server.js to use a relative uth_info_baileys path instead of absolute /app/... to support hybrid local/Docker execution.
+- Updated  aileys-server/server.js to use a relative  uth_info_baileys path instead of absolute /app/... to support hybrid local/Docker execution.
 - Formally renamed the project from GMaker to QSS (Quant System Sales) across documentation (README.md, PCA_INDEX.md).
+
+## 2026-07-03
+- Explored integrating OpenWA Gateway natively into the QSS backend as a robust alternative to Baileys.
+- Implemented and subsequently reverted the native OpenWA backend proxy and frontend dashboard UI (rolled back due to preference for maintaining the lightweight, already-working Baileys architecture for end-clients).

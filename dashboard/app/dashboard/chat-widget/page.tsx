@@ -400,6 +400,19 @@ export default function ChatWidgetPage() {
             </Field>
 
             <div className="md:col-span-2">
+              <Field label="Mensaje de bienvenida" hint="Primera línea que verá el visitante">
+                <textarea
+                  value={config.welcome_message}
+                  rows={2}
+                  maxLength={300}
+                  onChange={(e) => setConfig({ ...config, welcome_message: e.target.value })}
+                  className={textareaCls}
+                  placeholder="¡Hola! ¿En qué podemos ayudarte hoy?"
+                />
+              </Field>
+            </div>
+
+            <div className="md:col-span-2">
               <Field label="Mensaje de despedida" hint="Se muestra si el usuario no alcanza el umbral de IA">
                 <textarea
                   value={config.rejection_message || ""}
@@ -410,107 +423,6 @@ export default function ChatWidgetPage() {
                   placeholder="Ej: ¡Gracias! Nos pondremos en contacto contigo a la brevedad."
                 />
               </Field>
-            </div>
-
-            <div className="md:col-span-2">
-              <Field label="Dominios Permitidos (Opcional)" hint="Separa los dominios con comas. Déjalo en blanco para aceptar todos los dominios.">
-                <textarea
-                  value={config.allowed_domains || ""}
-                  rows={2}
-                  maxLength={1000}
-                  onChange={(e) => setConfig({ ...config, allowed_domains: e.target.value })}
-                  className={textareaCls}
-                  placeholder="Ej: miempresa.com, www.miempresa.com"
-                />
-              </Field>
-            </div>
-
-            <div className="md:col-span-2">
-              <Field label="Mensaje de bienvenida" hint="Primera línea que verá el visitante">
-                <textarea
-                  value={config.welcome_message}
-                  rows={3}
-                  maxLength={300}
-                  onChange={(e) => setConfig({ ...config, welcome_message: e.target.value })}
-                  className={textareaCls}
-                  placeholder="¡Hola! ¿En qué podemos ayudarte hoy?"
-                />
-              </Field>
-            </div>
-
-            <div className="md:col-span-2 border-t border-dark-card-border pt-6 mt-4">
-              <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <span className="text-neon-purple">⚙️</span> Proveedor de IA
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <Field label="Proveedor de IA" hint="Selecciona el modelo de Inteligencia Artificial">
-                    <select
-                      value={config.ai_provider || "openai"}
-                      onChange={(e) => setConfig({ ...config, ai_provider: e.target.value })}
-                      className={inputCls}
-                    >
-                      <option value="openai">OpenAI (GPT-4o Mini)</option>
-                      <option value="anthropic">Anthropic (Claude 3.5 Haiku)</option>
-                      <option value="gemini">Google (Gemini 2.0 Flash)</option>
-                    </select>
-                  </Field>
-                </div>
-
-                <div className="md:col-span-2">
-                  <Field label={
-                    <div className="flex items-center gap-2">
-                      API Key
-                      {config.has_api_key && (
-                        <span className="text-[10px] uppercase tracking-wider font-bold bg-neon-green/20 text-neon-green px-2 py-0.5 rounded-full">
-                          ✓ Configurada
-                        </span>
-                      )}
-                    </div>
-                  } hint={config.has_api_key ? "Ya tienes una API Key guardada de forma segura." : "Pega tu clave secreta de la API."}>
-                    {config.has_api_key && !isEditingKey ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="password"
-                          value="sk-...*********************************"
-                          disabled
-                          className={`${inputCls} opacity-50 cursor-not-allowed`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setIsEditingKey(true)}
-                          className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-medium transition-colors border border-white/10 whitespace-nowrap"
-                        >
-                          Cambiar clave
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="password"
-                          value={config.ai_api_key || ""}
-                          onChange={(e) => setConfig({ ...config, ai_api_key: e.target.value })}
-                          className={inputCls}
-                          placeholder="sk-..."
-                          autoFocus
-                        />
-                        {config.has_api_key && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsEditingKey(false);
-                              setConfig({ ...config, ai_api_key: "" });
-                            }}
-                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-medium transition-colors border border-red-500/20"
-                          >
-                            Cancelar
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </Field>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -597,7 +509,77 @@ export default function ChatWidgetPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="md:col-span-1">
+              <Field label="Proveedor de IA" hint="Selecciona el modelo de Inteligencia Artificial">
+                <select
+                  value={config.ai_provider || "openai"}
+                  onChange={(e) => setConfig({ ...config, ai_provider: e.target.value })}
+                  className={inputCls}
+                >
+                  <option value="openai">OpenAI (GPT-4o Mini)</option>
+                  <option value="anthropic">Anthropic (Claude 3.5 Haiku)</option>
+                  <option value="gemini">Google (Gemini 2.0 Flash)</option>
+                </select>
+              </Field>
+            </div>
+
+            <div className="md:col-span-1">
+              <Field label={
+                <div className="flex items-center gap-2">
+                  API Key
+                  {config.has_api_key && (
+                    <span className="text-[10px] uppercase tracking-wider font-bold bg-neon-green/20 text-neon-green px-2 py-0.5 rounded-full">
+                      ✓ Configurada
+                    </span>
+                  )}
+                </div>
+              } hint={config.has_api_key ? "API Key guardada." : "Pega tu clave secreta de la API."}>
+                {config.has_api_key && !isEditingKey ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="password"
+                      value="sk-...*********************************"
+                      disabled
+                      className={`${inputCls} opacity-50 cursor-not-allowed`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingKey(true)}
+                      className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-medium transition-colors border border-white/10 whitespace-nowrap"
+                    >
+                      Cambiar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="password"
+                      value={config.ai_api_key || ""}
+                      onChange={(e) => setConfig({ ...config, ai_api_key: e.target.value })}
+                      className={inputCls}
+                      placeholder="sk-..."
+                      autoFocus
+                    />
+                    {config.has_api_key && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingKey(false);
+                          setConfig({ ...config, ai_api_key: "" });
+                        }}
+                        className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-medium transition-colors border border-red-500/20"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </Field>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-dark-card-border">
             <Field label="Umbral de intención (pts)" hint="Score mínimo para activar IA">
               <input
                 type="number"
@@ -667,6 +649,23 @@ export default function ChatWidgetPage() {
       ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "instalacion" && (
         <div className="space-y-6">
+          <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8">
+            <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+              <Code2 size={18} className="text-neon-purple" />
+              Seguridad del script
+            </h3>
+            <Field label="Dominios Permitidos (Opcional)" hint="Separa los dominios con comas. El widget solo cargará en estos sitios. Déjalo en blanco para permitir todos.">
+              <textarea
+                value={config.allowed_domains || ""}
+                rows={2}
+                maxLength={1000}
+                onChange={(e) => setConfig({ ...config, allowed_domains: e.target.value })}
+                className={textareaCls}
+                placeholder="Ej: miempresa.com, www.miempresa.com"
+              />
+            </Field>
+          </div>
+
           <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8">
             <SectionTitle icon={<Code2 size={22} />} title="Código de Instalación" />
             <p className="text-gray-400 text-sm mb-6 mt-1">
