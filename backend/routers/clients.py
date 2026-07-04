@@ -493,10 +493,10 @@ async def connect_openwa(
         try:
             res = await client.post(f"{openwa_url}/api/sessions/{user.id}/start", headers=headers)
             if res.status_code >= 400 and res.status_code != 409:
-                raise HTTPException(status_code=400, detail=f"OpenWA error: {res.text}")
+                return {"status": "error", "detail": f"OpenWA error: {res.text}"}
             return {"status": "starting"}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"OpenWA connection error: {e}")
+        except httpx.RequestError as e:
+            raise HTTPException(status_code=502, detail=f"No se pudo conectar con OpenWA: {e}. Revisa OPENWA_API_URL.")
 
 @router.get("/me/openwa/status")
 async def status_openwa(
