@@ -268,7 +268,7 @@ export default function LandingPage() {
             <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-red-500 mb-4 bg-red-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Clock size={24} /></div>
               <h3 className="text-xl font-bold mb-2">Emergencias a las 3 AM</h3>
-              <p className="text-gray-400">Las detenciones ocurren de madrugada. Si un familiar busca abogado y no respondes en 5 minutos, se va con la competencia. Nuestro Widget IA atiende 24/7.</p>
+              <p className="text-gray-400">Las detenciones ocurren de madrugada. Si un familiar busca abogado y no respondes en 5 minutos, se va con la competencia. Nuestro Bot de WhatsApp atiende 24/7.</p>
             </div>
             <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-orange-500 mb-4 bg-orange-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><BarChart3 size={24} /></div>
@@ -308,13 +308,13 @@ export default function LandingPage() {
             <div className="min-w-[85vw] md:min-w-0 snap-center relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-purple flex items-center justify-center text-2xl font-bold text-neon-purple mb-6 shadow-[0_0_20px_rgba(168,85,247,0.3)]">2</div>
               <h3 className="text-xl font-bold mb-3">Filtrado por Inteligencia Artificial</h3>
-              <p className="text-gray-400">El Chat Widget pre-califica al visitante en tiempo real. Si no tiene presupuesto o es un caso civil menor, le ofrece un recurso gratuito o lo rechaza amablemente.</p>
+              <p className="text-gray-400">El prospecto entra a un número de WhatsApp operado por nosotros. Nuestro bot lo pre-califica en tiempo real. Si es un caso civil menor, lo descarta.</p>
             </div>
 
             <div className="min-w-[85vw] md:min-w-0 snap-center relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-green flex items-center justify-center text-2xl font-bold text-neon-green mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">3</div>
               <h3 className="text-xl font-bold mb-3">Cierre Directo en WhatsApp</h3>
-              <p className="text-gray-400">Recibes en tu teléfono únicamente a los prospectos calificados, con un resumen detallado del caso y listos para pagar sus honorarios.</p>
+              <p className="text-gray-400">Una vez que el lead califica, el bot le entrega un enlace para hablar directamente a tu WhatsApp personal. Tu teléfono solo suena con dinero en la mesa.</p>
             </div>
           </div>
         </div>
@@ -347,7 +347,7 @@ export default function LandingPage() {
             </div>
             <h3 className="text-xl font-semibold mb-3">WhatsApp Directo</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Recibe notificaciones instantáneas y detalles del caso en WhatsApp. El cliente te contactará pre-evaluado y listo para agendar la primera consulta pagada.
+              Solo los clientes serios consiguen el enlace a tu número. Tu celular solo sonará cuando el lead ya esté pre-evaluado, filtrado y listo para agendar su consulta.
             </p>
           </div>
 
@@ -403,7 +403,7 @@ export default function LandingPage() {
               <div>
                 <h3 className="text-2xl font-bold mb-3">3. Filtro Inteligente en WhatsApp</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Nuestro widget automatizado captura al lead en la web, verifica su capacidad de pago y la gravedad del caso antes de enviarlo a tu WhatsApp personal.
+                  Operamos un número exclusivo de WhatsApp donde nuestro bot atiende al lead, verifica su capacidad de pago y la gravedad del caso. Solo transfiere a los rentables a tu número personal.
                 </p>
               </div>
             </div>
