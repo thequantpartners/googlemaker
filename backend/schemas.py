@@ -335,6 +335,7 @@ class DashboardMetrics(BaseModel):
     total_leads_tracked: int = 0
     consultation_paid_count: int = 0
     full_case_paid_count: int = 0
+    total_revenue: float = 0.0
     lead_sources: list[LeadSourceStat] = []
 
 

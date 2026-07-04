@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { X, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles, Target, Globe, ChevronRight, Save, Trash2, Lightbulb } from "lucide-react";
+import { X, Activity, AlertCircle, Play, Pause, DollarSign, TrendingUp, CheckCircle2, Copy, ExternalLink, Sparkles, Target, Globe, ChevronRight, Save, Trash2, Lightbulb, XCircle, Plus } from "lucide-react";
 
 interface ConnectedAccount {
   id: string;
@@ -50,6 +50,7 @@ export default function ClientCampaigns() {
   const [campaigns, setCampaigns] = useState<CampaignMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
+  const [statusData, setStatusData] = useState<any>(null);
 
   // AI Wizard State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -179,6 +180,7 @@ export default function ClientCampaigns() {
         });
         if (res.ok) {
           const data = await res.json();
+          setStatusData(data);
           setAccounts(data.connected_accounts || []);
           if (data.connected_accounts?.length > 0) {
             setSelectedAccount(data.connected_accounts[0].target_customer_id);
@@ -249,6 +251,105 @@ export default function ClientCampaigns() {
     <div className="space-y-8 animate-fade-in-up pb-20">
 
       {/* Header — title always visible, controls skeleton while session loads */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Connected Accounts</h1>
+          <p className="text-gray-400">Manage your Google Ads connections.</p>
+        </div>
+        {!headerLoading && statusData?.connected_accounts?.length < (statusData?.plan_limit || 1) && (
+          <button 
+            onClick={() => {
+              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials?token=${session?.backendToken}`;
+            }}
+            className="bg-neon-green hover:bg-neon-green/90 text-black px-6 py-3 rounded-lg font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center gap-2"
+          >
+            <Plus size={20} /> Connect Google Ads
+          </button>
+        )}
+      </div>
+
+      {/* Connected Accounts Table */}
+      {headerLoading ? (
+        <Skeleton className="h-32 w-full mb-8" />
+      ) : accounts.length === 0 ? (
+        <div className="p-8 text-center bg-dark-card border border-dark-card-border rounded-2xl mb-8 flex flex-col items-center justify-center">
+          <Activity size={48} className="text-gray-500 mb-4" />
+          <h3 className="text-xl font-bold text-white mb-2">No accounts connected</h3>
+          <p className="text-gray-400 max-w-md mx-auto">
+            Connect your Google Ads account to start managing campaigns.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-dark-card border border-dark-card-border rounded-[2rem] overflow-hidden mb-12">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-dark-card-border text-gray-400 text-sm">
+                  <th className="py-4 px-6 font-medium">Customer ID</th>
+                  <th className="py-4 px-6 font-medium">Credential</th>
+                  <th className="py-4 px-6 font-medium">Status</th>
+                  <th className="py-4 px-6 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accounts.map((acc: any, index: number) => {
+                  const isInvalid =
+                    acc.target_customer_id === "Unknown" ||
+                    acc.target_customer_id === "Unknown:1" ||
+                    acc.target_customer_id === "PENDING" ||
+                    acc.target_customer_id === "PENDING:1";
+                  return (
+                    <tr key={index} className="border-b border-dark-card-border hover:bg-white/[0.02] transition-colors group">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3 text-white font-medium">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isInvalid ? 'bg-red-500/20 text-red-500' : 'bg-neon-blue/20 text-neon-blue'}`}>
+                            {isInvalid ? <AlertCircle size={16} /> : <Activity size={16} />}
+                          </div>
+                          {acc.target_customer_id}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-gray-400">{acc.id.split("-")[0]}</td>
+                      <td className="py-4 px-6">
+                        {isInvalid ? (
+                          <span className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-1 w-max">
+                            <XCircle size={12} /> Corrupt/Expired
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-semibold flex items-center gap-1 w-max shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                            <CheckCircle2 size={12} /> Active Sync
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to disconnect account ${acc.target_customer_id}?`)) {
+                              try {
+                                await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${acc.id}`, {
+                                  method: "DELETE",
+                                  headers: { Authorization: `Bearer ${session?.backendToken}` },
+                                });
+                                window.location.reload();
+                              } catch (err) {
+                                console.error(err);
+                              }
+                            }
+                          }}
+                          className="text-gray-500 hover:text-red-500 transition-colors text-sm font-medium"
+                        >
+                          Disconnect
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Campaigns Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">My Campaigns</h1>

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Plus, AlertCircle, CheckCircle2, Activity, XCircle, Users, CreditCard, TrendingUp, Target } from "lucide-react";
+import { Plus, AlertCircle, CheckCircle2, Activity, XCircle, Users, CreditCard, TrendingUp, Target, ChevronDown, DollarSign } from "lucide-react";
 import PricingCards from "../components/PricingCards";
 
 function Skeleton({ className = "" }: { className?: string }) {
@@ -216,28 +216,9 @@ function DashboardContent() {
       {/* Top action bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Dashboard Overview</h1>
-          {loading
-            ? <Skeleton className="h-4 w-44 mt-1" />
-            : <p className="text-gray-400 text-sm">{connectedCount} accounts connected.</p>
-          }
+          <h1 className="text-3xl font-bold text-white mb-2">Business Overview</h1>
+          <p className="text-gray-400 text-sm">Track your investment and real revenue.</p>
         </div>
-
-        {loading ? (
-          <Skeleton className="h-12 w-52 rounded-full" />
-        ) : canConnectMore ? (
-          <button
-            onClick={isSuspended ? undefined : handleConnect}
-            disabled={isSuspended}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-white transition-all
-              ${isSuspended
-                ? "bg-gray-700 cursor-not-allowed opacity-50"
-                : "bg-gradient-to-r from-neon-green/80 to-emerald-600 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
-              }`}
-          >
-            <Plus size={18} /> Connect Google Ads
-          </button>
-        ) : null}
       </div>
 
       {searchParams.get("connected") === "success" && (
@@ -274,254 +255,153 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* Connected Accounts */}
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold text-white mb-4">Connected Accounts</h3>
 
-        {loading ? (
-          <div className="bg-dark-card border border-dark-card-border rounded-[2rem] p-6 space-y-5">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <Skeleton className="w-8 h-8 rounded-lg flex-shrink-0" />
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-6 w-28 rounded-full" />
-                <Skeleton className="h-4 w-20 ml-auto" />
-              </div>
-            ))}
-          </div>
-        ) : connectedCount === 0 ? (
-          <div className="bg-dark-card border border-dark-card-border p-12 text-center rounded-[2rem]">
-            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Activity className="text-gray-500" size={32} />
+
+      {/* 5 Main Business KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
+        
+        {/* Total Ad Spend */}
+        <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                        shadow-[0_0_30px_rgba(168,85,247,0.05)] group hover:border-neon-purple/30 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-neon-purple/5 to-transparent pointer-events-none" />
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 rounded-xl bg-neon-purple/10 border border-neon-purple/20">
+              <Activity size={18} className="text-neon-purple" />
             </div>
-            <p className="text-gray-400 mb-6">No Google Ads accounts connected yet.</p>
-            <button
-              onClick={isSuspended ? undefined : handleConnect}
-              disabled={isSuspended}
-              className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-            >
-              Connect Now
-            </button>
+            <span className="text-[10px] font-semibold text-neon-purple/70 uppercase tracking-widest">Invested</span>
           </div>
-        ) : (
-          <div className="bg-dark-card border border-dark-card-border rounded-[2rem] overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-dark-card-border text-gray-400 text-sm">
-                    <th className="py-4 px-6 font-medium">Customer ID</th>
-                    <th className="py-4 px-6 font-medium">Credential</th>
-                    <th className="py-4 px-6 font-medium">Status</th>
-                    <th className="py-4 px-6 font-medium text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {statusData?.connected_accounts?.map((acc: any, index: number) => {
-                    const isInvalid =
-                      acc.target_customer_id === "Unknown" ||
-                      acc.target_customer_id === "Unknown:1" ||
-                      acc.target_customer_id === "PENDING" ||
-                      acc.target_customer_id === "PENDING:1";
-                    return (
-                      <tr key={index} className="border-b border-dark-card-border hover:bg-white/[0.02] transition-colors group">
-                        <td className="py-4 px-6">
-                          <div className="flex items-center gap-3 text-white font-medium">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isInvalid ? 'bg-red-500/20 text-red-500' : 'bg-neon-blue/20 text-neon-blue'}`}>
-                              {isInvalid ? <AlertCircle size={16} /> : <Activity size={16} />}
-                            </div>
-                            {acc.target_customer_id}
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-gray-400">{acc.id.split("-")[0]}</td>
-                        <td className="py-4 px-6">
-                          {isInvalid ? (
-                            <span className="px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-semibold flex items-center gap-1 w-max">
-                              <XCircle size={12} /> Corrupt/Expired
-                            </span>
-                          ) : (
-                            <span className="px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/30 text-neon-green text-xs font-semibold flex items-center gap-1 w-max shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-                              <CheckCircle2 size={12} /> Active Sync
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-4 px-6 text-right">
-                          <button
-                            onClick={async () => {
-                              if (confirm(`Are you sure you want to disconnect account ${acc.target_customer_id}?`)) {
-                                try {
-                                  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${acc.id}`, {
-                                    method: "DELETE",
-                                    headers: { Authorization: `Bearer ${session?.backendToken}` },
-                                  });
-                                  window.location.reload();
-                                } catch (err) {
-                                  console.error(err);
-                                }
-                              }
-                            }}
-                            className="text-gray-500 hover:text-red-500 transition-colors text-sm font-medium"
-                          >
-                            Disconnect
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          {metricsLoading ? (
+            <Skeleton className="h-8 w-24 mb-1" />
+          ) : (
+            <p className="text-3xl font-bold text-white tracking-tight">
+              ${globalMetrics.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          )}
+          <p className="text-xs text-gray-500 mt-1">Total Ad Spend</p>
+        </div>
+
+        {/* Total Leads */}
+        <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                        shadow-[0_0_30px_rgba(59,130,246,0.05)] group hover:border-neon-blue/30 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-neon-blue/5 to-transparent pointer-events-none" />
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 rounded-xl bg-neon-blue/10 border border-neon-blue/20">
+              <Users size={18} className="text-neon-blue" />
             </div>
+            <span className="text-[10px] font-semibold text-neon-blue/70 uppercase tracking-widest">CRM</span>
           </div>
-        )}
+          {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (
+            <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.total_leads_tracked ?? 0}</p>
+          )}
+          <p className="text-xs text-gray-500 mt-1">Total leads captured</p>
+        </div>
+
+        {/* Paid Clients */}
+        <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                        shadow-[0_0_30px_rgba(16,185,129,0.05)] group hover:border-neon-green/30 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent pointer-events-none" />
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 rounded-xl bg-neon-green/10 border border-neon-green/20">
+              <CheckCircle2 size={18} className="text-neon-green" />
+            </div>
+            <span className="text-[10px] font-semibold text-neon-green/70 uppercase tracking-widest">Sales</span>
+          </div>
+          {crmLoading ? <Skeleton className="h-8 w-16 mb-1" /> : (
+            <p className="text-3xl font-bold text-white tracking-tight">
+              {(crmMetrics?.consultation_paid_count ?? 0) + (crmMetrics?.full_case_paid_count ?? 0)}
+            </p>
+          )}
+          <p className="text-xs text-gray-500 mt-1">Total Paid Clients</p>
+        </div>
+
+        {/* Total Revenue */}
+        <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-neon-green/30 rounded-2xl p-5
+                        shadow-[0_0_40px_rgba(16,185,129,0.15)] group hover:border-neon-green/50 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-neon-green/10 to-transparent pointer-events-none" />
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 rounded-xl bg-neon-green/20 border border-neon-green/40">
+              <DollarSign size={18} className="text-neon-green" />
+            </div>
+            <span className="text-[10px] font-bold text-neon-green uppercase tracking-widest">Revenue</span>
+          </div>
+          {crmLoading ? <Skeleton className="h-8 w-24 mb-1" /> : (
+            <p className="text-3xl font-bold text-white tracking-tight">
+              ${((crmMetrics as any)?.total_revenue ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+          )}
+          <p className="text-xs text-gray-400 mt-1">Real Money Generated</p>
+        </div>
+
+        {/* Conversion Rate (ROI Proxy) */}
+        <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
+                        shadow-[0_0_30px_rgba(245,158,11,0.05)] group hover:border-amber-500/30 transition-all duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <Target size={18} className="text-amber-400" />
+            </div>
+            <span className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-widest">Rate</span>
+          </div>
+          {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (() => {
+            const total = crmMetrics?.total_leads_tracked ?? 0;
+            const paid = (crmMetrics?.consultation_paid_count ?? 0) + (crmMetrics?.full_case_paid_count ?? 0);
+            const rate = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
+            return <p className="text-3xl font-bold text-white tracking-tight">{rate}%</p>;
+          })()}
+          <p className="text-xs text-gray-500 mt-1">Lead → Sale rate</p>
+        </div>
       </div>
 
-      {/* 4 Metric Widgets — card shells always present to prevent layout shift */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
-        {/* Spend */}
-        <div className="bg-dark-card backdrop-blur-xl border border-neon-purple/30 p-6 rounded-2xl relative overflow-hidden shadow-[0_0_20px_rgba(168,85,247,0.05)]">
-          <p className="text-gray-400 text-sm mb-2">Total Spend / Limit</p>
-          {metricsLoading ? (
-            <>
-              <Skeleton className="h-9 w-36 mb-4" />
-              <Skeleton className="h-2.5 w-full" />
-            </>
-          ) : (
-            <>
-              <div className="flex items-end gap-3 mb-4">
-                <h2 className="text-3xl font-bold text-white">
-                  ${globalMetrics.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </h2>
-                <span className="text-gray-500 mb-1">/ ${statusData?.ad_spend_limit?.toLocaleString("en-US")}</span>
-              </div>
-              <div className="w-full bg-black/40 rounded-full h-2.5 overflow-hidden">
-                <div
-                  className={`h-2.5 rounded-full transition-all duration-700 ${globalMetrics.cost >= statusData?.ad_spend_limit ? 'bg-amber-500' : 'bg-neon-purple'}`}
-                  style={{ width: `${Math.min(100, (globalMetrics.cost / (statusData?.ad_spend_limit || 1)) * 100)}%` }}
-                />
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Conversions */}
-        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
-          <p className="text-gray-400 text-sm mb-2">Conversions</p>
-          {metricsLoading
-            ? <Skeleton className="h-9 w-24 mt-1" />
-            : <h2 className="text-3xl font-bold text-white">{globalMetrics.conversions.toLocaleString("en-US")}</h2>
-          }
-        </div>
-
-        {/* Avg CPA */}
-        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-2xl">
-          <p className="text-gray-400 text-sm mb-2">Avg. CPA</p>
-          {metricsLoading
-            ? <Skeleton className="h-9 w-28 mt-1" />
-            : <h2 className="text-3xl font-bold text-white">
-                ${globalMetrics.avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </h2>
-          }
-        </div>
-
-        {/* Autopilot */}
-        <div className="bg-dark-card backdrop-blur-xl border border-neon-green/30 p-6 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.05)]">
-          <p className="text-gray-400 text-sm mb-2">Autopilot Status</p>
-          {metricsLoading ? (
-            <Skeleton className="h-10 w-48 mt-2 rounded-xl" />
-          ) : (
-            <div className="flex items-center gap-3 mt-2">
-              {globalMetrics.cost >= statusData?.ad_spend_limit ? (
-                <span className="flex items-center gap-2 text-amber-500 font-bold bg-amber-500/10 px-4 py-2 rounded-xl">
-                  <AlertCircle size={20} /> Paused (Limit Reached)
-                </span>
-              ) : (
-                <span className="flex items-center gap-2 text-neon-green font-bold bg-neon-green/10 px-4 py-2 rounded-xl">
-                  <CheckCircle2 size={20} /> Active & Optimizing
-                </span>
+      {/* Más Métricas Accordion */}
+      <div className="mb-8">
+        <details className="bg-dark-card border border-dark-card-border rounded-[2rem] p-6 group [&_summary::-webkit-details-marker]:hidden">
+          <summary className="text-gray-300 font-semibold cursor-pointer flex items-center justify-between outline-none">
+            <span className="text-lg">Más Métricas (Google Ads & Autopilot)</span>
+            <div className="p-2 bg-white/5 rounded-full group-open:rotate-180 transition-transform duration-300">
+              <ChevronDown size={20} />
+            </div>
+          </summary>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up">
+            
+            {/* Conversions */}
+            <div className="bg-white/[0.02] border border-white/[0.05] p-5 rounded-2xl">
+              <p className="text-gray-400 text-sm mb-2">Google Ads Conversions</p>
+              {metricsLoading ? <Skeleton className="h-8 w-20 mt-1" /> : (
+                <h2 className="text-2xl font-bold text-white">{globalMetrics.conversions.toLocaleString("en-US")}</h2>
               )}
             </div>
-          )}
-        </div>
+
+            {/* Avg CPA */}
+            <div className="bg-white/[0.02] border border-white/[0.05] p-5 rounded-2xl">
+              <p className="text-gray-400 text-sm mb-2">Avg. CPA (Google Ads)</p>
+              {metricsLoading ? <Skeleton className="h-8 w-24 mt-1" /> : (
+                <h2 className="text-2xl font-bold text-white">
+                  ${globalMetrics.avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h2>
+              )}
+            </div>
+
+            {/* Autopilot Status */}
+            <div className="bg-white/[0.02] border border-white/[0.05] p-5 rounded-2xl">
+              <p className="text-gray-400 text-sm mb-2">Autopilot Status</p>
+              {metricsLoading ? <Skeleton className="h-8 w-32 mt-1" /> : (
+                <div className="flex items-center gap-2 mt-2">
+                  {globalMetrics.cost >= statusData?.ad_spend_limit ? (
+                    <span className="flex items-center gap-1.5 text-amber-500 font-bold bg-amber-500/10 px-3 py-1.5 rounded-lg text-sm">
+                      <AlertCircle size={16} /> Limit Reached
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-neon-green font-bold bg-neon-green/10 px-3 py-1.5 rounded-lg text-sm">
+                      <CheckCircle2 size={16} /> Active
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </details>
       </div>
-
-      {/* ── QSS CRM KPIs ──────────────────────────────────────────────────── */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold text-white">Lead & Revenue Tracking</h3>
-          <a href="/dashboard/chat-widget" className="text-xs text-neon-purple hover:text-white transition-colors">
-            Manage Widget →
-          </a>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-
-          {/* Total Leads */}
-          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
-                          shadow-[0_0_30px_rgba(168,85,247,0.05)] group hover:border-neon-purple/30 transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-neon-purple/5 to-transparent pointer-events-none" />
-            <div className="flex items-start justify-between mb-3">
-              <div className="p-2 rounded-xl bg-neon-purple/10 border border-neon-purple/20">
-                <Users size={18} className="text-neon-purple" />
-              </div>
-              <span className="text-[10px] font-semibold text-neon-purple/70 uppercase tracking-widest">CRM</span>
-            </div>
-            {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (
-              <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.total_leads_tracked ?? 0}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">Total leads captured</p>
-          </div>
-
-          {/* Consultations Paid */}
-          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
-                          shadow-[0_0_30px_rgba(16,185,129,0.05)] group hover:border-neon-green/30 transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent pointer-events-none" />
-            <div className="flex items-start justify-between mb-3">
-              <div className="p-2 rounded-xl bg-neon-green/10 border border-neon-green/20">
-                <CreditCard size={18} className="text-neon-green" />
-              </div>
-              <span className="text-[10px] font-semibold text-neon-green/70 uppercase tracking-widest">Paid</span>
-            </div>
-            {crmLoading ? <Skeleton className="h-8 w-16 mb-1" /> : (
-              <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.consultation_paid_count ?? 0}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">Consultations paid</p>
-          </div>
-
-          {/* Full Cases Paid */}
-          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
-                          shadow-[0_0_30px_rgba(59,130,246,0.05)] group hover:border-neon-blue/30 transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-neon-blue/5 to-transparent pointer-events-none" />
-            <div className="flex items-start justify-between mb-3">
-              <div className="p-2 rounded-xl bg-neon-blue/10 border border-neon-blue/20">
-                <TrendingUp size={18} className="text-neon-blue" />
-              </div>
-              <span className="text-[10px] font-semibold text-neon-blue/70 uppercase tracking-widest">Closed</span>
-            </div>
-            {crmLoading ? <Skeleton className="h-8 w-16 mb-1" /> : (
-              <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.full_case_paid_count ?? 0}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">Full cases retained</p>
-          </div>
-
-          {/* Conversion Rate */}
-          <div className="relative overflow-hidden bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5
-                          shadow-[0_0_30px_rgba(245,158,11,0.05)] group hover:border-amber-500/30 transition-all duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent pointer-events-none" />
-            <div className="flex items-start justify-between mb-3">
-              <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                <Target size={18} className="text-amber-400" />
-              </div>
-              <span className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-widest">Rate</span>
-            </div>
-            {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (() => {
-              const total = crmMetrics?.total_leads_tracked ?? 0;
-              const paid = (crmMetrics?.consultation_paid_count ?? 0) + (crmMetrics?.full_case_paid_count ?? 0);
-              const rate = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
-              return <p className="text-3xl font-bold text-white tracking-tight">{rate}%</p>;
-            })()}
-            <p className="text-xs text-gray-500 mt-1">Lead → payment rate</p>
-          </div>
-        </div>
 
         {/* Lead Sources breakdown */}
         {!crmLoading && crmMetrics && crmMetrics.lead_sources.length > 0 && (
@@ -540,7 +420,6 @@ function DashboardContent() {
             </div>
           </div>
         )}
-      </div>
 
       {/* Chart — card chrome always visible */}
       <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border p-6 rounded-[2rem] mb-8">

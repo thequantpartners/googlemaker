@@ -77,6 +77,9 @@ async def get_dashboard_metrics(
     total_leads = len(leads)
     consultation_paid_count = sum(1 for l in leads if l.consultation_paid)
     full_case_paid_count = sum(1 for l in leads if l.full_case_paid)
+    
+    total_revenue = sum((l.consultation_amount or 0.0) for l in leads if l.consultation_paid)
+    total_revenue += sum((l.full_case_amount or 0.0) for l in leads if l.full_case_paid)
 
     # ── 3. Lead source breakdown ─────────────────────────────────────────────
     source_counter: Counter[str] = Counter()
@@ -98,5 +101,6 @@ async def get_dashboard_metrics(
         total_leads_tracked=total_leads,
         consultation_paid_count=consultation_paid_count,
         full_case_paid_count=full_case_paid_count,
+        total_revenue=round(total_revenue, 2),
         lead_sources=lead_sources,
     )
