@@ -47,6 +47,7 @@ interface WidgetConfig {
   widget_name: string;
   welcome_message: string;
   rejection_message: string;
+  downsell_url: string | null;
   allowed_domains: string;
   ai_provider: string;
   ai_api_key?: string;
@@ -193,6 +194,7 @@ export default function ChatWidgetPage() {
           widget_name:      config.widget_name,
           welcome_message:  config.welcome_message,
           rejection_message: config.rejection_message,
+          downsell_url:     config.downsell_url || null,
           allowed_domains:  config.allowed_domains,
           ai_provider:      config.ai_provider,
           ai_api_key:       config.ai_api_key,
@@ -407,12 +409,12 @@ export default function ChatWidgetPage() {
                   maxLength={300}
                   onChange={(e) => setConfig({ ...config, welcome_message: e.target.value })}
                   className={textareaCls}
-                  placeholder="¡Hola! ¿En qué podemos ayudarte hoy?"
+                  placeholder="¡Hola! 👋 ¿En qué podemos ayudarte hoy?"
                 />
               </Field>
             </div>
 
-            <div className="md:col-span-2">
+            <div className="md:col-span-1">
               <Field label="Mensaje de despedida" hint="Se muestra si el usuario no alcanza el umbral de IA">
                 <textarea
                   value={config.rejection_message || ""}
@@ -420,7 +422,19 @@ export default function ChatWidgetPage() {
                   maxLength={500}
                   onChange={(e) => setConfig({ ...config, rejection_message: e.target.value })}
                   className={textareaCls}
-                  placeholder="Ej: ¡Gracias! Nos pondremos en contacto contigo a la brevedad."
+                  placeholder="Ej: ¡Gracias! Nos pondremos en contacto contigo a la brevedad. 😊"
+                />
+              </Field>
+            </div>
+
+            <div className="md:col-span-1">
+              <Field label="URL de Downsell (Opcional)" hint="Enlace u oferta extra para leads no calificados">
+                <input
+                  type="url"
+                  value={config.downsell_url || ""}
+                  onChange={(e) => setConfig({ ...config, downsell_url: e.target.value })}
+                  className={inputCls}
+                  placeholder="https://tudominio.com/oferta"
                 />
               </Field>
             </div>

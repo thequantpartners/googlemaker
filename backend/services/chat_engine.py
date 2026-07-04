@@ -95,6 +95,8 @@ def _build_system_instruction(config: ChatWidgetConfig) -> str:
 
     # Injected last so it always overrides anything the operator might write.
     parts.append(
+        "--- PROTOCOLO DE CONVERSACIÓN ---\n"
+        "Mantén un tono empático y humano. Usa emojis con moderación para que la conversación no sea rígida (ej: 👋, 😊, 🎯), pero sin exagerar.\n\n"
         "--- PROTOCOLO DE CAPTURA DE LEAD ---\n"
         "Tu misión final es recopilar de forma natural los datos de contacto del visitante:\n"
         "  • Nombre completo\n"
@@ -103,7 +105,7 @@ def _build_system_instruction(config: ChatWidgetConfig) -> str:
         "(en una línea nueva, sin NADA después) el siguiente marcador exacto:\n"
         '[[LEAD:{"name":"NOMBRE","email":"EMAIL_O_null","phone":"TELEFONO_O_null"}]]\n\n'
         "Ejemplo de respuesta completa cuando ya tienes los datos:\n"
-        "¡Perfecto, Juan! En breve nos pondremos en contacto contigo.\n"
+        "¡Perfecto, Juan! En breve nos pondremos en contacto contigo. 😊\n"
         '[[LEAD:{"name":"Juan Pérez","email":"juan@ejemplo.com","phone":null}]]\n\n'
         "REGLAS ESTRICTAS:\n"
         "- Nunca inventes datos. Si un campo falta, usa null (sin comillas).\n"
@@ -541,12 +543,26 @@ async def _handle_rules_mode(
 
     # 3c. Rules exhausted, threshold not reached → polite close ──────────────
     bot_reply = config.rejection_message or "¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad."
-    history = _push(history, "bot", bot_reply)
+    
+    msgs = [{"content": bot_reply, "type": "text", "options": None}]
+    
+    if getattr(config, "downsell_url", None):
+        # Append link to text (useful for WhatsApp native preview)
+        bot_reply_with_link = f"{bot_reply}\n\n👉 {config.downsell_url}"
+        history = _push(history, "bot", bot_reply_with_link)
+        # Add a special button-like message for the widget
+        msgs = [
+            {"content": bot_reply, "type": "text", "options": None},
+            {"content": config.downsell_url, "type": "link", "options": ["Ver Oferta Especial"]}
+        ]
+    else:
+        history = _push(history, "bot", bot_reply)
+        
     session.history = history
     session.state = ChatSessionState.closed
     await db.commit()
     return EngineResult(
-        messages=[{"content": bot_reply, "type": "text", "options": None}],
+        messages=msgs,
         new_state=ChatSessionState.closed,
     )
 

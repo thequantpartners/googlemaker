@@ -252,6 +252,7 @@ class ChatWidgetConfig(Base):
     rejection_message: Mapped[str] = mapped_column(
         Text, nullable=False, default="¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad."
     )
+    downsell_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     allowed_domains: Mapped[str | None] = mapped_column(Text, nullable=True)
     ai_provider: Mapped[str] = mapped_column(String(50), nullable=False, default="openai")
     ai_api_key: Mapped[str | None] = mapped_column(Text, nullable=True)
