@@ -10,41 +10,51 @@ async def get_cal_availability(cal_api_key: str, cal_booking_link: str, date_fro
     """
     Fetch availability from Cal.com API.
     """
-    # Extract username and event slug from cal_booking_link
-    # e.g., "cal.com/mi-agencia/consulta" -> username="mi-agencia", eventSlug="consulta"
+    # Handle both public booking links (cal.com/username/slug) 
+    # and admin dashboard links (app.cal.com/event-types/123456)
     link = cal_booking_link.replace("https://", "").replace("http://", "").strip("/")
-    parts = link.split("/")
-    if len(parts) < 3 or parts[0] != "cal.com":
-        return json.dumps({"error": "cal_booking_link inválido. Debe ser formato cal.com/username/event"})
     
-    username = parts[1]
-    event_slug = parts[2]
+    event_type_id = None
     
-    async with httpx.AsyncClient() as client:
-        # Step 1: Get eventTypeId by username and slug
-        users_url = f"https://api.cal.com/v1/users/{username}?apiKey={cal_api_key}"
-        user_res = await client.get(users_url)
-        if not user_res.is_success:
-            return json.dumps({"error": "No se pudo obtener el usuario de Cal.com. Verifica el token."})
+    if "app.cal.com/event-types/" in link:
+        # User provided the internal admin link, which directly contains the eventTypeId!
+        try:
+            event_type_id = int(link.split("app.cal.com/event-types/")[1].split("/")[0])
+        except ValueError:
+            return json.dumps({"error": "Link de app.cal.com inválido. No se pudo extraer el ID del evento."})
+    else:
+        # Parse public link cal.com/username/slug
+        parts = link.split("/")
+        if len(parts) < 3 or parts[0] != "cal.com":
+            return json.dumps({"error": "Link inválido. Debe ser cal.com/username/event o app.cal.com/event-types/ID"})
         
-        user_data = user_res.json()
-        user_id = user_data.get("user", {}).get("id")
-        if not user_id:
-            return json.dumps({"error": "Usuario de Cal.com no encontrado."})
+        username = parts[1]
+        event_slug = parts[2]
+        
+        async with httpx.AsyncClient() as client:
+            users_url = f"https://api.cal.com/v1/users/{username}?apiKey={cal_api_key}"
+            user_res = await client.get(users_url)
+            if not user_res.is_success:
+                return json.dumps({"error": "No se pudo obtener el usuario de Cal.com. Verifica el token."})
+            
+            user_data = user_res.json()
+            user_id = user_data.get("user", {}).get("id")
+            if not user_id:
+                return json.dumps({"error": "Usuario de Cal.com no encontrado."})
 
-        # Get event types for user
-        events_url = f"https://api.cal.com/v1/event-types?userId={user_id}&apiKey={cal_api_key}"
-        events_res = await client.get(events_url)
-        event_type_id = None
-        if events_res.is_success:
-            events = events_res.json().get("event_types", [])
-            for ev in events:
-                if ev.get("slug") == event_slug:
-                    event_type_id = ev.get("id")
-                    break
-                    
-        if not event_type_id:
-            return json.dumps({"error": f"No se encontró el evento '{event_slug}' para el usuario."})
+            events_url = f"https://api.cal.com/v1/event-types?userId={user_id}&apiKey={cal_api_key}"
+            events_res = await client.get(events_url)
+            if events_res.is_success:
+                events = events_res.json().get("event_types", [])
+                for ev in events:
+                    if ev.get("slug") == event_slug:
+                        event_type_id = ev.get("id")
+                        break
+                        
+            if not event_type_id:
+                return json.dumps({"error": f"No se encontró el evento '{event_slug}' para el usuario."})
+
+    async with httpx.AsyncClient() as client:
 
         # Step 2: Fetch slots
         slots_url = f"https://api.cal.com/v1/slots?eventTypeId={event_type_id}&startTime={date_from}&endTime={date_to}&apiKey={cal_api_key}"
@@ -59,31 +69,39 @@ async def book_cal_meeting(cal_api_key: str, cal_booking_link: str, start_time: 
     Book a meeting via Cal.com API.
     """
     link = cal_booking_link.replace("https://", "").replace("http://", "").strip("/")
-    parts = link.split("/")
-    if len(parts) < 3 or parts[0] != "cal.com":
-        return json.dumps({"error": "cal_booking_link inválido."})
+    event_type_id = None
     
-    username = parts[1]
-    event_slug = parts[2]
-    
-    async with httpx.AsyncClient() as client:
-        # Get eventTypeId (similar to above, could cache this)
-        users_url = f"https://api.cal.com/v1/users/{username}?apiKey={cal_api_key}"
-        user_res = await client.get(users_url)
-        if not user_res.is_success:
-            return json.dumps({"error": "No se pudo autenticar con Cal.com."})
-        user_id = user_res.json().get("user", {}).get("id")
+    if "app.cal.com/event-types/" in link:
+        try:
+            event_type_id = int(link.split("app.cal.com/event-types/")[1].split("/")[0])
+        except ValueError:
+            return json.dumps({"error": "Link de app.cal.com inválido."})
+    else:
+        parts = link.split("/")
+        if len(parts) < 3 or parts[0] != "cal.com":
+            return json.dumps({"error": "cal_booking_link inválido."})
         
-        events_url = f"https://api.cal.com/v1/event-types?userId={user_id}&apiKey={cal_api_key}"
-        events_res = await client.get(events_url)
-        event_type_id = None
-        if events_res.is_success:
-            for ev in events_res.json().get("event_types", []):
-                if ev.get("slug") == event_slug:
-                    event_type_id = ev.get("id")
-                    break
-        if not event_type_id:
-            return json.dumps({"error": "Evento no encontrado."})
+        username = parts[1]
+        event_slug = parts[2]
+        
+        async with httpx.AsyncClient() as client:
+            users_url = f"https://api.cal.com/v1/users/{username}?apiKey={cal_api_key}"
+            user_res = await client.get(users_url)
+            if not user_res.is_success:
+                return json.dumps({"error": "No se pudo autenticar con Cal.com."})
+            user_id = user_res.json().get("user", {}).get("id")
+            
+            events_url = f"https://api.cal.com/v1/event-types?userId={user_id}&apiKey={cal_api_key}"
+            events_res = await client.get(events_url)
+            if events_res.is_success:
+                for ev in events_res.json().get("event_types", []):
+                    if ev.get("slug") == event_slug:
+                        event_type_id = ev.get("id")
+                        break
+            if not event_type_id:
+                return json.dumps({"error": "Evento no encontrado."})
+
+    async with httpx.AsyncClient() as client:
 
         # Book
         payload = {
