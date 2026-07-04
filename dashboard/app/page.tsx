@@ -84,20 +84,37 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Full Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-20 left-6 right-6 bg-dark-card border border-dark-card-border rounded-2xl p-6 shadow-2xl z-50 flex flex-col gap-6 backdrop-blur-xl">
-          <Link href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Características</Link>
-          <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Cómo Funciona</Link>
-          <Link href="#calculator" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">Calculadora</Link>
-          <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium text-gray-300 hover:text-white">FAQ</Link>
-          <hr className="border-dark-card-border" />
-          <div className="flex justify-center">
+        <div className="md:hidden fixed inset-0 bg-[#0a0a0b]/98 backdrop-blur-2xl z-[100] flex flex-col pt-6 px-6 pb-8 animate-in fade-in zoom-in-95 duration-200">
+          <div className="flex justify-between items-center mb-16">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
+                <ShieldCheck size={20} className="text-white" />
+              </div>
+              <span className="text-xl font-bold tracking-tighter text-white">QSS</span>
+            </div>
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 text-gray-400 hover:text-white bg-white/5 rounded-full"
+            >
+              <X size={28} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-8 mt-4">
+            <Link href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-4xl font-bold text-gray-300 hover:text-white transition-all">Características</Link>
+            <Link href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)} className="text-4xl font-bold text-gray-300 hover:text-white transition-all">Cómo Funciona</Link>
+            <Link href="#calculator" onClick={() => setIsMobileMenuOpen(false)} className="text-4xl font-bold text-gray-300 hover:text-white transition-all">Calculadora</Link>
+            <Link href="#faq" onClick={() => setIsMobileMenuOpen(false)} className="text-4xl font-bold text-gray-300 hover:text-white transition-all">FAQ</Link>
+          </div>
+          <div className="mt-auto pt-12">
             <Link 
               href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas" 
               target="_blank"
-              className="px-8 py-3 rounded-full bg-gradient-to-r from-neon-blue to-neon-purple text-base font-bold text-white text-center shadow-[0_0_15px_rgba(168,85,247,0.4)] w-full"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-2 w-full py-5 rounded-full bg-gradient-to-r from-neon-blue to-neon-purple text-xl font-bold text-white text-center shadow-[0_0_30px_rgba(168,85,247,0.4)]"
             >
+              <MessageCircle size={24} />
               Agendar Demo
             </Link>
           </div>
@@ -238,18 +255,18 @@ export default function LandingPage() {
             Los clics son caros. Pierdes miles de soles al mes en personas buscando "abogado gratis", casos civiles que no te interesan, o emergencias de madrugada que no pudiste contestar.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8 text-left">
-            <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
+          <div className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide text-left">
+            <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-red-500 mb-4 bg-red-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Clock size={24} /></div>
               <h3 className="text-xl font-bold mb-2">Emergencias a las 3 AM</h3>
               <p className="text-gray-400">Las detenciones ocurren de madrugada. Si un familiar busca abogado y no respondes en 5 minutos, se va con la competencia. Nuestro Widget IA atiende 24/7.</p>
             </div>
-            <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
+            <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-orange-500 mb-4 bg-orange-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><BarChart3 size={24} /></div>
               <h3 className="text-xl font-bold mb-2">Filtro de Casos Rentables</h3>
               <p className="text-gray-400">Pagar por clics de gente buscando "casos civiles" agota tu presupuesto. La IA califica a los leads para que solo hables con defensas que valen la pena.</p>
             </div>
-            <div className="bg-dark-card border border-dark-card-border p-8 rounded-2xl">
+            <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card border border-dark-card-border p-8 rounded-2xl">
               <div className="text-yellow-500 mb-4 bg-yellow-500/10 w-12 h-12 rounded-lg flex items-center justify-center"><Zap size={24} /></div>
               <h3 className="text-xl font-bold mb-2">Falta de Tiempo</h3>
               <p className="text-gray-400">Estás en audiencias o litigando, no puedes perder 30 minutos al teléfono descubriendo que el prospecto no tiene presupuesto. Nosotros te pasamos el resumen.</p>
@@ -266,23 +283,23 @@ export default function LandingPage() {
             <p className="text-gray-400 text-lg">Nos encargamos de toda la tecnología. Tú solo atiende a los clientes listos para pagar.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-12 relative">
+          <div className="flex md:grid md:grid-cols-3 gap-8 md:gap-12 relative overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
             {/* Connecting line for desktop */}
             <div className="hidden md:block absolute top-[40px] left-[15%] right-[15%] h-0.5 bg-gradient-to-r from-neon-blue via-neon-purple to-neon-green opacity-20" />
             
-            <div className="relative z-10 flex flex-col items-center text-center">
+            <div className="min-w-[85vw] md:min-w-0 snap-center relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-blue flex items-center justify-center text-2xl font-bold text-neon-blue mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)]">1</div>
               <h3 className="text-xl font-bold mb-3">Tráfico de Alta Intención</h3>
               <p className="text-gray-400">Conectamos tus campañas de Google Ads y nuestro Autopilot asegura que tu presupuesto solo se gaste en búsquedas penales urgentes y rentables.</p>
             </div>
 
-            <div className="relative z-10 flex flex-col items-center text-center">
+            <div className="min-w-[85vw] md:min-w-0 snap-center relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-purple flex items-center justify-center text-2xl font-bold text-neon-purple mb-6 shadow-[0_0_20px_rgba(168,85,247,0.3)]">2</div>
               <h3 className="text-xl font-bold mb-3">Filtrado por Inteligencia Artificial</h3>
               <p className="text-gray-400">El Chat Widget pre-califica al visitante en tiempo real. Si no tiene presupuesto o es un caso civil menor, le ofrece un recurso gratuito o lo rechaza amablemente.</p>
             </div>
 
-            <div className="relative z-10 flex flex-col items-center text-center">
+            <div className="min-w-[85vw] md:min-w-0 snap-center relative z-10 flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full bg-dark-card border-2 border-neon-green flex items-center justify-center text-2xl font-bold text-neon-green mb-6 shadow-[0_0_20px_rgba(16,185,129,0.3)]">3</div>
               <h3 className="text-xl font-bold mb-3">Cierre Directo en WhatsApp</h3>
               <p className="text-gray-400">Recibes en tu teléfono únicamente a los prospectos calificados, con un resumen detallado del caso y listos para pagar sus honorarios.</p>
@@ -298,34 +315,34 @@ export default function LandingPage() {
           <p className="text-gray-400 text-lg">El único sistema construido específicamente para Abogados Penalistas.</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-dark-card backdrop-blur-lg border border-dark-card-border p-8 rounded-[24px] hover:border-neon-purple/50 hover:bg-white/[0.03] transition-all group">
+        <div className="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
+          <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card backdrop-blur-lg border border-dark-card-border p-8 rounded-[24px] hover:border-neon-purple/50 hover:bg-white/[0.03] transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-purple/20 to-transparent flex items-center justify-center mb-6 border border-neon-purple/20 group-hover:scale-110 transition-transform">
               <TrendingUp className="text-neon-purple" size={28} />
             </div>
-            <h3 className="text-xl font-semibold mb-3">Full Autopilot Optimization</h3>
+            <h3 className="text-xl font-semibold mb-3">Campañas Penales en Autopiloto</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Our algorithm analyzes your campaigns every single hour. It automatically adjusts bids, pauses underperforming ads, and scales budgets on the campaigns bringing in qualified consultation calls.
+              Nuestro algoritmo ajusta tus pujas en Google Ads cada hora para asegurar que siempre aparezcas primero cuando alguien busca un abogado por robo, drogas o fraude.
             </p>
           </div>
 
-          <div className="bg-dark-card backdrop-blur-lg border border-dark-card-border p-8 rounded-[24px] hover:border-neon-blue/50 hover:bg-white/[0.03] transition-all group">
+          <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card backdrop-blur-lg border border-dark-card-border p-8 rounded-[24px] hover:border-neon-blue/50 hover:bg-white/[0.03] transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-blue/20 to-transparent flex items-center justify-center mb-6 border border-neon-blue/20 group-hover:scale-110 transition-transform">
               <MessageCircle className="text-neon-blue" size={28} />
             </div>
-            <h3 className="text-xl font-semibold mb-3">Telegram Bot Integration</h3>
+            <h3 className="text-xl font-semibold mb-3">WhatsApp Directo</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Never miss a client. Our dedicated Telegram bot sends you instant, real-time push notifications the exact second a new lead submits a form or makes a call, straight to your phone.
+              Recibe notificaciones instantáneas y detalles del caso en WhatsApp. El cliente te contactará pre-evaluado y listo para agendar la primera consulta pagada.
             </p>
           </div>
 
-          <div className="bg-dark-card backdrop-blur-lg border border-dark-card-border p-8 rounded-[24px] hover:border-neon-green/50 hover:bg-white/[0.03] transition-all group">
+          <div className="min-w-[85vw] md:min-w-0 snap-center bg-dark-card backdrop-blur-lg border border-dark-card-border p-8 rounded-[24px] hover:border-neon-green/50 hover:bg-white/[0.03] transition-all group">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-neon-green/20 to-transparent flex items-center justify-center mb-6 border border-neon-green/20 group-hover:scale-110 transition-transform">
               <Zap className="text-neon-green" size={28} />
             </div>
-            <h3 className="text-xl font-semibold mb-3">AI Marketing Strategist</h3>
+            <h3 className="text-xl font-semibold mb-3">Embudo Legal Probado</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Just type your website URL, and our AI Strategist will instantly scrape your firm's value propositions to generate dozens of highly targeted, proven ad headlines and keywords.
+              Lanzamos anuncios ganadores comprobados en el nicho penal peruano. Olvídate de crear landing pages o redactar anuncios; nosotros te damos todo configurado.
             </p>
           </div>
         </div>
@@ -412,6 +429,17 @@ export default function LandingPage() {
         </div>
       </footer>
 
+      {/* Sticky Mobile Bottom Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#0a0a0b]/80 backdrop-blur-xl border-t border-white/10 z-40 pb-safe">
+        <Link 
+          href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas" 
+          target="_blank"
+          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-neon-blue to-neon-purple text-lg font-bold text-white text-center shadow-[0_0_20px_rgba(168,85,247,0.3)]"
+        >
+          <MessageCircle size={22} />
+          Hablar con un Asesor
+        </Link>
+      </div>
     </div>
   );
 }
