@@ -363,6 +363,66 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Deliverables Section (What you get) */}
+      <section id="deliverables" className="relative z-10 py-32 bg-black/40 border-t border-dark-card-border">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">Lo Que Recibes el Día 1</h2>
+            <p className="text-gray-400 text-lg">Entregamos un sistema "Llave en Mano". Cero trabajo técnico para ti.</p>
+          </div>
+
+          <div className="flex md:grid md:grid-cols-2 gap-6 overflow-x-auto snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0 scrollbar-hide">
+            <div className="min-w-[85vw] md:min-w-0 snap-center bg-gradient-to-br from-dark-card to-[#0a0a0b] border border-dark-card-border p-8 md:p-10 rounded-[2rem] flex flex-col sm:flex-row gap-6 items-start hover:border-neon-blue/50 transition-colors">
+              <div className="bg-neon-blue/10 p-4 rounded-2xl flex-shrink-0">
+                <Globe className="text-neon-blue w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3">1. Infraestructura de Captación</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Una página web de alta conversión idéntica a las que usamos para facturar miles de dólares en el nicho penal. Optimizada para dispositivos móviles y velocidad extrema.
+                </p>
+              </div>
+            </div>
+
+            <div className="min-w-[85vw] md:min-w-0 snap-center bg-gradient-to-br from-dark-card to-[#0a0a0b] border border-dark-card-border p-8 md:p-10 rounded-[2rem] flex flex-col sm:flex-row gap-6 items-start hover:border-neon-purple/50 transition-colors">
+              <div className="bg-neon-purple/10 p-4 rounded-2xl flex-shrink-0">
+                <TrendingUp className="text-neon-purple w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3">2. Motor de Tráfico (Google Ads)</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Implementamos nuestras campañas de búsqueda más rentables. Palabras clave precisas y anuncios redactados psicológicamente para atraer a personas desesperadas por defensa.
+                </p>
+              </div>
+            </div>
+
+            <div className="min-w-[85vw] md:min-w-0 snap-center bg-gradient-to-br from-dark-card to-[#0a0a0b] border border-dark-card-border p-8 md:p-10 rounded-[2rem] flex flex-col sm:flex-row gap-6 items-start hover:border-neon-green/50 transition-colors">
+              <div className="bg-neon-green/10 p-4 rounded-2xl flex-shrink-0">
+                <ShieldCheck className="text-neon-green w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3">3. Filtro Inteligente en WhatsApp</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Nuestro widget automatizado captura al lead en la web, verifica su capacidad de pago y la gravedad del caso antes de enviarlo a tu WhatsApp personal.
+                </p>
+              </div>
+            </div>
+
+            <div className="min-w-[85vw] md:min-w-0 snap-center bg-gradient-to-br from-dark-card to-[#0a0a0b] border border-dark-card-border p-8 md:p-10 rounded-[2rem] flex flex-col sm:flex-row gap-6 items-start hover:border-pink-500/50 transition-colors">
+              <div className="bg-pink-500/10 p-4 rounded-2xl flex-shrink-0">
+                <MessageCircle className="text-pink-500 w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold mb-3">4. Kit de Cierre Comercial (Bonus)</h3>
+                <p className="text-gray-400 leading-relaxed">
+                  Scripts exactos de WhatsApp diseñados para cerrar a clientes penales. Aprende cómo responder en los primeros 5 minutos y cómo justificar el valor de tus honorarios.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials (Social Proof) */}
       <section className="relative z-10 py-24 bg-[#0B0E14] border-y border-dark-card-border overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
