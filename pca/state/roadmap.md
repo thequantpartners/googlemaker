@@ -60,3 +60,4 @@
 - [x] Resolve Baileys Railway persistent volume detachment issue and rename project to QSS (2026-07-02)
 - [x] Evaluate OpenWA Gateway and subsequently revert to maintain focus on the lightweight Baileys server architecture (2026-07-03)
 - [x] Implement dynamic bot behavior scheduling (Business Hours, configurable Response Delays) across YCloud and Baileys (2026-07-03)
+- [x] Implement Agentic Booking with Cal.com (Function Calling, Multi-LLM, Asynchronous Webhook Interceptor) (2026-07-04)
