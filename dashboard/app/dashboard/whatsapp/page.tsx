@@ -57,11 +57,7 @@ export default function WhatsAppPage() {
   const [baileysQr, setBaileysQr] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
 
-  // OpenWA Modal State
-  const [isOpenWaModalOpen, setIsOpenWaModalOpen] = useState(false);
-  const [openwaStatus, setOpenwaStatus] = useState("disconnected");
-  const [openwaQr, setOpenwaQr] = useState<string | null>(null);
-  const [isOpenwaPolling, setIsOpenwaPolling] = useState(false);
+
 
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
   const masterWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/webhook${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
@@ -171,25 +167,7 @@ export default function WhatsAppPage() {
     if (baileysUrl) {
       checkBaileysStatus();
     }
-    
-    // Check initial OpenWA status
-    async function checkOpenwaStatus() {
-      try {
-        const res = await fetch(`${API}/clients/me/openwa/status`, {
-            headers: { Authorization: `Bearer ${session!.backendToken}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setOpenwaStatus(data.status);
-        }
-      } catch (e) {
-        console.error("Failed to fetch initial OpenWA status", e);
-      }
-    }
-    if (API && session?.backendToken) {
-        checkOpenwaStatus();
-    }
-  }, [baileysUrl, API, session]);
+  }, [baileysUrl]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -213,29 +191,7 @@ export default function WhatsAppPage() {
     return () => clearInterval(interval);
   }, [isBaileysModalOpen, baileysUrl, isPolling]);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isOpenWaModalOpen && isOpenwaPolling && API && session?.backendToken) {
-        interval = setInterval(async () => {
-            try {
-                const res = await fetch(`${API}/clients/me/openwa/status`, {
-                    headers: { Authorization: `Bearer ${session!.backendToken}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setOpenwaStatus(data.status);
-                    if (data.qr) setOpenwaQr(data.qr);
-                    if (data.status === 'connected') {
-                        setIsOpenwaPolling(false);
-                    }
-                }
-            } catch (e) {
-                console.error("OpenWA polling error", e);
-            }
-        }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [isOpenWaModalOpen, isOpenwaPolling, API, session]);
+
 
   async function handleConnectBaileys() {
     if (!baileysUrl) return;
@@ -264,35 +220,7 @@ export default function WhatsAppPage() {
     }
   }
 
-  async function handleConnectOpenwa() {
-    setOpenwaStatus("connecting");
-    setOpenwaQr(null);
-    setIsOpenwaPolling(true);
-    try {
-        await fetch(`${API}/clients/me/openwa/connect`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${session!.backendToken}` }
-        });
-    } catch (e) {
-        console.error("Error triggering OpenWA connect", e);
-    }
-  }
 
-  async function handleDisconnectOpenwa() {
-    if (!confirm("¿Seguro que deseas eliminar la conexión de OpenWA?")) return;
-    try {
-      await fetch(`${API}/clients/me/openwa/disconnect`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${session!.backendToken}` }
-      });
-      setOpenwaStatus("disconnected");
-      setOpenwaQr(null);
-      setMsg({ type: "ok", text: "Conexión de OpenWA eliminada." });
-    } catch (e) {
-      console.error(e);
-      setOpenwaStatus("disconnected");
-    }
-  }
 
   if (loading) {
     return (
@@ -542,53 +470,7 @@ export default function WhatsAppPage() {
         </div>
       </div>
 
-      {/* OpenWA Section */}
-      <div className="bg-[#0a0c10] border border-blue-500/30 rounded-2xl p-6 relative overflow-hidden mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl" />
-        
-        <div className="z-10 relative">
-          <h3 className="text-white font-medium mb-2 flex items-center gap-2">
-            <Phone size={18} className="text-blue-500" />
-            Conexión nativa (OpenWA)
-            {openwaStatus === "connected" && (
-                <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full uppercase tracking-wider border border-emerald-500/20 ml-2">
-                  Conectado
-                </span>
-            )}
-          </h3>
-          <div className="text-sm text-gray-400 space-y-1">
-            <p className="text-blue-400 font-medium text-xs">✨ Arquitectura Recomendada.</p>
-            <p>Conéctate directamente sin salir del panel. Escanea el QR para vincular tu WhatsApp.</p>
-          </div>
-        </div>
 
-        <div className="z-10 flex flex-col sm:flex-row gap-3">
-          {openwaStatus === "connected" && (
-            <button
-              onClick={handleDisconnectOpenwa}
-              className="px-6 py-3 font-semibold rounded-xl transition-colors whitespace-nowrap border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
-            >
-              Desconectar
-            </button>
-          )}
-          <button
-            onClick={() => {
-                setIsOpenWaModalOpen(true);
-                if (openwaStatus !== "connected") {
-                  setOpenwaStatus("disconnected");
-                  setOpenwaQr(null);
-                }
-            }}
-            className={`px-6 py-3 font-semibold rounded-xl transition-colors whitespace-nowrap border ${
-              openwaStatus === "connected" 
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20" 
-                : "bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
-            }`}
-          >
-            {openwaStatus === "connected" ? "Ver Estado" : "Conectar OpenWA"}
-          </button>
-        </div>
-      </div>
 
       {/* Connection Modal */}
       {isModalOpen && (
@@ -715,63 +597,7 @@ export default function WhatsAppPage() {
         </div>
       )}
 
-      {isOpenWaModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0a0c10] border border-blue-500/30 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col items-center">
-            <button
-              onClick={() => { setIsOpenWaModalOpen(false); setIsOpenwaPolling(false); }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
-            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2 w-full">
-              <Phone className="text-blue-500" size={24} /> Conectar OpenWA
-            </h2>
-            <p className="text-sm text-gray-400 mb-6 text-left w-full">
-              Tu instancia nativa de OpenWA está lista. Genera el QR para vincular tu dispositivo.
-            </p>
 
-            {openwaStatus === "disconnected" && (
-              <button
-                onClick={handleConnectOpenwa}
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors"
-              >
-                Generar QR
-              </button>
-            )}
-
-            {(openwaStatus === "connecting" || (openwaStatus === "qr_ready" && !openwaQr)) && (
-              <div className="flex flex-col items-center py-8">
-                <Skeleton className="w-48 h-48 rounded-xl mb-4" />
-                <p className="text-blue-400 text-sm animate-pulse">Iniciando motor y solicitando QR...</p>
-              </div>
-            )}
-
-            {openwaStatus === "qr_ready" && openwaQr && (
-              <div className="flex flex-col items-center py-4">
-                <div className="bg-white p-4 rounded-2xl shadow-xl mb-4 overflow-hidden flex items-center justify-center min-w-[200px] min-h-[200px]">
-                   {openwaQr.startsWith("data:image") ? (
-                     <img src={openwaQr} alt="WhatsApp QR Code" className="w-[200px] h-[200px]" />
-                   ) : (
-                     <QRCodeSVG value={openwaQr} size={200} />
-                   )}
-                </div>
-                <p className="text-gray-300 text-sm text-center">Abre WhatsApp en tu celular y escanea este código QR.</p>
-              </div>
-            )}
-
-            {openwaStatus === "connected" && (
-              <div className="flex flex-col items-center py-8 text-center">
-                <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle2 size={32} className="text-emerald-500" />
-                </div>
-                <h3 className="text-emerald-400 font-bold text-lg mb-1">¡Vinculado correctamente!</h3>
-                <p className="text-gray-400 text-sm">Tu número de WhatsApp ya está procesando mensajes con QSS de forma nativa.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

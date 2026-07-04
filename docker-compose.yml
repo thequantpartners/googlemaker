@@ -9,28 +9,12 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite+aiosqlite:///./saas.db
-      - OPENWA_API_URL=http://openwa:2785
-      - OPENWA_API_KEY=local-dev-key
       # In production, use real values from .env
     env_file:
       - ./backend/.env
     volumes:
       - ./backend/saas.db:/app/saas.db
-    depends_on:
-      - openwa
 
-  openwa:
-    image: rmyndharis/openwa:latest
-    ports:
-      - "2785:2785"
-    environment:
-      - ENGINE_TYPE=baileys
-      - API_KEY=local-dev-key
-      - WEBHOOK_URL=http://backend:8000/webhooks/openwa
-      - WEBHOOK_EVENTS=message
-      - WEBHOOK_SECRET=local-webhook-secret
-    volumes:
-      - ./openwa-data:/app/data
 
   # El antiguo servidor de baileys se mantiene para no interrumpir el servicio actual.
   # baileys-server:
