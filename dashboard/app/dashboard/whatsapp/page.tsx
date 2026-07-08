@@ -32,6 +32,7 @@ interface WhatsAppConfig {
   wa_timezone: string | null;
   wa_business_hours: any | null;
   wa_bhours_message: string | null;
+  wa_client_handoff_number?: string | null;
 }
 
 const inputCls =
@@ -55,6 +56,7 @@ export default function WhatsAppPage() {
   const [ycloudWebhookSecret, setYcloudWebhookSecret] = useState("");
   const [isEditingSecret, setIsEditingSecret] = useState(false);
   const [waDelayMode, setWaDelayMode] = useState("human");
+  const [handoffNumber, setHandoffNumber] = useState("");
 
   // Business Hours State
   const [bHoursEnabled, setBHoursEnabled] = useState(false);
@@ -101,6 +103,7 @@ export default function WhatsAppPage() {
         setYcloudKey(data.ycloud_api_key ?? "");
         setYcloudWebhookSecret(data.ycloud_webhook_secret ?? "");
         setWaDelayMode(data.wa_delay_mode ?? "human");
+        setHandoffNumber(data.wa_client_handoff_number ?? "");
         setBHoursEnabled(data.wa_business_hours_enabled ?? false);
         setTimezone(data.wa_timezone ?? "America/Lima");
         if (data.wa_bhours_message) setBHoursMsg(data.wa_bhours_message);
@@ -127,6 +130,7 @@ export default function WhatsAppPage() {
           ycloud_api_key: ycloudKey || "",
           ycloud_webhook_secret: ycloudWebhookSecret || "",
           wa_delay_mode: waDelayMode || "human",
+          wa_client_handoff_number: handoffNumber || null,
           wa_business_hours_enabled: bHoursEnabled,
           wa_timezone: timezone,
           wa_business_hours: schedule,
@@ -535,6 +539,41 @@ export default function WhatsAppPage() {
                 className="whitespace-nowrap bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
               >
                 {saving ? "Guardando..." : "Guardar Velocidad"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Handoff Section */}
+      <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6 mt-8">
+        <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+          <Link2 size={18} className="text-neon-pink" />
+          Número para Transferencia de Leads
+        </h3>
+        <div className="text-sm text-gray-400 mb-6">
+          <p>Ingresa el número real del cliente (con código de país, sin el '+'). A este número se redirigirán los leads una vez que el bot los califique.</p>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+              WhatsApp del Cliente
+            </label>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="text"
+                value={handoffNumber}
+                onChange={(e) => setHandoffNumber(e.target.value)}
+                placeholder="Ej. 5215555555555"
+                className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-pink/50 focus:bg-white/[0.06] transition-all"
+              />
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="whitespace-nowrap bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
+              >
+                {saving ? "Guardando..." : "Guardar Número"}
               </button>
             </div>
           </div>

@@ -296,6 +296,7 @@ class ClientPaymentConfigUpdate(BaseModel):
     wa_timezone: str | None = None
     wa_business_hours: dict | None = None
     wa_bhours_message: str | None = None
+    wa_client_handoff_number: str | None = None
     cal_api_key: str | None = None
     cal_booking_link: str | None = None
 
@@ -314,6 +315,7 @@ class ClientPaymentConfigOut(BaseModel):
     wa_timezone: str | None = None
     wa_business_hours: dict | None = None
     wa_bhours_message: str | None = None
+    wa_client_handoff_number: str | None = None
     cal_api_key: str | None = None
     cal_booking_link: str | None = None
     has_stripe_key: bool = False

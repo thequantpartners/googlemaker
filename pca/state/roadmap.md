@@ -61,3 +61,8 @@
 - [x] Evaluate OpenWA Gateway and subsequently revert to maintain focus on the lightweight Baileys server architecture (2026-07-03)
 - [x] Implement dynamic bot behavior scheduling (Business Hours, configurable Response Delays) across YCloud and Baileys (2026-07-03)
 - [x] Implement Agentic Booking with Cal.com (Function Calling, Multi-LLM, Asynchronous Webhook Interceptor) (2026-07-04)
+- [x] Redesign Client Dashboard to focus on 5 Business KPIs (Spend, Leads, Sales, Revenue, ROI) and group Sidebar Navigation (2026-07-04)
+- [x] Refine ICP to Abogados Penalistas (Peru) and implement Downsell URL feature (2026-07-04)
+- [x] Redesigned Landing Page WhatsApp copy to reflect the dedicated QSS WhatsApp filter architecture (2026-07-04)
+- [x] Generated enterprise-grade M&A-ready SOP documentation covering the entire QSS lifecycle (2026-07-05)
+- [x] Overhauled Landing Page UI/UX for extreme conversion: Removed navigation, simplified copy, applied glassmorphic grid design to benefits, and optimized mobile CTA behavior (2026-07-06)

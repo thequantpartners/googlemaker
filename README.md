@@ -39,3 +39,4 @@ pca task "current task"
     *   **Lead Tracking**: Auto-captures `gclid` and UTM parameters for robust Google Ads attribution.
     *   **Dynamic Payments**: Configurable payment providers per client (`ClientPaymentConfig`), natively supporting Stripe checkouts or Custom redirect links (e.g., LawPay).
     *   **Conversion Metrics**: Centralized dashboard calculating Ad Spend vs Leads Captured vs Consultations Paid vs Full Cases Paid.
+*   **Enterprise Operations (SOP Playbook)**: M&A-ready operational documentation structured with RACI matrices, defining the 8-phase agency lifecycle from "White-Glove" onboarding to technical deployment and client success.

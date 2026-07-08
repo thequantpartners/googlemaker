@@ -123,3 +123,12 @@
 - Implemented dynamic bot behavior scheduling (Business Hours & Configurable Response Delays) to strictly mimic human interaction patterns and mitigate Meta bans on unofficial WhatsApp APIs.
 - Updated `chat_engine.py` to evaluate timezone-aware business hours exactly at the LLM transition point. Rules/qualification execute 24/7, but if out of hours, the bot captures the lead, sends a one-time "Out of Office" message, and safely goes silent.
 - Added comprehensive Business Hours Matrix (7-day toggle/time UI) to the WhatsApp settings dashboard.
+
+## 2026-07-04
+- Integrated Agentic Booking with Cal.com using Function Calling for seamless appointment scheduling inside chat sessions.
+- 2026-07-04 (pm): Redesigned the Client Dashboard into a Business Metrics view prioritizing Ad Spend, CRM Leads, Sales, Revenue, and ROI. Relocated Google Ads configuration logic to the Campaigns tab. Aggregated `total_revenue` on the backend for precise financial tracking. Reorganized the Sidebar Navigation by grouping items into logical categories (GENERAL, CRM & AI AGENTS, CONFIGURATION) to reduce cognitive overload and maintain a clean UI.
+- 2026-07-04 (late night): Refined ICP to target Abogados Penalistas in Peru due to high transactional search intent and high-value ticket cases. Implemented Downsell URL feature for the Leads Widget. Disqualified leads are now seamlessly redirected to a custom URL. For WhatsApp, the link is appended to trigger a Native Rich Preview Card, whereas for the Web Chat Widget, it renders as an interactive Action Button. Integrated emoji guidelines into the AI system prompt and default widget messages. Updated Landing Page copy to explicitly reflect the new WhatsApp QSS-provided architecture (clarifying the 2-step QSS bot -> Lawyer handoff).
+- 2026-07-05: Generated comprehensive, M&A-ready SOP documentation (`docs/sops/`). Added an 8-phase Standard Operating Procedure playbook with RACI matrices, checklists, and Mermaid flowcharts covering the entire agency operations from acquisition to offboarding.
+
+## 2026-07-06
+- Overhauled the Landing Page for high conversion: Removed the top navigation bar, deleted heavy components like `AnimatedTestimonials`, and redesigned the "Beneficios" section into a premium glassmorphic grid layout. Re-wrote the copy to focus on realistic revenue outcomes (+S/ 10,000 al mes) and prioritized a single Sticky Bottom CTA for mobile devices.
