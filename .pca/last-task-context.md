@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-update backend for wa_client_handoff_number in whatsapp payment config
+reorganizar ux y sidebar del dashboard
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -53,13 +53,6 @@ Only after explicit user confirmation with `SI`:
 - [general] docs: close task and update context logs (2026-07-07T02:42:37.563Z)
 - [general] docs: close task and update context logs (2026-07-05T02:50:39.622Z)
 - [general] docs: close task and update context logs (2026-07-04T16:33:03.765Z)
-- [general] docs: close task and update context logs (2026-07-04T14:59:45.014Z)
-- [general] docs: close task and update context logs (2026-07-04T13:56:21.635Z)
-- [general] docs: close task and update context logs for business hours implementation (2026-07-04T02:27:34.999Z)
-- [general] docs: close task and update context logs for ui refactor (2026-07-04T01:18:58.312Z)
-- [general] docs: close task and update context logs (2026-07-04T00:46:21.666Z)
-- [general] docs: close task and update context logs (2026-07-03T22:08:11.280Z)
-- [general] docs: close task and update context logs (2026-07-02T23:02:36.850Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

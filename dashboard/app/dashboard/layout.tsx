@@ -50,26 +50,31 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     {
       title: "GENERAL",
       items: [
-        { name: "Setup Guide", href: "/onboarding", icon: ListChecks, locked: false },
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
+        { name: "Setup Guide", href: "/onboarding", icon: ListChecks, locked: false },
+      ]
+    },
+    {
+      title: "CANALES E IA",
+      items: [
+        { name: "WhatsApp Assistant", href: "/dashboard/whatsapp", icon: Phone, locked: true },
+        { name: "Web Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
+        { name: "Smart Calendar", href: "/dashboard/calendar", icon: Calendar, locked: true },
+      ]
+    },
+    {
+      title: "CRECIMIENTO",
+      items: [
         { name: "Campañas", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
+        { name: "Analytics & Logs", href: "/dashboard/logs", icon: Activity, locked: true },
       ]
     },
     {
-      title: "CRM & AI AGENTS",
+      title: "ADMINISTRACIÓN",
       items: [
-        { name: "WhatsApp Sales System", href: "/dashboard/whatsapp", icon: Phone, locked: true },
-        { name: "Calendar (IA)", href: "/dashboard/calendar", icon: Calendar, locked: true },
-        { name: "Leads Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
-      ]
-    },
-    {
-      title: "CONFIGURATION",
-      items: [
-        { name: "Payments", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
-        { name: "My Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
-        { name: "Analytics Logs", href: "/dashboard/logs", icon: Activity, locked: true },
-        { name: "Settings", href: "/dashboard/configuracion", icon: Settings, locked: true },
+        { name: "Configuración", href: "/dashboard/configuracion", icon: Settings, locked: true },
+        { name: "Mi Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
+        { name: "Pagos", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
       ]
     }
   ];
