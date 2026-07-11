@@ -465,6 +465,16 @@ async def _call_ai_provider(
                 )
                 asyncio.create_task(send_master_notification(client_user.whatsapp_phone, wa_message))
 
+            # ── Handoff link logic ──────────────────────────────────────────
+            from sqlalchemy import select
+            from models import ClientPaymentConfig
+            pay_cfg_res = await db.execute(select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_user.id))
+            pay_cfg = pay_cfg_res.scalar_one_or_none()
+            if pay_cfg and pay_cfg.provider_keys:
+                handoff_number = pay_cfg.provider_keys.get("wa_client_handoff_number")
+                if handoff_number:
+                    clean_reply += f"\n\nTe transfiero con un agente humano, presiona aquí: https://wa.me/{handoff_number}"
+
         except (json.JSONDecodeError, Exception) as exc:
             print(f"[chat_engine] Lead parse error — treating as plain reply: {exc}")
             clean_reply = raw_text  # keep the raw text if parse fails

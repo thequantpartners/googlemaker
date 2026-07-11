@@ -409,10 +409,26 @@ async def ycloud_master_webhook(
             }
         }
         
-        async with httpx.AsyncClient() as client:
-            yc_res = await client.post(ycloud_url, headers=headers, json=yc_payload)
-            if yc_res.status_code >= 400:
-                print(f"YCloud API Error: {yc_res.text}")
+        wa_delay_mode = pay_cfg.provider_keys.get("wa_delay_mode", "human") if pay_cfg and pay_cfg.provider_keys else "human"
+        if wa_delay_mode == "instant":
+            delay_sec = 0.0
+        elif wa_delay_mode == "fast":
+            delay_sec = 2.0
+        elif wa_delay_mode == "medium":
+            delay_sec = 5.0
+        else: # human
+            delay_sec = 8.0
+
+        async def _delayed_ycloud_send(d_sec: float, url: str, hdrs: dict, p_load: dict):
+            if d_sec > 0:
+                await asyncio.sleep(d_sec)
+            async with httpx.AsyncClient() as client:
+                yc_res = await client.post(url, headers=hdrs, json=p_load)
+                if yc_res.status_code >= 400:
+                    print(f"YCloud API Error: {yc_res.text}")
+
+        import asyncio
+        asyncio.create_task(_delayed_ycloud_send(delay_sec, ycloud_url, headers, yc_payload))
 
     return {"ok": True, "status": "processed"}
 
