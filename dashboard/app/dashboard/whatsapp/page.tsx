@@ -298,7 +298,10 @@ export default function WhatsAppPage() {
         >
           {msg.type === "ok" ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
           {msg.text}
-        </div      {!isConnected && baileysStatus !== "connected" ? (
+        </div>
+      )}
+
+      {!isConnected && baileysStatus !== "connected" ? (
         <div className="space-y-6">
           <div className="text-sm text-gray-400 mb-6">
             Selecciona tu proveedor de WhatsApp. Si estás empezando o haciendo pruebas, usa Baileys. Si vas a procesar cientos de leads o hacer publicidad, usa YCloud (API Oficial).
@@ -511,6 +514,7 @@ export default function WhatsAppPage() {
           )}
 
         </div>
+      )}
 
       {/* Bot Behavior Section */}
       <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6 mt-8">

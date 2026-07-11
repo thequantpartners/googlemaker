@@ -39,6 +39,8 @@ if "https://qss.thequantpartners.com" not in FRONTEND_ORIGINS:
     FRONTEND_ORIGINS.append("https://qss.thequantpartners.com")
 
 
+from sqlalchemy import select, text
+
 # ── Lifespan (startup / shutdown) ────────────────────────────────────────────
 
 
@@ -47,6 +49,12 @@ async def lifespan(app: FastAPI):
     # Startup: create tables & seed superadmin
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        
+        # Add new columns if they don't exist (poor man's migration)
+        try:
+            await conn.execute(text("ALTER TABLE users ADD COLUMN whatsapp_phone VARCHAR(50);"))
+        except Exception:
+            pass
 
     # Run DB migrations using isolated connections (not the shared session)
     # This prevents PostgreSQL session corruption after rollbacks
