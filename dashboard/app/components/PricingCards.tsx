@@ -74,8 +74,8 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Ideal para independientes que recién empiezan.</p>
           <ul className="space-y-4 mb-8 text-gray-300 text-sm">
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 500 Mensajes Mensuales</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Acceso a Snapshots</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 1 Número de WhatsApp</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> IA Básica (Prompt Estándar)</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 1 Número de WhatsApp (o Web Chat)</li>
           </ul>
         </div>
         {renderButton("starter", `w-full py-3.5 rounded-2xl border text-sm transition-colors font-semibold ${currentTier === 'starter' ? 'bg-white/10 text-gray-400 border-white/10 cursor-not-allowed' : 'border-white/10 bg-transparent hover:bg-white/5 text-white'}`)}
@@ -92,8 +92,8 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Para negocios que reciben buen volumen de leads.</p>
           <ul className="space-y-4 mb-8 text-gray-300 text-sm">
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 2,000 Mensajes Mensuales</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Agendamiento de Citas</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Integración CRM</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Custom Prompts & Memoria</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Agendamiento de Citas (Smart Calendar)</li>
           </ul>
         </div>
         {renderButton("growth", `w-full py-3.5 rounded-2xl text-sm font-bold transition-all shadow-[0_4px_14px_rgba(100,100,255,0.3)] ${currentTier === 'growth' ? 'bg-neon-purple/30 text-neon-purple cursor-not-allowed' : 'bg-gradient-to-r from-[#8B6CE0] to-[#5D85F0] text-white hover:opacity-90'}`)}
@@ -112,7 +112,7 @@ export default function PricingCards({
           <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">El autopilot definitivo para múltiples agentes.</p>
           <ul className="space-y-4 mb-8 text-gray-300 text-sm">
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 10,000 Mensajes Mensuales</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Múltiples Números</li>
+            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Motor IA Avanzado y Personalizado</li>
             <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Soporte Dedicado</li>
           </ul>
         </div>
