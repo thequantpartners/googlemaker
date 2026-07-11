@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CheckCircle2, TrendingUp, Clock, Shield } from "lucide-react";
+import LeadForm from "../components/LeadForm";
 
 const WhatsAppIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -41,17 +42,8 @@ export default function LandingPage() {
             Un caso penal promedio se cobra desde S/ 5,000. Nuestro sistema de adquisición automático filtra a los curiosos para que solo necesites cerrar 2 casos extra al mes y lograr esta meta.
           </p>
 
-          <div className="hidden md:flex flex-col w-full sm:w-auto mt-6">
-            <Link 
-              href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas" 
-              target="_blank"
-              className="group relative px-10 py-6 bg-gradient-to-r from-[#25D366] to-[#128C7E] rounded-full font-bold text-white text-2xl overflow-hidden shadow-[0_0_50px_rgba(37,211,102,0.4)] hover:shadow-[0_0_80px_rgba(37,211,102,0.6)] hover:scale-105 transition-all flex items-center justify-center gap-4 animate-pulse"
-            >
-              <WhatsAppIcon className="w-8 h-8" />
-              <span className="relative z-10 flex items-center gap-2">
-                Verificar Disponibilidad para mi Estudio
-              </span>
-            </Link>
+          <div className="hidden md:block w-full sm:w-auto mt-10">
+            <LeadForm />
           </div>
         </div>
       </main>
@@ -134,15 +126,15 @@ export default function LandingPage() {
       </section>
 
       {/* Sticky Mobile Bottom Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#0a0a0b]/80 backdrop-blur-xl border-t border-white/10 z-50 pb-safe">
-        <Link 
-          href="https://wa.me/51924464410?text=Hola,%20quiero%20conocer%20el%20sistema%20para%20abogados%20penalistas" 
-          target="_blank"
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-[#25D366] to-[#128C7E] text-xl font-bold text-white text-center shadow-[0_0_20px_rgba(37,211,102,0.3)] animate-pulse"
+      <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#0a0a0b]/90 backdrop-blur-xl border-t border-white/10 z-50 pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+        <button 
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-gradient-to-r from-neon-blue to-neon-purple text-xl font-bold text-white text-center shadow-[0_0_20px_rgba(59,130,246,0.3)] animate-pulse"
         >
-          <WhatsAppIcon className="w-7 h-7" />
-          Quiero casos rentables
-        </Link>
+          Llenar Solicitud
+        </button>
       </div>
     </div>
   );

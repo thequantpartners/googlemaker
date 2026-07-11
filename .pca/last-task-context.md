@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-reorganizar ux y sidebar del dashboard
+Agregar Creador de onboarding, Búsqueda simple de ICP y Formulario en Landing
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
