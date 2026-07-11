@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { LayoutDashboard, Users, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, LogOut, Menu, X, Rocket, Target, LayoutTemplate } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -14,6 +14,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Clientes", href: "/admin/clients", icon: Users },
+    { name: "Creador Onboarding", href: "/admin/onboarding-creator", icon: Rocket },
+    { name: "Validador ICP", href: "/admin/icp-validator", icon: Target },
+    { name: "Gen. Landings", href: "/admin/landing-generator", icon: LayoutTemplate },
   ];
 
   return (
