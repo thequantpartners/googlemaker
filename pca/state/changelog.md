@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-11
+- Rediseño minimalista del Sidebar agrupando opciones por Categoría.
+- Se implementó Setup Guide (Onboarding) forzado para usuarios nuevos sin conexiones activas.
+- Instalación de la Arquitectura Master Bot en Baileys: Se integró nuevo modelo `whatsapp_phone`, endpoint en backend, settings UI en frontend, y un endpoint `POST /api/send` en el microservicio Node para enviar notificaciones de Leads capturados directamente al WhatsApp personal del cliente.
+
 ## 2026-06-17
 - Initialized PCA context environment.
 - Configured project as a Monorepo, integrating `dashboard`, `backend`, and `ads-orchestrator`.

@@ -10,6 +10,7 @@
 
 ## Done
 
+- [x] Refactored UX: Sidebar minimalista, Setup Guide forzado, y arquitectura Master Bot (Baileys) para notificaciones de WhatsApp.
 - [x] Migrate Subscription Billing from Lemon Squeezy to Culqi (Webhook handlers, Checkouts).
 - [x] Implement GoHighLevel-style Onboarding (Industry Snapshot selection, Branding, WhatsApp QR).
 - [x] Refactor Database to track `monthly_message_count` and `industry_niche` for usage-based billing.
