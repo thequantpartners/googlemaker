@@ -15,7 +15,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Clientes", href: "/admin/clients", icon: Users },
     { name: "Creador Onboarding", href: "/admin/onboarding-creator", icon: Rocket },
-    { name: "Validador ICP", href: "/admin/icp-validator", icon: Target },
     { name: "Gen. Landings", href: "/admin/landing-generator", icon: LayoutTemplate },
   ];
 
