@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth import require_client
 from database import get_db
 from models import OrchestratorLog, User, SavedStrategy
-from schemas import LogOut, UserOut
+from schemas import LogOut, UserOut, ClientUpdateMe
 from services.google_ads_service import apply_campaign_action
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
@@ -26,7 +26,7 @@ async def get_my_profile(
 
 @router.patch("/me", response_model=UserOut)
 async def update_my_profile(
-    data: schemas.ClientUpdateMe,
+    data: ClientUpdateMe,
     user: User = Depends(require_client),
     db: AsyncSession = Depends(get_db),
 ):
