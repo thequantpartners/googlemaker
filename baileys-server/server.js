@@ -142,6 +142,30 @@ app.post('/api/connect', async (req, res) => {
     res.json({ status: connectionStatus });
 });
 
+app.post('/api/send', async (req, res) => {
+    const { to, text } = req.body;
+    if (!to || !text) {
+        return res.status(400).json({ error: "Missing 'to' or 'text'" });
+    }
+    if (!sock || connectionStatus !== 'connected') {
+        return res.status(503).json({ error: "WhatsApp not connected" });
+    }
+    
+    // Si 'to' no tiene el sufijo @s.whatsapp.net, se lo agregamos (limpiando el + si existe)
+    let phone = to.replace('+', '');
+    if (!phone.includes('@s.whatsapp.net')) {
+        phone = `${phone}@s.whatsapp.net`;
+    }
+
+    try {
+        await sock.sendMessage(phone, { text });
+        res.json({ ok: true });
+    } catch (error) {
+        console.error("[X] Error sending message via /api/send:", error);
+        res.status(500).json({ error: "Failed to send message" });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Baileys Microservice corriendo en puerto ${PORT}`);
 });

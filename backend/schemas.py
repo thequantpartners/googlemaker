@@ -36,10 +36,15 @@ class UserOut(BaseModel):
     tier: str
     telegram_chat_id: str | None = None
     telegram_link_token: str | None = None
+    whatsapp_phone: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
 
+
+class ClientUpdateMe(BaseModel):
+    whatsapp_phone: str | None = None
+    industry_niche: str | None = None
 
 # ── Clients (admin-managed) ─────────────────────────────────────────────────
 

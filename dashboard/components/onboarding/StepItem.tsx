@@ -26,17 +26,17 @@ export default function StepItem({
   return (
     <div
       className={`group flex items-center justify-between p-4 mb-3 rounded-2xl transition-all duration-300 ease-out border border-transparent ${
-        isCurrent ? 'bg-white shadow-sm ring-1 ring-gray-100 hover:shadow-md' : 'hover:bg-gray-50'
+        isCurrent ? 'bg-[#0a0c10] border border-white/[0.08] shadow-sm hover:shadow-md' : 'hover:bg-white/[0.02]'
       }`}
     >
       <div className="flex items-center gap-6">
         <div
           className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-colors duration-300 ${
             isCompleted
-              ? 'bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]'
+              ? 'bg-neon-green text-[#0B0E14] shadow-[0_0_15px_rgba(16,185,129,0.4)]'
               : isCurrent
-              ? 'bg-gray-100 text-gray-900 border-2 border-gray-200'
-              : 'bg-gray-50 text-gray-400 border border-gray-200'
+              ? 'bg-white/[0.05] text-white border-2 border-white/[0.1]'
+              : 'bg-transparent text-gray-500 border border-white/[0.05]'
           }`}
         >
           {isCompleted ? (
@@ -57,7 +57,7 @@ export default function StepItem({
         <div>
           <h3
             className={`text-base font-medium transition-colors ${
-              isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-500'
+              isCompleted || isCurrent ? 'text-white' : 'text-gray-400'
             }`}
           >
             {title}
@@ -68,7 +68,7 @@ export default function StepItem({
 
       <div className="ml-4 flex-shrink-0">
         {isCompleted ? (
-          <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-[0_0_10px_rgba(34,197,94,0.3)]">
+          <div className="w-8 h-8 rounded-full bg-neon-green flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.3)]">
              <svg
               className="w-4 h-4 text-white"
               fill="none"
@@ -82,7 +82,7 @@ export default function StepItem({
         ) : !isCompleted && actionText && actionHref ? (
           <Link
             href={actionHref}
-            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 bg-[#9F83F0] rounded-lg hover:bg-[#8B6CE0] hover:shadow-[0_4px_14px_rgba(159,131,240,0.39)] focus:outline-none focus:ring-2 focus:ring-[#9F83F0] focus:ring-offset-2 transform hover:-translate-y-0.5 active:translate-y-0"
+            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-white transition-all duration-300 bg-neon-purple rounded-lg hover:bg-purple-600 hover:shadow-[0_4px_14px_rgba(168,85,247,0.39)] focus:outline-none focus:ring-2 focus:ring-neon-purple focus:ring-offset-2 focus:ring-offset-[#0B0E14] transform hover:-translate-y-0.5 active:translate-y-0"
           >
             {actionText}
           </Link>

@@ -40,7 +40,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   // Redirect new users to onboarding
   useEffect(() => {
     if (tier && (tier === "free" || tier === "none" || tier === "") && pathname === "/dashboard") {
-      router.push("/onboarding");
+      router.push("/dashboard/setup-guide");
     }
   }, [tier, pathname, router]);
 
@@ -51,7 +51,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       title: "GENERAL",
       items: [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
-        { name: "Setup Guide", href: "/onboarding", icon: ListChecks, locked: false },
+        { name: "Setup Guide", href: "/dashboard/setup-guide", icon: ListChecks, locked: false },
       ]
     },
     {

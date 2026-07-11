@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import ChatSession, ChatSessionState, ChatWidgetConfig, Lead, User, ClientPaymentConfig
 from services.telegram_service import send_telegram_message
+from services.baileys_service import send_master_notification
 from encryption import decrypt_value
 from services.ai_tools import (
     execute_tool_call, get_openai_tools, get_anthropic_tools, get_gemini_tools
@@ -447,10 +448,21 @@ async def _call_ai_provider(
                 )
             else:
                 # TODO: add email/webhook notification as alternative to Telegram
-                print(
-                    f"[chat_engine] Lead captured for client {session.client_id} "
-                    f"(no Telegram configured): {lead_data}"
+                print(f"[chat_engine] Client {client_user.id} has no telegram_chat_id for notifications.")
+            
+            # ── WhatsApp Master Bot alert ────────────────────────────────────
+            if hasattr(client_user, "whatsapp_phone") and client_user.whatsapp_phone:
+                name_str = lead_data.get("name") or "N/A"
+                email_str = lead_data.get("email") or "N/A"
+                phone_str = lead_data.get("phone") or "N/A"
+                wa_message = (
+                    "🔥 *¡Nuevo Lead Capturado!*\n\n"
+                    f"👤 *Nombre:* {name_str}\n"
+                    f"📧 *Email:* {email_str}\n"
+                    f"📱 *Teléfono:* {phone_str}\n\n"
+                    "📌 *Fuente:* Chat Widget"
                 )
+                asyncio.create_task(send_master_notification(client_user.whatsapp_phone, wa_message))
 
         except (json.JSONDecodeError, Exception) as exc:
             print(f"[chat_engine] Lead parse error — treating as plain reply: {exc}")

@@ -77,25 +77,25 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-neon-purple/20 border-t-neon-purple rounded-full animate-spin"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col items-center py-16 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="flex-1 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="w-full max-w-3xl">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight sm:text-4xl mb-3">
+          <h1 className="text-3xl font-bold text-white tracking-tight sm:text-4xl mb-3">
             ¡Bienvenido a QSS!
           </h1>
-          <p className="text-lg text-gray-500">
+          <p className="text-lg text-gray-400">
             Sigue estos 4 pasos para desplegar tu Recepcionista de IA en piloto automático.
           </p>
         </div>
 
-        <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-6 sm:p-10 shadow-sm border border-gray-100">
+        <div className="bg-[#0a0c10] rounded-3xl p-6 sm:p-10 border border-dark-card-border shadow-[0_0_40px_rgba(0,0,0,0.5)]">
           <div className="space-y-2">
             {steps.map((step) => (
               <StepItem

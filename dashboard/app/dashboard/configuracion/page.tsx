@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug, Send } from "lucide-react";
+import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug, Send, Phone } from "lucide-react";
 
 export default function ConfiguracionPage() {
   const { data: session } = useSession();
@@ -12,6 +12,8 @@ export default function ConfiguracionPage() {
   const [msg, setMsg] = useState({ text: "", type: "" });
   const [connectingTelegram, setConnectingTelegram] = useState(false);
   const [disconnectingTelegram, setDisconnectingTelegram] = useState(false);
+  const [whatsappPhone, setWhatsappPhone] = useState("");
+  const [savingWhatsapp, setSavingWhatsapp] = useState(false);
 
   const fetchProfile = async () => {
     if (!session?.backendToken) return;
@@ -22,6 +24,9 @@ export default function ConfiguracionPage() {
       if (res.ok) {
         const data = await res.json();
         setProfile(data);
+        if (data.whatsapp_phone) {
+          setWhatsappPhone(data.whatsapp_phone);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch profile", err);
@@ -105,6 +110,32 @@ export default function ConfiguracionPage() {
       setMsg({ text: "Network connection error.", type: "error" });
     } finally {
       setDisconnectingTelegram(false);
+    }
+  };
+
+  const handleSaveWhatsapp = async () => {
+    if (!session?.backendToken) return;
+    setSavingWhatsapp(true);
+    setMsg({ text: "", type: "" });
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me`, {
+        method: "PATCH",
+        headers: { 
+          "Authorization": `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ whatsapp_phone: whatsappPhone })
+      });
+      if (res.ok) {
+        setMsg({ text: "WhatsApp number saved successfully.", type: "success" });
+        fetchProfile();
+      } else {
+        setMsg({ text: "Error saving WhatsApp number.", type: "error" });
+      }
+    } catch (err) {
+      setMsg({ text: "Network connection error.", type: "error" });
+    } finally {
+      setSavingWhatsapp(false);
     }
   };
 
@@ -229,6 +260,33 @@ export default function ConfiguracionPage() {
             {connectingTelegram ? "Connecting..." : "Connect Telegram"}
           </button>
         )}
+      </div>
+
+      {/* WHATSAPP PERSONAL (MASTER BOT) */}
+      <div className="bg-dark-card backdrop-blur-xl border border-neon-green/30 rounded-[2rem] p-6 md:p-8 mt-8">
+        <h2 className="text-xl font-bold text-neon-green mb-4 flex items-center gap-2 border-b border-neon-green/10 pb-4">
+          <Phone size={24} /> Alertas por WhatsApp (Master Bot)
+        </h2>
+        <p className="text-gray-400 mb-6 leading-relaxed">
+          Ingresa tu número de WhatsApp personal con código de país (ej. +51999888777). El Master Bot de la agencia te enviará notificaciones instantáneas aquí cuando consigas un nuevo lead o agendes una cita.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <input
+            type="text"
+            value={whatsappPhone}
+            onChange={(e) => setWhatsappPhone(e.target.value)}
+            placeholder="+51999888777"
+            className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green w-full"
+          />
+          <button 
+            onClick={handleSaveWhatsapp} 
+            disabled={savingWhatsapp || !whatsappPhone}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-neon-green/20 hover:bg-neon-green text-neon-green hover:text-[#0B0E14] border border-neon-green/50 hover:border-neon-green rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+          >
+            {savingWhatsapp ? "Guardando..." : "Guardar Número"}
+          </button>
+        </div>
       </div>
     </div>
   );

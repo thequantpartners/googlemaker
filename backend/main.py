@@ -73,6 +73,7 @@ async def lifespan(app: FastAPI):
         await safe_add_column("users", "tier", "VARCHAR(50)", "'none'")
         await safe_add_column("users", "telegram_chat_id", "VARCHAR(100)")
         await safe_add_column("users", "telegram_link_token", "VARCHAR(100)")
+        await safe_add_column("users", "whatsapp_phone", "VARCHAR(50)")
         await safe_add_column("users", "industry_niche", "VARCHAR(50)")
         await safe_add_column("users", "monthly_message_count", "INTEGER", "0")
         await safe_add_column("orchestrator_logs", "status", "VARCHAR(20)", "'auto_applied'")

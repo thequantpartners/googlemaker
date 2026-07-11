@@ -24,6 +24,20 @@ async def get_my_profile(
 ):
     return user
 
+@router.patch("/me", response_model=UserOut)
+async def update_my_profile(
+    data: schemas.ClientUpdateMe,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    if data.whatsapp_phone is not None:
+        user.whatsapp_phone = data.whatsapp_phone
+    if data.industry_niche is not None:
+        user.industry_niche = data.industry_niche
+    await db.commit()
+    await db.refresh(user)
+    return user
+
 import uuid
 
 @router.post("/me/telegram-link-token")
