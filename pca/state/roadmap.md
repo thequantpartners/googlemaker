@@ -6,11 +6,14 @@
 
 ## Pending
 
-- [ ] Build the central landing page for "The Quant Partners" (Growth Partner model).
-- [ ] Define standardized tech stack for client webs.
+- [ ] Add more snapshots and templates for specific industries.
 
 ## Done
 
+- [x] Migrate Subscription Billing from Lemon Squeezy to Culqi (Webhook handlers, Checkouts).
+- [x] Implement GoHighLevel-style Onboarding (Industry Snapshot selection, Branding, WhatsApp QR).
+- [x] Refactor Database to track `monthly_message_count` and `industry_niche` for usage-based billing.
+- [x] Redesign primary Landing Page to pitch the AI WhatsApp Receptionist SaaS instead of Google Ads.
 - [x] Plan and implement Chat Widget in GMaker (Rules + Heuristics for intent detection, then AI handoff).
 - [x] Pivoted business strategy to Growth Partner / Tech-Enabled Agency model ("The Quant Partners" offering 360 acquisition systems).
 - [x] Execute Autopilot Pivot Implementation Plan (Ad Spend pricing, Soft Pause logic, Immigration Lawyer Templates).

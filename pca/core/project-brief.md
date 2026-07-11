@@ -1,7 +1,7 @@
 # Project Brief
 
-**QSS (Quant Sales System)** is a specialized "Growth Partner Automatizado" SaaS designed for Abogados Penalistas in Peru. 
+**QSS (Quant Sales System)** is a scalable AI Receptionist SaaS designed for professional service businesses (Lawyers, Clinics, Real Estate, Consultants). It provides an automated, always-on WhatsApp agent to pre-qualify leads, answer questions, and schedule appointments via Cal.com.
 
-**Core Value Proposition**: The "Autopilot" engine. QSS connects to the client's Google Ads account and acts as a set-and-forget orchestrator that automatically pauses wasteful keywords (Loss Prevention) and recomienda oportunidades de escalado. Given the urgent, high-intent nature of criminal defense searches on Google, QSS helps lawyers efficiently capture high-value clients (typically 5,000 to 8,000+ PEN per case), making the system highly profitable with just one additional client per month.
+**Core Value Proposition**: The "AI WhatsApp Autopilot". QSS completely automates lead qualification and booking on WhatsApp without the business owner needing to intervene. Instead of a generic bot, QSS uses "Vertical Snapshots" (pre-configured prompts for specific industries like Legal, Health, and Real Estate) to deliver immediate, highly specialized value right after onboarding.
 
-**Business Model**: Pricing is tiered based strictly on the monthly volume of Ad Spend managed by the platform ($49 to $1000+/mo), aligning the SaaS's success directly with the client's marketing budget. Features are not gated; all clients receive the full Autopilot capability.
+**Business Model**: Pricing is a hybrid SaaS model billed in local currency (PEN) via Culqi. It features a flat monthly subscription (e.g., S/ 97, S/ 199, S/ 499) gated by **Monthly WhatsApp Message Volume Limits** rather than ad spend or user seats. This perfectly aligns the cost with the massive operational savings of replacing a human receptionist.

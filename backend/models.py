@@ -45,10 +45,18 @@ class UserTier(str, enum.Enum):
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 def get_ad_spend_limit(tier: UserTier) -> int:
+    # Deprecated: Kept for backwards compatibility if needed during migration
     if tier == UserTier.starter: return 1000
     if tier == UserTier.growth: return 5000
     if tier == UserTier.pro: return 25000
     if tier == UserTier.elite: return 1000000 # Virtually unlimited or $1M
+    return 0  # none
+
+def get_message_limit(tier: UserTier) -> int:
+    if tier == UserTier.starter: return 500
+    if tier == UserTier.growth: return 2000
+    if tier == UserTier.pro: return 10000
+    if tier == UserTier.elite: return 1000000
     return 0  # none
 
 def get_plan_limit(tier: UserTier) -> int | None:
@@ -90,6 +98,8 @@ class User(Base):
         nullable=False,
         default=UserTier.none,
     )
+    industry_niche: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    monthly_message_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     telegram_chat_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     telegram_link_token: Mapped[str | None] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)

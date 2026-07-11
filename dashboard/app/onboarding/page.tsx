@@ -8,10 +8,11 @@ import { useSession } from "next-auth/react";
 export default function OnboardingPage() {
   const { data: session } = useSession();
   const [tier, setTier] = useState<string | null>(null);
+  const [industry, setIndustry] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchTier() {
+    async function fetchClientData() {
       if (!session?.backendToken) return;
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me`, {
@@ -20,6 +21,7 @@ export default function OnboardingPage() {
         if (res.ok) {
           const data = await res.json();
           setTier(data.tier);
+          setIndustry(data.industry_niche);
         }
       } catch (err) {
         // ignore
@@ -29,47 +31,47 @@ export default function OnboardingPage() {
     }
     
     if (session) {
-      fetchTier();
+      fetchClientData();
     } else if (session === null) {
       setLoading(false);
     }
   }, [session]);
 
-  // If user has a plan that is not empty/free, unlock the other steps.
-  const hasPlan = tier && tier !== "free" && tier !== "none" && tier !== "";
+  const hasPlan = tier && tier !== "none" && tier !== "";
+  const hasIndustry = industry && industry !== "";
 
   const steps = [
     {
       id: 1,
-      title: 'Choose your plan',
-      description: 'Select a subscription plan to unlock all features',
-      status: (hasPlan ? 'completed' : 'current') as StepStatus,
-      actionText: hasPlan ? undefined : 'Select Plan',
-      actionHref: hasPlan ? undefined : '/dashboard/planes',
+      title: 'Configuración de Negocio (Snapshot)',
+      description: 'Selecciona tu industria (Legal, Salud, Inmobiliaria) para cargar el asistente de IA pre-entrenado para tu nicho.',
+      status: (hasIndustry ? 'completed' : 'current') as StepStatus,
+      actionText: hasIndustry ? undefined : 'Seleccionar Industria',
+      actionHref: hasIndustry ? undefined : '/dashboard/configuracion',
     },
     {
       id: 2,
-      title: 'Connect Google Ads Account',
-      description: 'Link your account to start managing your campaigns',
-      status: (hasPlan ? 'current' : 'pending') as StepStatus,
-      actionText: hasPlan ? 'Connect Account' : undefined,
-      actionHref: hasPlan ? '/dashboard' : undefined,
+      title: 'Conectar Canal de WhatsApp',
+      description: 'Vincula el número donde tus clientes escriben (Vía Código QR o API Oficial).',
+      status: (hasIndustry ? (hasPlan ? 'completed' : 'current') : 'pending') as StepStatus,
+      actionText: hasIndustry && !hasPlan ? 'Conectar WhatsApp' : undefined,
+      actionHref: hasIndustry && !hasPlan ? '/dashboard/whatsapp' : undefined,
     },
     {
       id: 3,
-      title: 'Configure Telegram bot',
-      description: 'Receive notifications and manage leads directly from Telegram',
-      status: 'pending' as StepStatus,
-      actionText: hasPlan ? 'Configure' : undefined,
-      actionHref: hasPlan ? '/dashboard/configuracion' : undefined,
+      title: 'Activar Suscripción',
+      description: 'Activa tu plan de mensajes para que la IA empiece a responder a tus clientes 24/7.',
+      status: (hasPlan ? 'completed' : (hasIndustry ? 'current' : 'pending')) as StepStatus,
+      actionText: hasPlan ? undefined : 'Ver Planes',
+      actionHref: hasPlan ? undefined : '/dashboard/planes',
     },
     {
       id: 4,
-      title: 'Generate AI Strategy',
-      description: 'Use our AI Marketing Strategist to create high-converting ad copy',
+      title: 'Probar el Asistente (¡A-ha Moment!)',
+      description: 'Envía un mensaje de prueba a tu número conectado y mira cómo la IA atiende y agenda la cita.',
       status: 'pending' as StepStatus,
-      actionText: hasPlan ? 'Generate Strategy' : undefined,
-      actionHref: hasPlan ? '/dashboard/campaigns' : undefined,
+      actionText: hasPlan ? 'Hacer Prueba' : undefined,
+      actionHref: hasPlan ? '/dashboard/leads' : undefined,
     }
   ];
 
@@ -86,10 +88,10 @@ export default function OnboardingPage() {
       <div className="w-full max-w-3xl">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight sm:text-4xl mb-3">
-            Welcome to QSS!
+            ¡Bienvenido a QSS!
           </h1>
           <p className="text-lg text-gray-500">
-            Complete these simple steps to get your system up and running.
+            Sigue estos 4 pasos para desplegar tu Recepcionista de IA en piloto automático.
           </p>
         </div>
 
@@ -110,13 +112,13 @@ export default function OnboardingPage() {
 
           <div className="mt-12 text-center">
             <p className="text-sm text-gray-500 mb-4">
-              Take your business to the next level by configuring all integrations
+              La IA no responderá a tus clientes reales hasta que tú la actives manualmente.
             </p>
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-sm font-medium text-neon-purple hover:text-purple-700 transition-colors"
             >
-              Skip setup for now
+              Ir al Dashboard Principal →
             </Link>
           </div>
         </div>

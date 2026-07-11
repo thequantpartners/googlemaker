@@ -133,7 +133,12 @@
 ## 2026-07-06
 - Overhauled the Landing Page for high conversion: Removed the top navigation bar, deleted heavy components like `AnimatedTestimonials`, and redesigned the "Beneficios" section into a premium glassmorphic grid layout. Re-wrote the copy to focus on realistic revenue outcomes (+S/ 10,000 al mes) and prioritized a single Sticky Bottom CTA for mobile devices.
 
-## 2026-07-11
+- **2026-07-11**
 - Integrated a highly optimized `LeadForm` into the Landing Page (`/`) to capture initial prospect data. This replaces the direct WhatsApp link, allowing Google Ads to properly register conversions upon successful form submission before seamlessly handing off the user to the WhatsApp channel.
 - Developed an internal `OnboardingCreator` (`/admin/onboarding-creator`) for agency admins to define Custom SOP steps for new clients. Implemented a stateless architectural design that compiles the client data and steps into a base64-encoded URL, generating a secure and personalized welcome portal (`/welcome/[clientId]`) without requiring database storage.
 - Built a `LandingGenerator` (`/admin/landing-generator`) tool enabling admins to rapidly spin up static landing pages for clients. The tool utilizes `jszip` and `file-saver` to dynamically inject form data into a pre-styled HTML/Tailwind template and downloads a ready-to-deploy `.zip` file entirely client-side.
+- Completed the business model pivot from "Done For You" to a volume-based "WhatsApp AI Receptionist" SaaS.
+- Refactored PostgreSQL Database to support `monthly_message_count` (integer limits) and `industry_niche` per client.
+- Redesigned the Onboarding Flow (`/onboarding`) to a 4-step GoHighLevel-inspired architecture (Industry Snapshot Selection, WhatsApp Connection, Subscription Activation, Testing).
+- Migrated payment infrastructure from Lemon Squeezy to Culqi, integrating `checkout.culqi.com/js/v4` directly into the frontend (`/dashboard/planes`) with background token processing via the new `payments` router.
+- Fully redesigned the main Landing Page (`/`) from targeting "Abogados Penalistas" to a horizontal SaaS platform ("El Recepcionista IA para Empresas y Agencias").

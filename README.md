@@ -21,15 +21,16 @@ pca task "current task"
 
 ## Target Audience (ICP)
 
-- **US Immigration Lawyers (Latino Market)**: Optimized pre-loaded templates for Spanish keywords, negative keywords, and ad copies designed specifically for immigration law firms.
+- **Empresas y Agencias**: Horizontal SaaS providing pre-trained AI Receptionists (Snapshots) for various niches including Legal, Health, Real Estate, and general agencies.
 
 ## Features
 
-*   **Google Ads Autopilot (Core)**: A set-and-forget orchestrator.
-    *   **Automated Budget Protection**: Automatically pauses wasteful keywords and bleeding campaigns (Learning Phase heuristics implemented).
-    *   **Scaling Recommendations**: Generates horizontal and vertical scaling recommendations for high-performing campaigns.
-    *   **Ad-Spend Pricing Model**: Pricing is tied to the volume of ad spend managed, not feature gating. All users get the full Autopilot.
-    *   **Soft Pause Enforcement**: Limits are enforced safely by pausing the Autopilot optimization engine, without ever touching or pausing the client's live Google Ads campaigns.
+*   **WhatsApp AI Receptionist (SaaS Core)**: An autonomous agent operating on WhatsApp to qualify leads 24/7.
+    *   **Volume-Based Pricing Model**: 3 tiers (Starter, Growth, Scale) priced in Soles (PEN) based on `monthly_message_count`.
+    *   **GoHighLevel-Style Onboarding**: Users select their industry snapshot, connect their WhatsApp via QR (Baileys) or official API (YCloud), and activate subscriptions immediately.
+    *   **Dual WhatsApp Architecture**: 
+        *   *Baileys (QR)*: Experimental mode for instant onboarding and Aha-moment testing without Meta Business verification.
+        *   *YCloud (API)*: Production mode with strict HMAC-SHA256 signature verification for scalable deployments.
     *   **Multi-Account Support**: Supports multiple Google Ads customer IDs mapped to subscription limits.
 *   **AI Chat Widget (Lead Capture)**: Native embeddable widget for client websites.
     *   **Rule-based Pre-qualification**: Deterministic state machine to evaluate user intent.
