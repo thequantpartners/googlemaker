@@ -19,10 +19,10 @@ export default function LandingPage() {
           <Bot className="text-neon-purple" /> QSS
         </div>
         <div className="flex gap-4">
-          <Link href="/auth/login" className="text-sm font-medium text-gray-300 hover:text-white transition px-4 py-2">
+          <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition px-4 py-2">
             Iniciar Sesión
           </Link>
-          <Link href="/auth/register" className="text-sm font-semibold bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-100 transition">
+          <Link href="/login" className="text-sm font-semibold bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-100 transition">
             Crear Cuenta
           </Link>
         </div>
@@ -52,7 +52,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 mt-8 w-full justify-center">
             <Link 
-              href="/auth/register" 
+              href="/login" 
               className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-neon-purple text-lg font-bold text-white shadow-[0_0_30px_rgba(139,92,246,0.3)] hover:scale-105 transition-transform"
             >
               Comenzar Prueba Gratis <ArrowRight size={20} />
@@ -138,7 +138,7 @@ export default function LandingPage() {
           <h2 className="text-4xl font-bold mb-6">Deja de perder ventas por responder tarde</h2>
           <p className="text-xl text-gray-400 mb-10">Regístrate ahora y configura tu primer recepcionista de IA en menos de 5 minutos.</p>
           <Link 
-            href="/auth/register" 
+            href="/login" 
             className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl bg-white text-black text-xl font-bold hover:bg-gray-100 hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]"
           >
             Crear mi cuenta gratis
@@ -149,7 +149,7 @@ export default function LandingPage() {
       {/* Sticky Mobile Bottom Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-[#0a0a0b]/90 backdrop-blur-xl border-t border-white/10 z-50 pb-safe shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
         <Link 
-          href="/auth/register"
+          href="/login"
           className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-neon-purple text-lg font-bold text-white text-center shadow-[0_0_20px_rgba(139,92,246,0.3)]"
         >
           Empezar Ahora
