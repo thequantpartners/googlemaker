@@ -75,12 +75,13 @@ def _to_gemini_history(history: list) -> list[dict]:
     return result
 
 
-def _build_system_instruction(config: ChatWidgetConfig) -> str:
+def _build_system_instruction(config: ChatWidgetConfig, enable_tools: bool = False) -> str:
     """
     Assemble the full system instruction for Gemini by concatenating:
       1. The operator-defined system_prompt
       2. The security_protocol
-      3. The immutable lead-capture protocol
+      3. The calendar protocol (if tools enabled)
+      4. The immutable lead-capture protocol
     """
     parts: list[str] = []
 
@@ -91,6 +92,15 @@ def _build_system_instruction(config: ChatWidgetConfig) -> str:
         parts.append(
             "--- PROTOCOLO DE SEGURIDAD (no negociable) ---\n"
             + config.security_protocol.strip()
+        )
+
+    if enable_tools:
+        parts.append(
+            "--- PROTOCOLO DE CALENDARIO (AGENDAMIENTO) ---\n"
+            f"Hoy es {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')} UTC. "
+            "Tienes acceso a herramientas de calendario. Si el lead muestra intención de agendar una reunión o llamada, "
+            "SIEMPRE usa la herramienta 'get_availability' para ofrecerle horarios reales disponibles. "
+            "NUNCA inventes horarios. Una vez que el lead elija un horario de los disponibles, usa 'book_meeting' para confirmar la cita."
         )
 
     # Injected last so it always overrides anything the operator might write.
@@ -214,19 +224,19 @@ async def _call_ai_provider(
             "lead_captured": False,
         }
 
-    system_prompt = _build_system_instruction(config)
+    cal_api_key = None
+    cal_booking_link = None
+    if pay_cfg and pay_cfg.provider_keys:
+        cal_api_key = pay_cfg.provider_keys.get("cal_api_key")
+        cal_booking_link = pay_cfg.provider_keys.get("cal_booking_link")
+        
+    enable_tools = bool(cal_api_key and cal_booking_link)
+    
+    system_prompt = _build_system_instruction(config, enable_tools=enable_tools)
     provider = config.ai_provider or "openai"
     raw_text = ""
 
     try:
-        cal_api_key = None
-        cal_booking_link = None
-        if pay_cfg and pay_cfg.provider_keys:
-            cal_api_key = pay_cfg.provider_keys.get("cal_api_key")
-            cal_booking_link = pay_cfg.provider_keys.get("cal_booking_link")
-            
-        enable_tools = bool(cal_api_key and cal_booking_link)
-
         if provider == "openai":
             import openai
             client = openai.AsyncOpenAI(api_key=api_key)

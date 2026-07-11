@@ -97,10 +97,10 @@ export default function CalendarPage() {
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <Calendar className="text-neon-purple" />
-            Agendamiento IA (Cal.com)
+            Calendario Integrado de IA
           </h1>
           <p className="text-gray-400 text-sm max-w-2xl">
-            Conecta tu cuenta de Cal.com para que tu Asistente de Inteligencia Artificial pueda leer tu disponibilidad y agendar reuniones automáticamente con tus leads.
+            Permite que la Inteligencia Artificial lea tu disponibilidad en tiempo real y agende reuniones automáticamente en tu Google Calendar o Outlook. Usamos la infraestructura de Cal.com por detrás para evitar cruces de horarios.
           </p>
         </div>
 
@@ -133,10 +133,10 @@ export default function CalendarPage() {
             {/* Step 1 */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Paso 1: Tu enlace de Cal.com
+                Paso 1: Tu enlace de Evento (Motor de Calendario)
               </label>
               <p className="text-xs text-gray-500 mb-3">
-                Ingresa el enlace directo del evento que deseas agendar (ej. cal.com/tu-usuario/15min).
+                Crea una cuenta gratuita en Cal.com (nuestro partner de infraestructura), sincroniza tu Google Calendar allí, y pega aquí el enlace del evento que la IA va a ofrecer (ej. cal.com/tu-usuario/15min).
               </p>
               <div className="relative">
                 <input
@@ -155,7 +155,7 @@ export default function CalendarPage() {
                 Paso 2: Token de Integración (API Key)
               </label>
               <p className="text-xs text-gray-500 mb-3">
-                Genera tu token privado en tu cuenta de Cal.com para permitir que la IA agende por ti.
+                Genera tu token privado en tu cuenta de Cal.com para permitir que la IA de la plataforma lea tu disponibilidad y agende por ti.
               </p>
               <div className="relative">
                 <input
