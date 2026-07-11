@@ -74,12 +74,6 @@ export default function WhatsAppPage() {
     sunday: { ...closedSchedule },
   });
 
-  // Baileys Modal State
-  const [isBaileysModalOpen, setIsBaileysModalOpen] = useState(false);
-  const [baileysUrl] = useState("https://qss-baileys-server-production.up.railway.app");
-  const [baileysStatus, setBaileysStatus] = useState("disconnected");
-  const [baileysQr, setBaileysQr] = useState<string | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
 
 
 
@@ -187,74 +181,6 @@ export default function WhatsAppPage() {
     // URL is now hardcoded for simplicity
   }, []);
 
-  useEffect(() => {
-    // Check initial Baileys status
-    async function checkBaileysStatus() {
-      try {
-        const res = await fetch(`${baileysUrl}/api/status`);
-        if (res.ok) {
-          const data = await res.json();
-          setBaileysStatus(data.status);
-        }
-      } catch (e) {
-        console.error("Failed to fetch initial Baileys status", e);
-      }
-    }
-    if (baileysUrl) {
-      checkBaileysStatus();
-    }
-  }, [baileysUrl]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isBaileysModalOpen && baileysUrl && isPolling) {
-        interval = setInterval(async () => {
-            try {
-                const res = await fetch(`${baileysUrl}/api/status`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setBaileysStatus(data.status);
-                    setBaileysQr(data.qr);
-                    if (data.status === 'connected') {
-                        setIsPolling(false);
-                    }
-                }
-            } catch (e) {
-                console.error("Polling error", e);
-            }
-        }, 3000);
-    }
-    return () => clearInterval(interval);
-  }, [isBaileysModalOpen, baileysUrl, isPolling]);
-
-
-
-  async function handleConnectBaileys() {
-    if (!baileysUrl) return;
-    setBaileysStatus("connecting");
-    setBaileysQr(null);
-    setIsPolling(true);
-    try {
-        await fetch(`${baileysUrl}/api/connect`, { method: "POST" });
-    } catch (e) {
-        console.error("Error triggering connect", e);
-    }
-  }
-
-  async function handleDisconnectBaileys() {
-    if (!confirm("¿Seguro que deseas eliminar la conexión de Baileys?")) return;
-    // Lógica para desconectar del servidor Baileys
-    try {
-      // Intentamos llamar a un endpoint de disconnect si existe, de lo contrario solo actualizamos estado local
-      await fetch(`${baileysUrl}/api/disconnect`, { method: "POST" }).catch(() => {});
-      setBaileysStatus("disconnected");
-      setBaileysQr(null);
-      setMsg({ type: "ok", text: "Conexión de Baileys eliminada." });
-    } catch (e) {
-      console.error(e);
-      setBaileysStatus("disconnected");
-    }
-  }
 
 
 
@@ -301,40 +227,12 @@ export default function WhatsAppPage() {
         </div>
       )}
 
-      {!isConnected && baileysStatus !== "connected" ? (
+      {!isConnected ? (
         <div className="space-y-6">
           <div className="text-sm text-gray-400 mb-6">
-            Selecciona tu proveedor de WhatsApp. Si estás empezando o haciendo pruebas, usa Baileys. Si vas a procesar cientos de leads o hacer publicidad, usa YCloud (API Oficial).
+            Conecta tu proveedor de WhatsApp Oficial (YCloud) para procesar leads.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Baileys Card */}
-            <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl overflow-hidden hover:border-orange-500/50 transition-all group">
-              <div className="h-40 relative overflow-hidden bg-gradient-to-br from-orange-500/20 to-purple-500/20 border-b border-dark-card-border flex items-center justify-center">
-                 <div className="w-16 h-16 bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform">
-                   <Phone size={32} className="text-orange-400" />
-                 </div>
-              </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-white mb-2">WhatsApp Modo Desarrollo</h3>
-                <p className="text-sm text-gray-400 mb-6 h-16">
-                  Ideal para pruebas internas y uso personal. Escanea un código QR para conectar tu número actual mediante Baileys.
-                  <span className="block text-orange-400 mt-1 font-medium text-xs">⚠️ No recomendado para producción.</span>
-                </p>
-                <button
-                  onClick={() => {
-                    setIsBaileysModalOpen(true);
-                    if (baileysStatus !== "connected") {
-                      setBaileysStatus("disconnected");
-                      setBaileysQr(null);
-                    }
-                  }}
-                  className="bg-white/5 hover:bg-white/10 text-white font-medium px-4 py-2.5 rounded-lg text-sm transition-colors w-auto inline-flex items-center gap-2 border border-white/10"
-                >
-                  Conectar Baileys <span>→</span>
-                </button>
-              </div>
-            </div>
-
             {/* YCloud Card */}
             <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl overflow-hidden hover:border-green-500/50 transition-all group">
               <div className="h-40 relative overflow-hidden bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-b border-dark-card-border flex items-center justify-center">
@@ -343,7 +241,7 @@ export default function WhatsAppPage() {
                  </div>
               </div>
               <div className="p-6">
-                <h3 className="text-lg font-bold text-white mb-2">WhatsApp Modo Producción</h3>
+                <h3 className="text-lg font-bold text-white mb-2">WhatsApp API Oficial</h3>
                 <p className="text-sm text-gray-400 mb-6 h-16">
                   Integración con la API Oficial de WhatsApp (YCloud). Diseñado para alta disponibilidad, múltiples agentes y escalabilidad sin riesgo de baneo.
                 </p>
@@ -483,35 +381,7 @@ export default function WhatsAppPage() {
             </>
           )}
 
-          {/* If Baileys is connected */}
-          {baileysStatus === "connected" && (
-            <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl" />
-              <div className="flex items-center gap-4 z-10">
-                <div className="w-12 h-12 bg-orange-500/20 border border-orange-500/30 rounded-full flex items-center justify-center">
-                  <CheckCircle2 size={24} className="text-orange-500" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-white">Baileys Conectado</h2>
-                  <p className="text-gray-400 text-sm">El motor IA está enlazado a tu WhatsApp personal (Modo Desarrollo).</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 z-10">
-                <button
-                  onClick={() => setIsBaileysModalOpen(true)}
-                  className="px-4 py-2 border border-orange-500/30 text-orange-400 font-medium rounded-xl hover:bg-orange-500/10 transition-colors"
-                >
-                  Ver Estado
-                </button>
-                <button
-                  onClick={handleDisconnectBaileys}
-                  className="px-4 py-2 border border-red-500/30 text-red-400 font-medium rounded-xl hover:bg-red-500/10 transition-colors"
-                >
-                  Desconectar
-                </button>
-              </div>
-            </div>
-          )}
+
 
         </div>
       )}
@@ -783,66 +653,7 @@ export default function WhatsAppPage() {
         </div>
       )}
 
-      {/* Baileys Connection Modal */}
-      {isBaileysModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#0a0c10] border border-orange-500/30 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col items-center">
-            <button
-              onClick={() => { setIsBaileysModalOpen(false); setIsPolling(false); }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
-            <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2 w-full">
-              <AlertCircle className="text-orange-500" size={24} /> Conectar Baileys
-            </h2>
-            <p className="text-sm text-gray-400 mb-6 text-left w-full">
-              Genera tu código QR para conectar tu número telefónico a QSS.
-            </p>
 
-            <div className="w-full space-y-4 mb-6">
-              <div className="text-xs text-gray-500 bg-white/[0.02] p-3 rounded-xl border border-white/[0.05]">
-                <strong>Importante:</strong> Configura en tu Railway las variables <code>QSS_CLIENT_ID={config?.user_id}</code> y <code>QSS_WEBHOOK_SECRET={config?.generic_webhook_secret || '...'}</code> para que funcione.
-              </div>
-            </div>
-
-            {baileysStatus === "disconnected" && (
-              <button
-                onClick={handleConnectBaileys}
-                className="w-full py-3 bg-orange-500 text-white font-semibold rounded-xl hover:bg-orange-600 transition-colors"
-              >
-                Generar QR de WhatsApp
-              </button>
-            )}
-
-            {(baileysStatus === "connecting" || (baileysStatus === "qr_ready" && !baileysQr)) && (
-              <div className="flex flex-col items-center py-8">
-                <Skeleton className="w-48 h-48 rounded-xl mb-4" />
-                <p className="text-orange-400 text-sm animate-pulse">Solicitando QR al servidor...</p>
-              </div>
-            )}
-
-            {baileysStatus === "qr_ready" && baileysQr && (
-              <div className="flex flex-col items-center py-4">
-                <div className="bg-white p-4 rounded-2xl shadow-xl mb-4">
-                   <QRCodeSVG value={baileysQr} size={200} />
-                </div>
-                <p className="text-gray-300 text-sm text-center">Abre WhatsApp en tu celular y escanea el código para vincular.</p>
-              </div>
-            )}
-
-            {baileysStatus === "connected" && (
-              <div className="flex flex-col items-center py-8 text-center">
-                <div className="w-16 h-16 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle2 size={32} className="text-emerald-500" />
-                </div>
-                <h3 className="text-emerald-400 font-bold text-lg mb-1">¡Conectado!</h3>
-                <p className="text-gray-400 text-sm">Tu WhatsApp está enlazado a QSS vía Baileys.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
 
     </div>
