@@ -20,7 +20,7 @@ from fastapi.staticfiles import StaticFiles
 
 from auth import create_jwt, get_current_user, verify_google_token
 from database import Base, engine, get_db
-from models import User, UserRole, UserStatus, ChatWidgetConfig, ChatSession, Lead, ClientPaymentConfig  # noqa: F401 – registers new tables with Base.metadata
+from models import User, UserRole, UserStatus, UserTier, ChatWidgetConfig, ChatSession, Lead, ClientPaymentConfig  # noqa: F401 – registers new tables with Base.metadata
 from routers import admin, clients, orchestrator, auth_google, payments, telegram
 from routers.chat_widget import router as chat_widget_router, create_widget_app
 from routers.webhooks import router as webhooks_router
@@ -238,8 +238,18 @@ async def login(
     user = result.scalar_one_or_none()
 
     if user is None:
-        # Closed Registration: Only pre-created users can log in.
-        raise HTTPException(status_code=403, detail="Acceso denegado. Tu cuenta no ha sido registrada por el administrador.")
+        # Open Registration (SaaS): Auto-create user
+        user = User(
+            email=email,
+            name=google_info.get("name", ""),
+            avatar_url=google_info.get("picture", ""),
+            role=UserRole.client,
+            status=UserStatus.active,
+            tier=UserTier.none
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
 
     if user.status != UserStatus.active:
         raise HTTPException(status_code=403, detail="Account is suspended")
