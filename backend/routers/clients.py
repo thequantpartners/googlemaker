@@ -63,6 +63,58 @@ async def disconnect_telegram(
     return {"status": "success"}
 
 
+# ── Get own calendar events ─────────────────────────────────────────────────────
+
+@router.get("/me/calendar/events")
+async def get_my_calendar_events(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    from models import ClientPaymentConfig
+    from encryption import decrypt_value
+    from fastapi import HTTPException
+    
+    result = await db.execute(select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == user.id))
+    config = result.scalar_one_or_none()
+    if not config or not config.provider_keys:
+        return []
+    
+    refresh_token_enc = config.provider_keys.get("google_calendar_refresh_token")
+    if not refresh_token_enc:
+        return []
+        
+    try:
+        refresh_token = decrypt_value(refresh_token_enc)
+    except:
+        return []
+        
+    import httpx
+    import datetime
+    from services.ai_tools import get_google_access_token
+    
+    access_token = await get_google_access_token(refresh_token)
+    if not access_token:
+        raise HTTPException(status_code=401, detail="No se pudo refrescar el token de Google Calendar")
+        
+    now = datetime.datetime.utcnow().isoformat() + 'Z'
+    
+    async with httpx.AsyncClient() as client:
+        res = await client.get(
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            headers={"Authorization": f"Bearer {access_token}"},
+            params={
+                "timeMin": now,
+                "maxResults": 10,
+                "singleEvents": "true",
+                "orderBy": "startTime"
+            }
+        )
+        if res.is_success:
+            return res.json().get("items", [])
+        else:
+            raise HTTPException(status_code=res.status_code, detail="Error fetching calendar events")
+
+
 # ── Get own campaigns from Google Ads API ─────────────────────────────────────
 
 
