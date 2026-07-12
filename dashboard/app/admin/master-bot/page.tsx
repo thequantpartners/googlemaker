@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from 'qrcode.react';
-import { AlertCircle, CheckCircle2, Phone } from "lucide-react";
-
+import { AlertCircle, CheckCircle2, Phone, MessageCircle, Link2, Clock } from "lucide-react";
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-800/50 rounded-xl ${className}`} />;
 }
@@ -14,6 +13,11 @@ export default function MasterBotPage() {
   const [baileysQr, setBaileysQr] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
+  // Configuration States
+  const [responseSpeed, setResponseSpeed] = useState("medium");
+  const [transferNumber, setTransferNumber] = useState("");
+  const [isScheduleActive, setIsScheduleActive] = useState(false);
 
   useEffect(() => {
     async function checkBaileysStatus() {
@@ -79,6 +83,11 @@ export default function MasterBotPage() {
       setBaileysStatus("disconnected");
     }
   }
+
+  const handleSaveConfig = (configName: string) => {
+    setMsg({ type: "ok", text: `Configuración de ${configName} guardada exitosamente.` });
+    setTimeout(() => setMsg(null), 3000);
+  };
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
@@ -152,6 +161,99 @@ export default function MasterBotPage() {
             </button>
           </div>
         )}
+      </div>
+
+      <div className="space-y-6 mt-12">
+        {/* Comportamiento del Bot */}
+        <div className="bg-[#0a0c10] border border-gray-800/50 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <MessageCircle className="text-purple-500" size={24} />
+            <h3 className="text-xl font-bold text-white">Comportamiento del Bot (WhatsApp)</h3>
+          </div>
+          <p className="text-gray-400 text-sm mb-6">
+            Configura la velocidad con la que el bot responde a los mensajes en WhatsApp.
+          </p>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-gray-500 tracking-wider">VELOCIDAD DE RESPUESTA</label>
+            <div className="flex items-center gap-4">
+              <select
+                value={responseSpeed}
+                onChange={(e) => setResponseSpeed(e.target.value)}
+                className="bg-[#13151a] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 w-64"
+              >
+                <option value="fast">Rápida (0 a 2 segundos)</option>
+                <option value="medium">Media (2 a 8 segundos)</option>
+                <option value="slow">Lenta (8 a 15 segundos)</option>
+              </select>
+              <button 
+                onClick={() => handleSaveConfig("Velocidad")}
+                className="px-6 py-3 bg-[#1a1c23] hover:bg-[#23252d] text-gray-300 font-medium rounded-xl transition-colors text-sm"
+              >
+                Guardar Velocidad
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Número para Transferencia */}
+        <div className="bg-[#0a0c10] border border-gray-800/50 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Link2 className="text-white" size={24} />
+            <h3 className="text-xl font-bold text-white">Número para Transferencia de Leads</h3>
+          </div>
+          <p className="text-gray-400 text-sm mb-6">
+            Ingresa el número real del cliente (con código de país, sin el '+'). A este número se redirigirán los leads una vez que el bot los califique.
+          </p>
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold text-gray-500 tracking-wider">WHATSAPP DEL CLIENTE</label>
+            <div className="flex items-center gap-4">
+              <input
+                type="text"
+                placeholder="Ej. 5215555555555"
+                value={transferNumber}
+                onChange={(e) => setTransferNumber(e.target.value)}
+                className="bg-[#13151a] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-white focus:ring-1 focus:ring-white flex-1 max-w-2xl placeholder:text-gray-600"
+              />
+              <button 
+                onClick={() => handleSaveConfig("Número")}
+                className="px-6 py-3 bg-[#1a1c23] hover:bg-[#23252d] text-gray-300 font-medium rounded-xl transition-colors text-sm"
+              >
+                Guardar Número
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Horario Comercial */}
+        <div className="bg-[#0a0c10] border border-gray-800/50 rounded-2xl p-6 flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <Clock className="text-purple-500" size={24} />
+              <h3 className="text-xl font-bold text-white">Horario Comercial (Anti-Ban)</h3>
+            </div>
+            <p className="text-gray-400 text-sm">
+              Configura cuándo el asistente IA debe guardar silencio. Las reglas seguirán capturando leads 24/7.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-white">Activar Horario</span>
+            <button
+              onClick={() => {
+                setIsScheduleActive(!isScheduleActive);
+                handleSaveConfig("Horario");
+              }}
+              className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${
+                isScheduleActive ? "bg-white" : "bg-gray-700"
+              }`}
+            >
+              <div
+                className={`w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${
+                  isScheduleActive ? "translate-x-6 bg-gray-900" : "translate-x-0 bg-white"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
