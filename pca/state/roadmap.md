@@ -10,6 +10,7 @@
 
 ## Done
 
+- [x] Integrate Native Google Calendar OAuth and AI Tools for zero-touch automatic scheduling.
 - [x] Refactored UX: Sidebar minimalista, Setup Guide forzado, y arquitectura Master Bot (Baileys) para notificaciones de WhatsApp.
 - [x] Migrate Subscription Billing from Lemon Squeezy to Culqi (Webhook handlers, Checkouts).
 - [x] Implement GoHighLevel-style Onboarding (Industry Snapshot selection, Branding, WhatsApp QR).

@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-07-11
+- Integrated Native Google Calendar OAuth: Replaced Cal.com dependency with direct Google Calendar API integration via OAuth. Added `/auth/google-calendar` routes, secured refresh tokens, and exposed `get_gcal_availability` and `book_gcal_meeting` native AI tools to the Chat Engine for automatic AI scheduling.
 - Rediseño minimalista del Sidebar agrupando opciones por Categoría.
 - Se implementó Setup Guide (Onboarding) forzado para usuarios nuevos sin conexiones activas.
 - Instalación de la Arquitectura Master Bot en Baileys: Se integró nuevo modelo `whatsapp_phone`, endpoint en backend, settings UI en frontend, y un endpoint `POST /api/send` en el microservicio Node para enviar notificaciones de Leads capturados directamente al WhatsApp personal del cliente.

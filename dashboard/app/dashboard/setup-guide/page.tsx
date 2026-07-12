@@ -133,7 +133,7 @@ export default function OnboardingPage() {
   };
 
   const handleOAuth = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-ads/login?token=${session?.backendToken}`;
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-ads/login?token=${session?.backendToken}&return_to=${encodeURIComponent(window.location.href)}`;
   };
 
   const steps = [
@@ -356,7 +356,7 @@ export default function OnboardingPage() {
                     <h3 className="text-lg font-medium text-white mb-4">Conecta tu cuenta de Google Calendar</h3>
                     <button 
                       onClick={() => {
-                        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-calendar/login?token=${session?.backendToken}`;
+                        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-calendar/login?token=${session?.backendToken}&return_to=${encodeURIComponent(window.location.href)}`;
                       }}
                       className="bg-neon-purple hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2"
                     >

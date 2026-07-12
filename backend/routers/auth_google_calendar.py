@@ -46,9 +46,15 @@ async def google_calendar_login(token: str, request: Request, db: AsyncSession =
     if not user or user.status.value == "suspended":
         raise HTTPException(status_code=403, detail="User account is suspended")
 
-    # Extract frontend origin from Referer header
+    # Get return_to from query, fallback to referer, then default
+    return_to = request.query_params.get("return_to")
     origin = request.headers.get("referer")
-    if origin:
+    
+    if return_to:
+        parsed = urllib.parse.urlparse(return_to)
+        frontend_url = f"{parsed.scheme}://{parsed.netloc}"
+        frontend_path = parsed.path
+    elif origin:
         parsed = urllib.parse.urlparse(origin)
         frontend_url = f"{parsed.scheme}://{parsed.netloc}"
         frontend_path = parsed.path
