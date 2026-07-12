@@ -228,11 +228,18 @@ async def _call_ai_provider(
 
     cal_api_key = None
     cal_booking_link = None
+    gcal_refresh_token = None
     if pay_cfg and pay_cfg.provider_keys:
         cal_api_key = pay_cfg.provider_keys.get("cal_api_key")
         cal_booking_link = pay_cfg.provider_keys.get("cal_booking_link")
+        enc_token = pay_cfg.provider_keys.get("google_calendar_refresh_token")
+        if enc_token:
+            try:
+                gcal_refresh_token = decrypt_value(enc_token)
+            except Exception:
+                pass
         
-    enable_tools = bool(cal_api_key and cal_booking_link)
+    enable_tools = bool((cal_api_key and cal_booking_link) or gcal_refresh_token)
     
     system_prompt = _build_system_instruction(config, enable_tools=enable_tools)
     provider = config.ai_provider or "openai"
@@ -267,7 +274,7 @@ async def _call_ai_provider(
                 for tool_call in msg.tool_calls:
                     func_name = tool_call.function.name
                     args = json.loads(tool_call.function.arguments)
-                    result = await execute_tool_call(func_name, args, cal_api_key, cal_booking_link)
+                    result = await execute_tool_call(func_name, args, cal_api_key, cal_booking_link, gcal_refresh_token)
                     oai_history.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
@@ -313,7 +320,7 @@ async def _call_ai_provider(
                 tool_results = []
                 for block in response.content:
                     if block.type == "tool_use":
-                        result = await execute_tool_call(block.name, block.input, cal_api_key, cal_booking_link)
+                        result = await execute_tool_call(block.name, block.input, cal_api_key, cal_booking_link, gcal_refresh_token)
                         tool_results.append({
                             "type": "tool_result",
                             "tool_use_id": block.id,
@@ -368,7 +375,7 @@ async def _call_ai_provider(
             
             if fc:
                 args = type(fc.args).to_dict(fc.args) if hasattr(fc.args, "to_dict") else dict(fc.args)
-                result = await execute_tool_call(fc.name, args, cal_api_key, cal_booking_link)
+                result = await execute_tool_call(fc.name, args, cal_api_key, cal_booking_link, gcal_refresh_token)
                 
                 resp2 = await chat.send_message_async(
                     genai.types.Part.from_function_response(

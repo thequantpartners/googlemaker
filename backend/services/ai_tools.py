@@ -129,27 +129,113 @@ async def book_cal_meeting(cal_api_key: str, cal_booking_link: str, start_time: 
         else:
             return json.dumps({"error": f"Fallo al agendar: {book_res.text}"})
 
+import os
+
+async def get_google_access_token(refresh_token: str) -> str | None:
+    client_id = os.getenv("GOOGLE_ADS_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_ADS_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        return None
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "refresh_token": refresh_token,
+                "grant_type": "refresh_token",
+            },
+        )
+        if res.is_success:
+            return res.json().get("access_token")
+    return None
+
+async def get_gcal_availability(refresh_token: str, date_from: str, date_to: str) -> str:
+    access_token = await get_google_access_token(refresh_token)
+    if not access_token:
+        return json.dumps({"error": "No se pudo obtener el access token de Google Calendar."})
+
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            "https://www.googleapis.com/calendar/v3/freeBusy",
+            headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+            json={
+                "timeMin": date_from,
+                "timeMax": date_to,
+                "items": [{"id": "primary"}]
+            }
+        )
+        if res.is_success:
+            data = res.json()
+            busy_slots = data.get("calendars", {}).get("primary", {}).get("busy", [])
+            # For simplicity we return the busy slots, the LLM will infer availability
+            # In a real app we'd invert this to free slots between 9am and 5pm.
+            return json.dumps({"busy_slots": busy_slots, "message": "Los slots devueltos indican horas OCUPADAS. Debes agendar en un horario que NO esté en esta lista (asumiendo horario de oficina 9am a 6pm)."})
+        return json.dumps({"error": f"Error de Google Calendar: {res.text}"})
+
+async def book_gcal_meeting(refresh_token: str, start_time: str, name: str, email: str, timezone_str: str = "America/Lima") -> str:
+    access_token = await get_google_access_token(refresh_token)
+    if not access_token:
+        return json.dumps({"error": "No se pudo obtener el access token de Google Calendar."})
+
+    # Calculate end time (30 mins default)
+    start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+    end_dt = start_dt + timedelta(minutes=30)
+
+    async with httpx.AsyncClient() as client:
+        res = await client.post(
+            "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+            headers={"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"},
+            json={
+                "summary": f"Reunión con {name}",
+                "description": f"Agendado vía IA para {name} ({email})",
+                "start": {"dateTime": start_dt.isoformat(), "timeZone": timezone_str},
+                "end": {"dateTime": end_dt.isoformat(), "timeZone": timezone_str},
+                "attendees": [{"email": email}],
+                "reminders": {"useDefault": True}
+            }
+        )
+        if res.is_success:
+            return json.dumps({"success": True, "message": "Reunión agendada exitosamente en Google Calendar."})
+        return json.dumps({"error": f"Error al agendar en Google Calendar: {res.text}"})
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Tool Router
 # ─────────────────────────────────────────────────────────────────────────────
 
-async def execute_tool_call(tool_name: str, arguments: dict, cal_api_key: str, cal_booking_link: str) -> str:
+async def execute_tool_call(tool_name: str, arguments: dict, cal_api_key: str, cal_booking_link: str, google_calendar_refresh_token: str = None) -> str:
     if tool_name == "get_availability":
-        return await get_cal_availability(
-            cal_api_key, 
-            cal_booking_link, 
-            arguments.get("date_from"), 
-            arguments.get("date_to")
-        )
+        if google_calendar_refresh_token:
+            return await get_gcal_availability(
+                google_calendar_refresh_token,
+                arguments.get("date_from"),
+                arguments.get("date_to")
+            )
+        else:
+            return await get_cal_availability(
+                cal_api_key, 
+                cal_booking_link, 
+                arguments.get("date_from"), 
+                arguments.get("date_to")
+            )
     elif tool_name == "book_meeting":
-        return await book_cal_meeting(
-            cal_api_key, 
-            cal_booking_link, 
-            arguments.get("start_time"), 
-            arguments.get("name", "Cliente"), 
-            arguments.get("email", "cliente@example.com"),
-            arguments.get("timezone", "America/Lima")
-        )
+        if google_calendar_refresh_token:
+            return await book_gcal_meeting(
+                google_calendar_refresh_token,
+                arguments.get("start_time"),
+                arguments.get("name", "Cliente"),
+                arguments.get("email", "cliente@example.com"),
+                arguments.get("timezone", "America/Lima")
+            )
+        else:
+            return await book_cal_meeting(
+                cal_api_key, 
+                cal_booking_link, 
+                arguments.get("start_time"), 
+                arguments.get("name", "Cliente"), 
+                arguments.get("email", "cliente@example.com"),
+                arguments.get("timezone", "America/Lima")
+            )
     return json.dumps({"error": f"Tool '{tool_name}' no existe."})
 
 # ─────────────────────────────────────────────────────────────────────────────

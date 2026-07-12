@@ -172,6 +172,7 @@ async def get_payment_config(
         wa_client_handoff_number=keys.get("wa_client_handoff_number"),
         cal_api_key=keys.get("cal_api_key"),
         cal_booking_link=keys.get("cal_booking_link"),
+        has_google_calendar=bool(keys.get("google_calendar_refresh_token")),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
         created_at=config.created_at,

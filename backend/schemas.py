@@ -323,6 +323,7 @@ class ClientPaymentConfigOut(BaseModel):
     wa_client_handoff_number: str | None = None
     cal_api_key: str | None = None
     cal_booking_link: str | None = None
+    has_google_calendar: bool = False
     has_stripe_key: bool = False
     has_paypal_key: bool = False
     created_at: datetime

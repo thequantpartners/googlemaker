@@ -10,6 +10,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [connectedAds, setConnectedAds] = useState(false);
+  const [connectedCalendar, setConnectedCalendar] = useState(false);
 
   // Form states
   const [whatsappPhone, setWhatsappPhone] = useState("");
@@ -22,8 +23,10 @@ export default function OnboardingPage() {
     const params = new URLSearchParams(window.location.search);
     const stepParam = params.get('step');
     const connectedParam = params.get('connected');
+    const calendarConnectedParam = params.get('calendar_connected');
     if (stepParam) setCurrentStep(parseInt(stepParam));
     if (connectedParam === 'success') setConnectedAds(true);
+    if (calendarConnectedParam === 'success') setConnectedCalendar(true);
   }, []);
 
   useEffect(() => {
@@ -46,6 +49,9 @@ export default function OnboardingPage() {
           setYcloudApiKey(data.ycloud_api_key || "");
           setCalApiKey(data.cal_api_key || "");
           setCalBookingLink(data.cal_booking_link || "");
+          if (data.has_google_calendar) {
+            setConnectedCalendar(true);
+          }
         }
         if (credRes.ok) {
           const data = await credRes.json();
@@ -336,39 +342,38 @@ export default function OnboardingPage() {
           {currentStep === 5 && (
             <div className="animate-fade-in">
               <h2 className="text-2xl font-bold text-white mb-2">5. Agendamiento Automático</h2>
-              <p className="text-gray-400 mb-8">¿Quieres que la IA cierre citas por ti? Conecta tu calendario de Cal.com para que ofrezca tus horarios disponibles.</p>
+              <p className="text-gray-400 mb-8">¿Quieres que la IA cierre citas por ti? Conecta tu Google Calendar para que ofrezca tus horarios disponibles.</p>
               
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Cal.com API Key (Opcional)</label>
-                  <input
-                    type="password"
-                    value={calApiKey}
-                    onChange={(e) => setCalApiKey(e.target.value)}
-                    placeholder="cal_live_xxxx"
-                    className="w-full bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Enlace de Reserva</label>
-                  <input
-                    type="text"
-                    value={calBookingLink}
-                    onChange={(e) => setCalBookingLink(e.target.value)}
-                    placeholder="Ej: nombre/30min"
-                    className="w-full bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors"
-                  />
-                </div>
+              <div className="flex flex-col items-center justify-center py-8 bg-[#0a0c10] border border-gray-800 rounded-2xl mb-6">
+                <Calendar size={48} className="text-neon-purple mb-4" />
+                {connectedCalendar ? (
+                  <div className="text-center">
+                    <h3 className="text-xl font-bold text-white mb-2">¡Calendario Conectado!</h3>
+                    <p className="text-sm text-gray-400">Ya has autorizado el acceso a Google Calendar.</p>
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-medium text-white mb-4">Conecta tu cuenta de Google Calendar</h3>
+                    <button 
+                      onClick={() => {
+                        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-calendar/login?token=${session?.backendToken}`;
+                      }}
+                      className="bg-neon-purple hover:bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2"
+                    >
+                      <Plus size={20} /> Conectar Google Calendar
+                    </button>
+                  </>
+                )}
               </div>
 
               <div className="flex justify-between mt-10">
                 <button onClick={() => setCurrentStep(4)} className="text-gray-400 hover:text-white transition-colors">Atrás</button>
                 <button 
-                  onClick={() => handleNext(5)}
+                  onClick={() => window.location.href = "/dashboard"}
                   disabled={saving}
-                  className="bg-neon-purple text-white px-8 py-3 rounded-xl font-semibold hover:bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all flex items-center gap-2"
+                  className="bg-white text-black px-8 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-all flex items-center gap-2"
                 >
-                  {saving ? "Finalizando..." : "Completar Onboarding"} <CheckCircle2 size={18} />
+                  Finalizar Onboarding <CheckCircle2 size={18} />
                 </button>
               </div>
             </div>
