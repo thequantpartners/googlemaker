@@ -16,36 +16,47 @@ export default function LeadForm() {
     name: "",
     email: "",
     phone: "",
+    consent: false,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.consent) {
+      setErrorMsg("Debes aceptar recibir mensajes por WhatsApp para continuar.");
+      return;
+    }
+    
     setIsSubmitting(true);
+    setErrorMsg("");
     
-    // Aquí puedes integrar el envío a tu backend, CRM o Google Sheets.
-    // Por ahora simulamos el envío exitoso para disparar el pixel.
-    
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/public/leads/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
       
-      // Aquí podrías disparar eventos de conversión para Google Ads:
-      // if (typeof window !== 'undefined' && (window as any).gtag) {
-      //   (window as any).gtag('event', 'conversion', { 'send_to': 'AW-XXXXXXXX/YYYYYYY' });
-      // }
-    }, 1000);
+      if (res.ok) {
+        setIsSubmitted(true);
+      } else {
+        const err = await res.json();
+        setErrorMsg(err.detail || "Error al procesar la solicitud.");
+      }
+    } catch (err) {
+      setErrorMsg("Error de conexión. Inténtalo nuevamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
   };
 
   if (isSubmitted) {
-    // Pantalla de éxito (Thank You Page embebida)
-    const waMessage = `Hola, mi nombre es ${formData.name}. Llené el formulario y quiero conocer el sistema para abogados penalistas.`;
-    const waLink = `https://wa.me/51924464410?text=${encodeURIComponent(waMessage)}`;
-
     return (
       <div className="bg-[#0a0a0b]/80 backdrop-blur-xl border border-[#25D366]/30 p-8 rounded-[2rem] text-center max-w-md mx-auto shadow-[0_0_40px_rgba(37,211,102,0.15)] animate-fade-in-up relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-[#25D366]/20 rounded-full blur-[50px] -mr-10 -mt-10" />
@@ -57,19 +68,13 @@ export default function LeadForm() {
               <CheckCircle2 className="text-[#25D366] w-10 h-10" />
             </div>
           </div>
-          <h3 className="text-2xl font-bold mb-4 text-white">¡Datos recibidos!</h3>
-          <p className="text-gray-300 mb-8">
-            Estás a un paso de revolucionar tu captación de clientes. Haz clic abajo para iniciar la conversación privada por WhatsApp con nuestro especialista.
+          <h3 className="text-2xl font-bold mb-4 text-white">¡Solicitud recibida!</h3>
+          <p className="text-gray-300 mb-6">
+            Nuestro asistente virtual te acaba de enviar un mensaje a tu WhatsApp para iniciar la conversación.
           </p>
-          
-          <Link 
-            href={waLink} 
-            target="_blank"
-            className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-gradient-to-r from-[#25D366] to-[#128C7E] rounded-xl font-bold text-white text-lg overflow-hidden shadow-[0_0_30px_rgba(37,211,102,0.3)] hover:shadow-[0_0_50px_rgba(37,211,102,0.5)] hover:scale-[1.02] transition-all animate-pulse"
-          >
-            <WhatsAppIcon className="w-6 h-6" />
-            <span>Hablar por WhatsApp ahora</span>
-          </Link>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#25D366]/10 text-[#25D366] rounded-xl border border-[#25D366]/20">
+            <Bot size={18} /> Revisa tu celular ahora
+          </div>
         </div>
       </div>
     );
@@ -113,7 +118,7 @@ export default function LeadForm() {
             />
           </div>
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">Teléfono / WhatsApp</label>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">WhatsApp</label>
             <input 
               type="tel" 
               id="phone" 
@@ -121,15 +126,35 @@ export default function LeadForm() {
               required
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/50 transition-all"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#25D366]/50 focus:ring-1 focus:ring-[#25D366]/50 transition-all"
               placeholder="+51 999 999 999"
             />
           </div>
+
+          <div className="flex items-start gap-3 mt-4">
+            <input
+              type="checkbox"
+              id="consent"
+              name="consent"
+              checked={formData.consent}
+              onChange={handleChange}
+              className="mt-1 bg-white/10 border-white/20 rounded accent-neon-purple cursor-pointer"
+            />
+            <label htmlFor="consent" className="text-xs text-gray-400 cursor-pointer">
+              Acepto recibir mensajes automáticos por WhatsApp con información del sistema. Puedes darte de baja en cualquier momento.
+            </label>
+          </div>
+          
+          {errorMsg && (
+            <div className="text-red-400 text-sm mt-2 font-medium">
+              {errorMsg}
+            </div>
+          )}
           
           <button 
             type="submit" 
-            disabled={isSubmitting}
-            className="w-full mt-4 flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl font-bold text-white text-lg overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] hover:scale-[1.02] transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isSubmitting || !formData.consent}
+            className="w-full mt-4 flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-neon-blue to-neon-purple rounded-xl font-bold text-white text-lg overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2">
@@ -137,11 +162,11 @@ export default function LeadForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Procesando...
+                Conectando WhatsApp...
               </span>
             ) : (
               <>
-                <span>Continuar</span>
+                <span>Recibir Demo en WhatsApp</span>
                 <ArrowRight className="w-5 h-5" />
               </>
             )}

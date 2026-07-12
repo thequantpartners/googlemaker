@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CheckCircle2, Bot, Clock, MessageSquare, ArrowRight } from "lucide-react";
+import LeadForm from "@/components/LeadForm";
 
 export default function LandingPage() {
   return (
@@ -132,17 +133,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section with Lead Form */}
       <section className="relative z-10 py-24 text-center">
-        <div className="max-w-3xl mx-auto px-6">
+        <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-4xl font-bold mb-6">Deja de perder ventas por responder tarde</h2>
-          <p className="text-xl text-gray-400 mb-10">Regístrate ahora y configura tu primer recepcionista de IA en menos de 5 minutos.</p>
-          <Link 
-            href="/login" 
-            className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl bg-white text-black text-xl font-bold hover:bg-gray-100 hover:scale-105 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)]"
-          >
-            Crear mi cuenta gratis
-          </Link>
+          <p className="text-xl text-gray-400 mb-12">Recibe una demostración interactiva ahora mismo en tu WhatsApp.</p>
+          
+          <LeadForm />
+          
         </div>
       </section>
 
