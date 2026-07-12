@@ -259,7 +259,7 @@ export default function ClientCampaigns() {
         {(!headerLoading && (statusData?.plan_limit === null || (statusData?.connected_accounts?.length || 0) < (statusData?.plan_limit || 0))) && (
           <button 
             onClick={() => {
-              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials?token=${session?.backendToken}`;
+              window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-ads/login?token=${session?.backendToken}`;
             }}
             className="bg-neon-green hover:bg-neon-green/90 text-black px-6 py-3 rounded-lg font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center gap-2"
           >

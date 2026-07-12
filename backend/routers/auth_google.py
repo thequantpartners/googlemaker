@@ -69,11 +69,13 @@ async def google_ads_login(token: str, request: Request, db: AsyncSession = Depe
     if origin:
         parsed = urllib.parse.urlparse(origin)
         frontend_url = f"{parsed.scheme}://{parsed.netloc}"
+        frontend_path = parsed.path
     else:
         frontend_url = os.getenv("FRONTEND_ORIGINS", "https://qss.thequantpartners.com").split(",")[0]
+        frontend_path = "/dashboard"
 
     # Encrypt user_id and frontend_url to use as state to prevent CSRF and identify the user in the callback
-    state_payload = f"{user_id}::{frontend_url}"
+    state_payload = f"{user_id}::{frontend_url}::{frontend_path}"
     state = encrypt_value(state_payload)
 
     # Determine redirect URI dynamically
@@ -106,6 +108,7 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
         parts = decrypted_state.split("::")
         user_id = parts[0]
         frontend_url = parts[1] if len(parts) > 1 else os.getenv("FRONTEND_ORIGINS", "https://qss.thequantpartners.com").split(",")[0]
+        frontend_path = parts[2] if len(parts) > 2 else "/dashboard"
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid state parameter")
 
@@ -132,18 +135,29 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
             },
         )
         if resp.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Failed to exchange token: {resp.text}")
+            error_msg = f"Failed to get tokens from Google: {resp.text}"
+            return RedirectResponse(f"{frontend_url}{frontend_path}?connected=error&message={urllib.parse.quote(error_msg)}")
         
-        token_data = resp.json()
+        data = resp.json()
+        refresh_token = data.get("refresh_token")
 
-    refresh_token = token_data.get("refresh_token")
-    if not refresh_token:
-        # If the user already authorized the app previously, Google might not return a refresh_token
-        # without `prompt=consent`, but we enforce it. Just in case:
-        raise HTTPException(status_code=400, detail="No refresh token returned. Try revoking app access in Google Account and try again.")
+        if not refresh_token:
+            # Check if we already have it
+            existing_cred = await db.execute(
+                select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
+            )
+            first_cred = existing_cred.scalars().first()
+            if first_cred:
+                try:
+                    refresh_token = decrypt_value(first_cred.refresh_token)
+                except:
+                    pass
 
-    # Upsert the GoogleAdsCredential
-    # Delete any existing PENDING credential for this user so they don't stack up
+        if not refresh_token:
+            error_msg = "Google no envió un refresh_token. Debes revocar el acceso a esta App en la configuración de seguridad de Google y volver a intentar."
+            return RedirectResponse(f"{frontend_url}{frontend_path}?connected=error&message={urllib.parse.quote(error_msg)}")
+
+    # Delete any PENDING credentials
     pending_old = await db.execute(
         select(GoogleAdsCredential).where(
             GoogleAdsCredential.user_id == user.id,
@@ -165,7 +179,7 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
             error_msg = "Esta cuenta de Google no tiene cuentas de Google Ads asociadas o accesibles. Crea una cuenta en ads.google.com o usa otra cuenta."
         else:
             error_msg = f"Error al conectar Google Ads: {error_str[:200]}"
-        return RedirectResponse(f"{frontend_url}/dashboard?connected=error&message={urllib.parse.quote(error_msg)}")
+        return RedirectResponse(f"{frontend_url}{frontend_path}?connected=error&message={urllib.parse.quote(error_msg)}")
 
     # Get existing credentials for this user to avoid duplicates
     existing_creds_result = await db.execute(
@@ -202,5 +216,10 @@ async def google_ads_callback(request: Request, code: str, state: str, db: Async
 
     await db.commit()
 
-    # Redirect back to the frontend dashboard
-    return RedirectResponse(f"{frontend_url}/dashboard?connected=success")
+    # Redirect back to the frontend dashboard or setup-guide
+    # If frontend_path is setup-guide, append step=5
+    redirect_suffix = "?connected=success"
+    if "setup-guide" in frontend_path:
+        redirect_suffix = "?step=5"
+        
+    return RedirectResponse(f"{frontend_url}{frontend_path}{redirect_suffix}")
