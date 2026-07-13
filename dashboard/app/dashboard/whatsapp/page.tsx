@@ -2,7 +2,6 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { QRCodeSVG } from 'qrcode.react';
 import {
   Phone,
   MessageCircle,
@@ -14,7 +13,10 @@ import {
   ExternalLink,
   Save,
   Link2,
-  Lock
+  Lock,
+  Plug,
+  Zap,
+  Clock
 } from "lucide-react";
 
 function Skeleton({ className = "" }: { className?: string }) {
@@ -39,10 +41,19 @@ const inputCls =
   "w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder:text-gray-600 " +
   "focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all";
 
+const TABS = [
+  { id: "conexion", label: "Conexión", icon: Plug },
+  { id: "comportamiento", label: "Comportamiento", icon: Zap },
+  { id: "horarios", label: "Horarios", icon: Clock },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
 export default function WhatsAppPage() {
   const { data: session } = useSession();
   const API = process.env.NEXT_PUBLIC_API_URL;
 
+  const [activeTab, setActiveTab] = useState<TabId>("conexion");
   const [config, setConfig] = useState<WhatsAppConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -73,9 +84,6 @@ export default function WhatsAppPage() {
     saturday: { ...closedSchedule },
     sunday: { ...closedSchedule },
   });
-
-
-
 
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
   const masterWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/webhook${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
@@ -132,11 +140,11 @@ export default function WhatsAppPage() {
         }),
       });
       if (!res.ok) throw new Error("Failed to save configuration");
-      setMsg({ type: "ok", text: "WhatsApp Sales System configurado exitosamente." });
+      setMsg({ type: "ok", text: "Configuración guardada exitosamente." });
       setIsModalOpen(false);
-      fetchConfig(); // Reload to get updated state
+      fetchConfig();
     } catch (e: any) {
-      setMsg({ type: "err", text: e.message || "Error saving configuration" });
+      setMsg({ type: "err", text: e.message || "Error al guardar configuración" });
     } finally {
       setSaving(false);
       setTimeout(() => setMsg(null), 5000);
@@ -177,13 +185,6 @@ export default function WhatsAppPage() {
     navigator.clipboard.writeText(text);
   }
 
-  useEffect(() => {
-    // URL is now hardcoded for simplicity
-  }, []);
-
-
-
-
   if (loading) {
     return (
       <div className="p-8 max-w-5xl mx-auto space-y-8">
@@ -199,68 +200,99 @@ export default function WhatsAppPage() {
   const isConnected = !!config?.ycloud_api_key;
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-5xl mx-auto pb-28 animate-fade-in-up">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <MessageCircle className="text-green-500" />
-            WhatsApp Sales System
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <MessageCircle className="text-neon-purple" size={32} />
+            WhatsApp Bot Config
           </h1>
-          <p className="text-gray-400 mt-1">
-            Conecta tu cuenta de YCloud para habilitar el motor IA "Dumb Router" y capturar conversiones offline.
+          <p className="text-gray-400 mt-1 text-sm">
+            Conecta tu cuenta de YCloud para habilitar el motor IA y capturar conversiones offline.
           </p>
+        </div>
+        
+        <div className={`flex items-center gap-2 px-5 py-2.5 rounded-full border font-semibold text-sm ${
+          isConnected
+            ? "bg-neon-green/10 border-neon-green/30 text-neon-green"
+            : "bg-white/5 border-dark-card-border text-gray-400"
+        }`}>
+          {isConnected ? <><CheckCircle2 size={18} /> Conectado</> : <><AlertCircle size={18} /> Desconectado</>}
         </div>
       </div>
 
       {msg && (
-        <div
-          className={`p-4 rounded-xl flex items-center gap-3 border ${
-            msg.type === "ok"
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-              : "bg-red-500/10 border-red-500/20 text-red-400"
-          }`}
-        >
-          {msg.type === "ok" ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+        <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 border text-sm ${
+          msg.type === "err"
+            ? "bg-red-500/10 border-red-500/30 text-red-400"
+            : "bg-neon-green/10 border-neon-green/30 text-neon-green"
+        }`}>
+          {msg.type === "ok" ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
           {msg.text}
         </div>
       )}
 
-      {!isConnected ? (
-        <div className="space-y-6">
-          <div className="text-sm text-gray-400 mb-6">
-            Conecta tu proveedor de WhatsApp Oficial (YCloud) para procesar leads.
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-white/[0.04] rounded-2xl border border-dark-card-border mb-8 overflow-x-auto">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-1 justify-center ${
+                activeTab === tab.id
+                  ? "bg-neon-purple/20 text-neon-purple border border-neon-purple/25"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              <Icon size={16} />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* TAB: CONEXIÓN */}
+      {activeTab === "conexion" && (
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 space-y-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Plug size={22} className="text-neon-purple" />
+            <h2 className="text-xl font-bold text-white">Conexión con YCloud</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* YCloud Card */}
-            <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl overflow-hidden hover:border-green-500/50 transition-all group">
-              <div className="h-40 relative overflow-hidden bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-b border-dark-card-border flex items-center justify-center">
-                 <div className="w-16 h-16 bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform">
-                   <MessageCircle size={32} className="text-green-400" />
-                 </div>
+          
+          {!isConnected ? (
+            <div className="space-y-6">
+              <div className="text-sm text-gray-400 mb-6">
+                Conecta tu proveedor de WhatsApp Oficial (YCloud) para procesar leads.
               </div>
-              <div className="p-6">
-                <h3 className="text-lg font-bold text-white mb-2">WhatsApp API Oficial</h3>
-                <p className="text-sm text-gray-400 mb-6 h-16">
-                  Integración con la API Oficial de WhatsApp (YCloud). Diseñado para alta disponibilidad, múltiples agentes y escalabilidad sin riesgo de baneo.
-                </p>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-white text-black font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-gray-200 w-auto inline-flex items-center gap-2"
-                >
-                  Conectar YCloud <span>→</span>
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-black/20 border border-dark-card-border rounded-2xl overflow-hidden hover:border-green-500/50 transition-all group">
+                  <div className="h-40 relative overflow-hidden bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-b border-dark-card-border flex items-center justify-center">
+                     <div className="w-16 h-16 bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-105 transition-transform">
+                       <MessageCircle size={32} className="text-green-400" />
+                     </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-white mb-2">WhatsApp API Oficial</h3>
+                    <p className="text-sm text-gray-400 mb-6 h-16">
+                      Integración con la API Oficial de WhatsApp (YCloud). Diseñado para alta disponibilidad, múltiples agentes y escalabilidad sin riesgo de baneo.
+                    </p>
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="bg-white text-black font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors hover:bg-gray-200 w-auto inline-flex items-center gap-2"
+                    >
+                      Conectar YCloud <span>→</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* If YCloud is connected */}
-          {isConnected && (
-            <>
-              <div className="bg-[#0a0c10] border border-green-500/30 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+          ) : (
+            <div className="space-y-6">
+              <div className="bg-black/20 border border-green-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-3xl" />
                 <div className="flex items-center gap-4 z-10">
                   <div className="w-12 h-12 bg-green-500/20 border border-green-500/30 rounded-full flex items-center justify-center">
@@ -280,7 +312,7 @@ export default function WhatsAppPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6">
+                <div className="bg-black/20 border border-dark-card-border rounded-2xl p-6">
                   <h3 className="text-white font-medium mb-4 flex items-center gap-2">
                     <ExternalLink size={18} className="text-neon-purple" />
                     Webhook Endpoint
@@ -313,7 +345,7 @@ export default function WhatsAppPage() {
                   </div>
                 </div>
 
-                <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6">
+                <div className="bg-black/20 border border-dark-card-border rounded-2xl p-6">
                   <h3 className="text-white font-medium mb-4 flex items-center gap-2">
                     <Lock className="text-neon-pink" />
                     Secreto del Webhook
@@ -350,7 +382,7 @@ export default function WhatsAppPage() {
                             }}
                             className="w-full sm:w-auto whitespace-nowrap bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-4 py-2 rounded-lg font-medium text-sm transition-colors border border-white/[0.06]"
                           >
-                            Cambiar clave
+                            Cambiar
                           </button>
                         </div>
                       ) : (
@@ -378,216 +410,212 @@ export default function WhatsAppPage() {
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
-
-
-
         </div>
       )}
 
-      {/* Bot Behavior Section */}
-      <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6 mt-8">
-        <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-          <MessageCircle size={18} className="text-neon-purple" />
-          Comportamiento del Bot (WhatsApp)
-        </h3>
-        <div className="text-sm text-gray-400 mb-6">
-          <p>Configura la velocidad con la que el bot responde a los mensajes en WhatsApp.</p>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-              Velocidad de Respuesta
-            </label>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <select
-                value={waDelayMode}
-                onChange={(e) => setWaDelayMode(e.target.value)}
-                className="bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
-              >
-                <option value="human">Simulación Humana (4 a 15 segundos)</option>
-                <option value="medium">Media (2 a 8 segundos)</option>
-                <option value="fast">Rápida (1 a 4 segundos)</option>
-                <option value="instant">Instantánea (Sin retraso)</option>
-              </select>
-              
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="whitespace-nowrap bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
-              >
-                {saving ? "Guardando..." : "Guardar Velocidad"}
-              </button>
-            </div>
+      {/* TAB: COMPORTAMIENTO */}
+      {activeTab === "comportamiento" && (
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 space-y-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap size={22} className="text-neon-purple" />
+            <h2 className="text-xl font-bold text-white">Comportamiento del Bot</h2>
           </div>
-        </div>
-      </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-black/20 border border-dark-card-border rounded-2xl p-6">
+              <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                <MessageCircle size={18} className="text-neon-purple" />
+                Velocidad de Respuesta
+              </h3>
+              <p className="text-sm text-gray-400 mb-6">Configura el tiempo que tarda el bot en enviar el mensaje. La simulación humana añade pausas para que parezca que alguien está escribiendo.</p>
 
-      {/* Handoff Section */}
-      <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6 mt-8">
-        <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-          <Link2 size={18} className="text-neon-pink" />
-          Número para Transferencia de Leads
-        </h3>
-        <div className="text-sm text-gray-400 mb-6">
-          <p>Ingresa el número real del cliente (con código de país, sin el '+'). A este número se redirigirán los leads una vez que el bot los califique.</p>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-              WhatsApp del Cliente
-            </label>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="text"
-                value={handoffNumber}
-                onChange={(e) => setHandoffNumber(e.target.value)}
-                placeholder="Ej. 5215555555555"
-                className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-pink/50 focus:bg-white/[0.06] transition-all"
-              />
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="whitespace-nowrap bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
-              >
-                {saving ? "Guardando..." : "Guardar Número"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Business Hours Section */}
-      <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-6 mt-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <div>
-            <h3 className="text-white font-medium flex items-center gap-2">
-              <Phone size={18} className="text-neon-purple" />
-              Horario Comercial (Anti-Ban)
-            </h3>
-            <p className="text-sm text-gray-400 mt-1">
-              Configura cuándo el asistente IA debe guardar silencio. Las reglas seguirán capturando leads 24/7.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 bg-white/[0.02] px-4 py-2 rounded-xl border border-white/[0.05]">
-            <span className="text-sm font-medium text-gray-300">Activar Horario</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer"
-                checked={bHoursEnabled}
-                onChange={(e) => setBHoursEnabled(e.target.checked)}
-              />
-              <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-purple"></div>
-            </label>
-          </div>
-        </div>
-
-        {bHoursEnabled && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* Timezone */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Zona Horaria
-              </label>
-              <select
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-                className="w-full sm:w-1/2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
-              >
-                <option value="America/Lima">America/Lima (Perú, Colombia)</option>
-                <option value="America/Mexico_City">America/Mexico_City</option>
-                <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
-                <option value="America/Santiago">America/Santiago (Chile)</option>
-                <option value="America/Bogota">America/Bogota</option>
-                <option value="America/Caracas">America/Caracas</option>
-                <option value="America/New_York">America/New_York (EST)</option>
-                <option value="Europe/Madrid">Europe/Madrid (España)</option>
-              </select>
-            </div>
-
-            {/* Matrix */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
-                Días de Atención
-              </label>
-              <div className="grid gap-3">
-                {[
-                  { id: 'monday', label: 'Lunes' },
-                  { id: 'tuesday', label: 'Martes' },
-                  { id: 'wednesday', label: 'Miércoles' },
-                  { id: 'thursday', label: 'Jueves' },
-                  { id: 'friday', label: 'Viernes' },
-                  { id: 'saturday', label: 'Sábado' },
-                  { id: 'sunday', label: 'Domingo' }
-                ].map(day => (
-                  <div key={day.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/[0.02] p-3 rounded-xl border border-white/[0.05]">
-                    <div className="w-32 flex items-center gap-2">
-                      <input 
-                        type="checkbox" 
-                        checked={schedule[day.id as keyof typeof schedule]?.enabled || false}
-                        onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], enabled: e.target.checked } }))}
-                        className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-neon-purple focus:ring-neon-purple focus:ring-offset-gray-900"
-                      />
-                      <span className="text-sm text-gray-300 font-medium">{day.label}</span>
-                    </div>
-                    {schedule[day.id as keyof typeof schedule]?.enabled ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="time"
-                          value={schedule[day.id as keyof typeof schedule]?.start || "09:00"}
-                          onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], start: e.target.value } }))}
-                          className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-neon-purple/50"
-                        />
-                        <span className="text-gray-500 text-sm">a</span>
-                        <input
-                          type="time"
-                          value={schedule[day.id as keyof typeof schedule]?.end || "18:00"}
-                          onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], end: e.target.value } }))}
-                          className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-neon-purple/50"
-                        />
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-500 font-medium px-3 py-1.5 bg-gray-800/50 rounded-lg">Cerrado</span>
-                    )}
-                  </div>
-                ))}
+              <div>
+                <select
+                  value={waDelayMode}
+                  onChange={(e) => setWaDelayMode(e.target.value)}
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
+                >
+                  <option value="human">Simulación Humana (4 a 15 segundos)</option>
+                  <option value="medium">Media (2 a 8 segundos)</option>
+                  <option value="fast">Rápida (1 a 4 segundos)</option>
+                  <option value="instant">Instantánea (Sin retraso)</option>
+                </select>
+                
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="mt-4 w-full bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
+                >
+                  {saving ? "Guardando..." : "Guardar Velocidad"}
+                </button>
               </div>
             </div>
 
-            {/* Out of hours message */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Mensaje de Ausencia
-              </label>
-              <textarea
-                value={bHoursMsg}
-                onChange={(e) => setBHoursMsg(e.target.value)}
-                rows={3}
-                placeholder="Mensaje que se enviará cuando el lead complete las preguntas fuera de horario..."
-                className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all resize-none"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Este mensaje solo se enviará una vez por día a cada lead que interactúe fuera de horario.
-              </p>
-            </div>
-            
-            <div className="pt-2">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full sm:w-auto bg-neon-purple hover:bg-neon-purple/80 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-              >
-                {saving ? <Skeleton className="w-5 h-5 rounded-full" /> : <Save size={16} />}
-                Guardar Horario Comercial
-              </button>
+            <div className="bg-black/20 border border-dark-card-border rounded-2xl p-6">
+              <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                <Link2 size={18} className="text-neon-pink" />
+                Transferencia de Leads
+              </h3>
+              <p className="text-sm text-gray-400 mb-6">Ingresa el número real (con código de país, sin el '+'). A este número se transferirán los leads si se requiere atención humana.</p>
+
+              <div>
+                <input
+                  type="text"
+                  value={handoffNumber}
+                  onChange={(e) => setHandoffNumber(e.target.value)}
+                  placeholder="Ej. 5215555555555"
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-pink/50 focus:bg-white/[0.06] transition-all"
+                />
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="mt-4 w-full bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
+                >
+                  {saving ? "Guardando..." : "Guardar Número"}
+                </button>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* TAB: HORARIOS */}
+      {activeTab === "horarios" && (
+        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-dark-card-border pb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Clock size={22} className="text-neon-purple" />
+                <h2 className="text-xl font-bold text-white">Horario Comercial (Anti-Ban)</h2>
+              </div>
+              <p className="text-sm text-gray-400">
+                Configura cuándo el asistente IA debe guardar silencio. Las reglas seguirán capturando leads 24/7.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 bg-white/[0.02] px-4 py-2 rounded-xl border border-white/[0.05]">
+              <span className="text-sm font-medium text-gray-300">Activar Horario</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer"
+                  checked={bHoursEnabled}
+                  onChange={(e) => setBHoursEnabled(e.target.checked)}
+                />
+                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-neon-purple"></div>
+              </label>
+            </div>
+          </div>
+
+          {bHoursEnabled ? (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Timezone */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                  Zona Horaria
+                </label>
+                <select
+                  value={timezone}
+                  onChange={(e) => setTimezone(e.target.value)}
+                  className="w-full sm:w-1/2 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
+                >
+                  <option value="America/Lima">America/Lima (Perú, Colombia)</option>
+                  <option value="America/Mexico_City">America/Mexico_City</option>
+                  <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
+                  <option value="America/Santiago">America/Santiago (Chile)</option>
+                  <option value="America/Bogota">America/Bogota</option>
+                  <option value="America/Caracas">America/Caracas</option>
+                  <option value="America/New_York">America/New_York (EST)</option>
+                  <option value="Europe/Madrid">Europe/Madrid (España)</option>
+                </select>
+              </div>
+
+              {/* Matrix */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">
+                  Días de Atención
+                </label>
+                <div className="grid gap-3">
+                  {[
+                    { id: 'monday', label: 'Lunes' },
+                    { id: 'tuesday', label: 'Martes' },
+                    { id: 'wednesday', label: 'Miércoles' },
+                    { id: 'thursday', label: 'Jueves' },
+                    { id: 'friday', label: 'Viernes' },
+                    { id: 'saturday', label: 'Sábado' },
+                    { id: 'sunday', label: 'Domingo' }
+                  ].map(day => (
+                    <div key={day.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/[0.02] p-3 rounded-xl border border-white/[0.05]">
+                      <div className="w-32 flex items-center gap-2">
+                        <input 
+                          type="checkbox" 
+                          checked={schedule[day.id as keyof typeof schedule]?.enabled || false}
+                          onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], enabled: e.target.checked } }))}
+                          className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-neon-purple focus:ring-neon-purple focus:ring-offset-gray-900"
+                        />
+                        <span className="text-sm text-gray-300 font-medium">{day.label}</span>
+                      </div>
+                      {schedule[day.id as keyof typeof schedule]?.enabled ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            value={schedule[day.id as keyof typeof schedule]?.start || "09:00"}
+                            onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], start: e.target.value } }))}
+                            className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-neon-purple/50"
+                          />
+                          <span className="text-gray-500 text-sm">a</span>
+                          <input
+                            type="time"
+                            value={schedule[day.id as keyof typeof schedule]?.end || "18:00"}
+                            onChange={(e) => setSchedule(prev => ({ ...prev, [day.id]: { ...prev[day.id as keyof typeof prev], end: e.target.value } }))}
+                            className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-neon-purple/50"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-500 font-medium px-3 py-1.5 bg-gray-800/50 rounded-lg">Cerrado</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Out of hours message */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                  Mensaje de Ausencia
+                </label>
+                <textarea
+                  value={bHoursMsg}
+                  onChange={(e) => setBHoursMsg(e.target.value)}
+                  rows={3}
+                  placeholder="Mensaje que se enviará cuando el lead complete las preguntas fuera de horario..."
+                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all resize-none"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Este mensaje solo se enviará una vez por día a cada lead que interactúe fuera de horario.
+                </p>
+              </div>
+              
+              <div className="pt-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="w-full sm:w-auto bg-neon-purple hover:bg-neon-purple/80 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                  {saving ? <Skeleton className="w-5 h-5 rounded-full" /> : <Save size={16} />}
+                  Guardar Horarios
+                </button>
+              </div>
+            </div>
+          ) : (
+             <div className="text-center py-12 text-gray-600 border border-dashed border-white/10 rounded-2xl">
+               <Clock size={36} className="mx-auto mb-3 opacity-40" />
+               <p className="text-sm max-w-md mx-auto">El horario comercial está desactivado. El bot responderá las 24 horas del día, los 7 días de la semana.</p>
+             </div>
+          )}
+        </div>
+      )}
 
       {/* Connection Modal */}
       {isModalOpen && (
@@ -652,10 +680,6 @@ export default function WhatsAppPage() {
           </div>
         </div>
       )}
-
-
-
-
     </div>
   );
 }
