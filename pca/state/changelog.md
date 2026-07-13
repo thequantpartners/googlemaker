@@ -1,7 +1,11 @@
 # Changelog
 
+## 2026-07-12
+- Added Master Bot configuration options to the SuperAdmin UI (`/admin/master-bot`), allowing admins to configure the bot's response speed, the lead transfer WhatsApp number, and the Anti-Ban commercial hours schedule.
+
 ## 2026-07-11
-- Integrated Native Google Calendar OAuth: Replaced Cal.com dependency with direct Google Calendar API integration via OAuth. Added `/auth/google-calendar` routes, secured refresh tokens, and exposed `get_gcal_availability` and `book_gcal_meeting` native AI tools to the Chat Engine for automatic AI scheduling.
+- Migrated Autopilot notifications from Telegram to WhatsApp Master Bot (Baileys) via Text-Based Menus. Intercepts client WhatsApp messages to the Master Bot and executes Google Ads actions in the background.
+- Integrated Native Google Calendar OAuth: Replaced Cal.com dependency con direct Google Calendar API integration via OAuth. Added `/auth/google-calendar` routes, secured refresh tokens, and exposed `get_gcal_availability` and `book_gcal_meeting` native AI tools to the Chat Engine for automatic AI scheduling.
 - Rediseño minimalista del Sidebar agrupando opciones por Categoría.
 - Se implementó Setup Guide (Onboarding) forzado para usuarios nuevos sin conexiones activas.
 - Instalación de la Arquitectura Master Bot en Baileys: Se integró nuevo modelo `whatsapp_phone`, endpoint en backend, settings UI en frontend, y un endpoint `POST /api/send` en el microservicio Node para enviar notificaciones de Leads capturados directamente al WhatsApp personal del cliente.

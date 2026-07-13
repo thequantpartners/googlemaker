@@ -10,6 +10,7 @@
 
 ## Done
 
+- [x] Migrated Autopilot notifications from Telegram to WhatsApp Master Bot (Baileys) via Text-Based Menus.
 - [x] Integrate Native Google Calendar OAuth and AI Tools for zero-touch automatic scheduling.
 - [x] Refactored UX: Sidebar minimalista, Setup Guide forzado, y arquitectura Master Bot (Baileys) para notificaciones de WhatsApp.
 - [x] Migrate Subscription Billing from Lemon Squeezy to Culqi (Webhook handlers, Checkouts).
@@ -74,3 +75,4 @@
 - [x] Integrated optimized Lead Form on Landing Page to register Google Ads conversions prior to WhatsApp handoff (2026-07-11)
 - [x] Developed internal Onboarding Creator to generate stateless, customized welcome portals (SOPs) for new agency clients (2026-07-11)
 - [x] Developed internal Landing Generator utilizing `jszip` to instantly compile and download static HTML/Tailwind templates for rapid deployment (2026-07-11)
+- [x] Added Master Bot configuration options (Response Speed, Lead Transfer Number, Anti-Ban Schedule) to the SuperAdmin UI (2026-07-12)

@@ -537,3 +537,98 @@ async def get_my_credentials_status(
     )
 
 
+# ── Magic Forms ───────────────────────────────────────────────────────────────
+
+from models import MagicForm
+from pydantic import BaseModel
+from typing import List
+
+class MagicFormQuestionOption(BaseModel):
+    text: str
+    score: int
+
+class MagicFormQuestion(BaseModel):
+    id: str
+    question: str
+    options: List[MagicFormQuestionOption]
+
+class MagicFormCreate(BaseModel):
+    title: str
+    subtitle: str | None = None
+    questions: List[MagicFormQuestion]
+    min_score_to_qualify: int
+    rejection_message: str
+
+class MagicFormOut(BaseModel):
+    id: str
+    title: str
+    subtitle: str | None
+    questions: List[MagicFormQuestion]
+    min_score_to_qualify: int
+    rejection_message: str
+    
+    class Config:
+        from_attributes = True
+
+@router.get("/me/magic-forms", response_model=List[MagicFormOut])
+async def get_my_magic_forms(
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(MagicForm).where(MagicForm.client_id == user.id))
+    return result.scalars().all()
+
+@router.post("/me/magic-forms", response_model=MagicFormOut)
+async def create_magic_form(
+    data: MagicFormCreate,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    form = MagicForm(
+        client_id=user.id,
+        title=data.title,
+        subtitle=data.subtitle,
+        questions=[q.model_dump() for q in data.questions],
+        min_score_to_qualify=data.min_score_to_qualify,
+        rejection_message=data.rejection_message
+    )
+    db.add(form)
+    await db.commit()
+    await db.refresh(form)
+    return form
+
+@router.put("/me/magic-forms/{form_id}", response_model=MagicFormOut)
+async def update_magic_form(
+    form_id: str,
+    data: MagicFormCreate,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(MagicForm).where(MagicForm.id == form_id, MagicForm.client_id == user.id))
+    form = result.scalar_one_or_none()
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+        
+    form.title = data.title
+    form.subtitle = data.subtitle
+    form.questions = [q.model_dump() for q in data.questions]
+    form.min_score_to_qualify = data.min_score_to_qualify
+    form.rejection_message = data.rejection_message
+    
+    await db.commit()
+    await db.refresh(form)
+    return form
+
+@router.delete("/me/magic-forms/{form_id}", status_code=204)
+async def delete_magic_form(
+    form_id: str,
+    user: User = Depends(require_client),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(MagicForm).where(MagicForm.id == form_id, MagicForm.client_id == user.id))
+    form = result.scalar_one_or_none()
+    if not form:
+        raise HTTPException(status_code=404, detail="Form not found")
+    await db.delete(form)
+    await db.commit()
+

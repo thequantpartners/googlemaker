@@ -20,7 +20,7 @@ from services.google_ads_service import (
     fetch_campaign_metrics,
     apply_campaign_action,
 )
-from services.telegram_service import send_telegram_message
+from services.baileys_service import send_master_notification
 
 router = APIRouter(prefix="/orchestrator", tags=["Orchestrator"])
 
@@ -245,29 +245,28 @@ async def run(
                         db.add(log)
                         await db.flush() # flush to get log.id
                         
-                        if client_user.telegram_chat_id and log_status == "pending":
+                        if client_user.whatsapp_phone and log_status == "pending":
                             if action_type == "PAUSE":
                                 text = (
-                                    f"👋 Hola {client_user.name}\n"
-                                    f"📢 Campaña {campaign['campaign_name']}\n"
-                                    f"🚨 Se detecto que la campaña {campaign['campaign_id']} empieza a gastar mucho dinero (${total_spend:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara por encima de tu límite.\n"
-                                    f"💡 Te sugerimos pausar para evitar perdida."
+                                    f"👋 Hola {client_user.name}\n\n"
+                                    f"📢 *Campaña:* {campaign['campaign_name']}\n"
+                                    f"🚨 Se detectó que la campaña empieza a gastar mucho dinero (${total_spend:.2f}) y tu CPA se dispara por encima de tu límite.\n\n"
+                                    f"💡 *Sugerencia:* Pausar temporalmente para evitar pérdidas.\n\n"
+                                    f"Responde con el número de tu decisión:\n"
+                                    f"1️⃣ Pausar automáticamente\n"
+                                    f"2️⃣ Ignorar por ahora"
                                 )
-                                buttons = [[
-                                    {"text": "🛑 PAUSAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
-                                    {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
-                                ]]
                             else:
                                 text = (
-                                    f"👋 Hola {client_user.name}\n"
-                                    f"📢 Campaña {campaign['campaign_name']}\n"
-                                    f"🚀 Tu campaña esta avanzando bien. Segun la data analizada, te sugerimos un {action_type.replace('_', ' ')}."
+                                    f"👋 Hola {client_user.name}\n\n"
+                                    f"📢 *Campaña:* {campaign['campaign_name']}\n"
+                                    f"🚀 Tu campaña está avanzando súper bien.\n\n"
+                                    f"💡 *Sugerencia:* {action_type.replace('_', ' ')}.\n\n"
+                                    f"Responde con el número de tu decisión:\n"
+                                    f"1️⃣ Escalar automáticamente\n"
+                                    f"2️⃣ Ignorar por ahora"
                                 )
-                                buttons = [[
-                                    {"text": "📈 ESCALAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
-                                    {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
-                                ]]
-                            await send_telegram_message(client_user.telegram_chat_id, text, buttons)
+                            await send_master_notification(client_user.whatsapp_phone, text)
 
                         cred_logs.append(log)
                 except Exception as inner_e:
@@ -378,29 +377,28 @@ async def cron_run(
                                 db.add(log)
                                 await db.flush() # get log.id
                                 
-                                if client_user.telegram_chat_id and log_status == "pending":
+                                if client_user.whatsapp_phone and log_status == "pending":
                                     if action_type == "PAUSE":
                                         text = (
-                                            f"👋 Hola {client_user.name}\n"
-                                            f"📢 Campaña {campaign['campaign_name']}\n"
-                                            f"🚨 Se detecto que la campaña {campaign['campaign_id']} empieza a gastar mucho dinero (${campaign['cost']:.2f}) y tu Costo Por Adquisición (Avg. CPA) se dispara por encima de tu límite.\n"
-                                            f"💡 Te sugerimos pausar para evitar perdida."
+                                            f"👋 Hola {client_user.name}\n\n"
+                                            f"📢 *Campaña:* {campaign['campaign_name']}\n"
+                                            f"🚨 Se detectó que la campaña empieza a gastar mucho dinero (${total_spend:.2f}) y tu CPA se dispara por encima de tu límite.\n\n"
+                                            f"💡 *Sugerencia:* Pausar temporalmente para evitar pérdidas.\n\n"
+                                            f"Responde con el número de tu decisión:\n"
+                                            f"1️⃣ Pausar automáticamente\n"
+                                            f"2️⃣ Ignorar por ahora"
                                         )
-                                        buttons = [[
-                                            {"text": "🛑 PAUSAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
-                                            {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
-                                        ]]
                                     else:
                                         text = (
-                                            f"👋 Hola {client_user.name}\n"
-                                            f"📢 Campaña {campaign['campaign_name']}\n"
-                                            f"🚀 Tu campaña esta avanzando bien. Segun la data analizada, te sugerimos un {action_type.replace('_', ' ')}."
+                                            f"👋 Hola {client_user.name}\n\n"
+                                            f"📢 *Campaña:* {campaign['campaign_name']}\n"
+                                            f"🚀 Tu campaña está avanzando súper bien.\n\n"
+                                            f"💡 *Sugerencia:* {action_type.replace('_', ' ')}.\n\n"
+                                            f"Responde con el número de tu decisión:\n"
+                                            f"1️⃣ Escalar automáticamente\n"
+                                            f"2️⃣ Ignorar por ahora"
                                         )
-                                        buttons = [[
-                                            {"text": "📈 ESCALAR AUTOMATICAMENTE", "callback_data": f"approve_{log.id}"},
-                                            {"text": "👁️ HACERLO YO MISMO", "callback_data": f"reject_{log.id}"}
-                                        ]]
-                                    await send_telegram_message(client_user.telegram_chat_id, text, buttons)
+                                    await send_master_notification(client_user.whatsapp_phone, text)
 
                                 cred_logs.append(log)
                         except Exception as inner_e:

@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks, Lock, MessageSquare, Wallet, Phone, Calendar } from "lucide-react";
+import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks, Lock, MessageSquare, Wallet, Phone, Calendar, LayoutTemplate } from "lucide-react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -55,18 +55,25 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       ]
     },
     {
-      title: "CANALES E IA",
+      title: "1. ADQUISICIÓN",
       items: [
-        { name: "WhatsApp Assistant", href: "/dashboard/whatsapp", icon: Phone, locked: true },
-        { name: "Web Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
-        { name: "Smart Calendar", href: "/dashboard/calendar", icon: Calendar, locked: true },
+        { name: "Campañas Ads", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
+        { name: "Ads Copilot", href: "/dashboard/logs", icon: Activity, locked: true },
       ]
     },
     {
-      title: "CRECIMIENTO",
+      title: "2. ATERRIZAJE",
       items: [
-        { name: "Campañas", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
-        { name: "Analytics & Logs", href: "/dashboard/logs", icon: Activity, locked: true },
+        { name: "Magic Forms", href: "/dashboard/magic-forms", icon: LayoutTemplate, locked: true },
+        { name: "Web Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
+      ]
+    },
+    {
+      title: "3. SETTER VIRTUAL",
+      items: [
+        { name: "Configuración Bot", href: "/dashboard/whatsapp", icon: Phone, locked: true },
+        { name: "Smart Calendar", href: "/dashboard/calendar", icon: Calendar, locked: true },
+        { name: "Cobros Auto", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
       ]
     },
     {
@@ -74,7 +81,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       items: [
         { name: "Configuración", href: "/dashboard/configuracion", icon: Settings, locked: true },
         { name: "Mi Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
-        { name: "Pagos", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
       ]
     }
   ];

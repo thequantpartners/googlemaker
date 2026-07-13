@@ -137,6 +137,10 @@ class User(Base):
         cascade="all, delete-orphan",
         uselist=False,
     )
+    magic_forms: Mapped[list["MagicForm"]] = relationship(
+        back_populates="client",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<User {self.email} role={self.role}>"
@@ -422,3 +426,47 @@ class ClientPaymentConfig(Base):
 
     def __repr__(self) -> str:
         return f"<ClientPaymentConfig user_id={self.user_id} provider={self.provider}>"
+
+# ── Magic Forms (Aterrizaje) ───────────────────────────────────────────────────
+
+class MagicForm(Base):
+    """
+    Hosted mini-landing pages with heuristic forms.
+    questions shape (JSONB array):
+    [
+      {
+        "id": "q1",
+        "question": "¿Cuál es tu presupuesto?",
+        "options": [
+          {"text": "Menos de $500", "score": -10},
+          {"text": "Más de $1,000", "score": 10}
+        ]
+      }
+    ]
+    """
+    __tablename__ = "magic_forms"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    client_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    
+    title: Mapped[str] = mapped_column(String(255), nullable=False, default="Inicia tu consulta")
+    subtitle: Mapped[str | None] = mapped_column(Text, nullable=True)
+    
+    questions: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
+    min_score_to_qualify: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
+    rejection_message: Mapped[str] = mapped_column(
+        Text, nullable=False, default="Lamentablemente, en este momento no podemos tomar tu caso. Gracias por tu interés."
+    )
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    client: Mapped["User"] = relationship(back_populates="magic_forms")
+
+    def __repr__(self) -> str:
+        return f"<MagicForm {self.id} client_id={self.client_id}>"
+
