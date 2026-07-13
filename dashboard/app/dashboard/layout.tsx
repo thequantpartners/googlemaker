@@ -139,6 +139,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   <Link
                     key={item.name}
                     href={item.href}
+                    onClick={() => setIsSidebarOpen(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all ${
                       isActive 
                       ? "bg-neon-green/10 text-neon-green border border-neon-green/20" 
