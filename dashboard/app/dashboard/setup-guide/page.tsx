@@ -208,7 +208,7 @@ export default function OnboardingPage() {
           {currentStep === 1 && (
             <div className="animate-fade-in">
               <h2 className="text-2xl font-bold text-white mb-2">1. Recibe tus Leads</h2>
-              <p className="text-gray-400 mb-8">Ingresa tu número de WhatsApp personal. Nuestro Master Bot te enviará al instante las alertas de tu <b>Autopiloto</b> y los datos de tus nuevos clientes (Leads).</p>
+              <p className="text-gray-400 mb-8">Ingresa tu número de WhatsApp personal. Nuestro Master Setter te enviará al instante las alertas de tu <b>Autopiloto</b> y los datos de tus nuevos clientes (Leads).</p>
               
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-300 mb-2">Tu Número de WhatsApp</label>

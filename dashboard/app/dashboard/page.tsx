@@ -365,8 +365,8 @@ function DashboardContent() {
                    <Phone size={24} />
                 </div>
                 <div>
-                   <h3 className="text-white font-semibold group-hover:text-neon-green transition-colors">WhatsApp Assistant</h3>
-                   <p className="text-xs text-gray-400 mt-1">Gestiona tu bot de WhatsApp</p>
+                   <h3 className="text-white font-semibold group-hover:text-neon-green transition-colors">Setter Virtual</h3>
+                   <p className="text-xs text-gray-400 mt-1">Gestiona tu setter virtual</p>
                 </div>
              </div>
           </Link>

@@ -205,13 +205,8 @@ export default function WhatsAppPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <MessageCircle className="text-neon-purple" size={32} />
-            WhatsApp Bot Config
-          </h1>
-          <p className="text-gray-400 mt-1 text-sm">
-            Conecta tu cuenta de YCloud para habilitar el motor IA y capturar conversiones offline.
-          </p>
+          <h1 className="text-3xl font-extrabold text-white mb-2 flex items-center gap-3">WhatsApp Setter Config <span className="px-3 py-1 rounded-full bg-neon-green/20 text-neon-green text-xs font-bold uppercase tracking-widest border border-neon-green/30">Alpha</span></h1>
+          <p className="text-gray-400">Integra tu propio número de WhatsApp o usa la API Oficial para automatizar respuestas.</p>
         </div>
         
         <div className={`flex items-center gap-2 px-5 py-2.5 rounded-full border font-semibold text-sm ${
@@ -418,63 +413,60 @@ export default function WhatsAppPage() {
       {/* TAB: COMPORTAMIENTO */}
       {activeTab === "comportamiento" && (
         <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 space-y-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Zap size={22} className="text-neon-purple" />
-            <h2 className="text-xl font-bold text-white">Comportamiento del Bot</h2>
-          </div>
+          <div className="bg-[#111520] border border-dark-card-border rounded-[2rem] p-6 lg:p-10 mb-8 shadow-xl">
+            <h2 className="text-xl font-bold text-white">Comportamiento del Setter</h2>
+            <p className="text-sm text-gray-400 mt-2 mb-8">Ajusta cómo la Inteligencia Artificial interactúa en WhatsApp.</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-black/20 border border-dark-card-border rounded-2xl p-6">
-              <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-                <MessageCircle size={18} className="text-neon-purple" />
-                Velocidad de Respuesta
-              </h3>
-              <p className="text-sm text-gray-400 mb-6">Configura el tiempo que tarda el bot en enviar el mensaje. La simulación humana añade pausas para que parezca que alguien está escribiendo.</p>
-
-              <div>
-                <select
-                  value={waDelayMode}
-                  onChange={(e) => setWaDelayMode(e.target.value)}
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
-                >
-                  <option value="human">Simulación Humana (4 a 15 segundos)</option>
-                  <option value="medium">Media (2 a 8 segundos)</option>
-                  <option value="fast">Rápida (1 a 4 segundos)</option>
-                  <option value="instant">Instantánea (Sin retraso)</option>
-                </select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-[#1A1F2B] p-6 rounded-2xl border border-white/5 mb-8">
+                <label className="block text-sm font-semibold text-gray-300 mb-2">Velocidad de Respuesta (Retraso Humano)</label>
+                <p className="text-sm text-gray-400 mb-6">Configura el tiempo que tarda el setter virtual en enviar el mensaje. La simulación humana añade pausas para que parezca que alguien está escribiendo.</p>
                 
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="mt-4 w-full bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
-                >
-                  {saving ? "Guardando..." : "Guardar Velocidad"}
-                </button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <select
+                    value={waDelayMode}
+                    onChange={(e) => setWaDelayMode(e.target.value)}
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-purple/50 focus:bg-white/[0.06] transition-all"
+                  >
+                    <option value="human">Simulación Humana (4 a 15 segundos)</option>
+                    <option value="medium">Media (2 a 8 segundos)</option>
+                    <option value="fast">Rápida (1 a 4 segundos)</option>
+                    <option value="instant">Instantánea (Sin retraso)</option>
+                  </select>
+                  
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="mt-4 w-full bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
+                  >
+                    {saving ? "Guardando..." : "Guardar Velocidad"}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="bg-black/20 border border-dark-card-border rounded-2xl p-6">
-              <h3 className="text-white font-medium mb-4 flex items-center gap-2">
-                <Link2 size={18} className="text-neon-pink" />
-                Transferencia de Leads
-              </h3>
-              <p className="text-sm text-gray-400 mb-6">Ingresa el número real (con código de país, sin el '+'). A este número se transferirán los leads si se requiere atención humana.</p>
+              <div className="bg-[#1A1F2B] p-6 rounded-2xl border border-white/5 mb-8">
+                <h3 className="text-white font-medium mb-4 flex items-center gap-2">
+                  <Link2 size={18} className="text-neon-pink" />
+                  Transferencia de Leads
+                </h3>
+                <p className="text-sm text-gray-400 mb-6">Ingresa el número real (con código de país, sin el '+'). A este número se transferirán los leads si se requiere atención humana.</p>
 
-              <div>
-                <input
-                  type="text"
-                  value={handoffNumber}
-                  onChange={(e) => setHandoffNumber(e.target.value)}
-                  placeholder="Ej. 5215555555555"
-                  className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-pink/50 focus:bg-white/[0.06] transition-all"
-                />
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="mt-4 w-full bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
-                >
-                  {saving ? "Guardando..." : "Guardar Número"}
-                </button>
+                <div>
+                  <input
+                    type="text"
+                    value={handoffNumber}
+                    onChange={(e) => setHandoffNumber(e.target.value)}
+                    placeholder="Ej. 5215555555555"
+                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-neon-pink/50 focus:bg-white/[0.06] transition-all"
+                  />
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="mt-4 w-full bg-white/[0.05] hover:bg-white/[0.1] text-gray-300 px-6 py-3 rounded-xl font-medium text-sm transition-colors border border-white/[0.06]"
+                  >
+                    {saving ? "Guardando..." : "Guardar Número"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -609,10 +601,11 @@ export default function WhatsAppPage() {
               </div>
             </div>
           ) : (
-             <div className="text-center py-12 text-gray-600 border border-dashed border-white/10 rounded-2xl">
-               <Clock size={36} className="mx-auto mb-3 opacity-40" />
-               <p className="text-sm max-w-md mx-auto">El horario comercial está desactivado. El bot responderá las 24 horas del día, los 7 días de la semana.</p>
-             </div>
+             <div className="bg-[#1A1F2B] p-8 text-center rounded-2xl border border-white/5">
+               <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/10"><Clock className="text-gray-400" size={32} /></div>
+               <h3 className="text-lg font-bold text-white mb-2">Horario 24/7 Activo</h3>
+               <p className="text-sm max-w-md mx-auto">El horario comercial está desactivado. El setter virtual responderá las 24 horas del día, los 7 días de la semana.</p>
+            </div>
           )}
         </div>
       )}

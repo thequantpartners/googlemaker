@@ -476,8 +476,9 @@ export default function ChatWidgetPage() {
                 <Plus size={16} /> Agregar Pregunta
               </button>
             </div>
+            <h3 className="text-xl font-bold text-white mb-2">Botones Rápidos (Heurística)</h3>
             <p className="text-gray-500 text-sm mb-6">
-              Define las preguntas iniciales que hará el bot. Cada opción suma puntos al score de intención.
+              Define las preguntas iniciales que hará el setter virtual. Cada opción suma puntos al score de intención.
               Cuando el score supere el <span className="text-neon-purple font-semibold">umbral</span>, la IA toma el control.
             </p>
 
@@ -915,7 +916,7 @@ function RuleQuestionCard({
                 onChange={(e) => onUpdateQuestion(qIdx, "response_type", e.target.value)}
                 className={`${inputCls} py-1.5 px-2`}
               >
-                <option value="options">Opciones (Botones)</option>
+                <option value="options">Opciones Rápidas</option>
                 <option value="text">Texto Libre / Input</option>
                 <option value="number">Número</option>
               </select>

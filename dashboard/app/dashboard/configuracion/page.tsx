@@ -176,13 +176,13 @@ export default function ConfiguracionPage() {
         </button>
       </div>
 
-      {/* WHATSAPP PERSONAL (MASTER BOT) */}
+      {/* WHATSAPP PERSONAL (MASTER SETTER) */}
       <div className="bg-dark-card backdrop-blur-xl border border-neon-green/30 rounded-[2rem] p-6 md:p-8 mt-8">
         <h2 className="text-xl font-bold text-neon-green mb-4 flex items-center gap-2 border-b border-neon-green/10 pb-4">
-          <Phone size={24} /> Alertas por WhatsApp (Master Bot)
+          <Phone size={24} /> Alertas por WhatsApp (Master Setter)
         </h2>
         <p className="text-gray-400 mb-6 leading-relaxed">
-          Ingresa tu número de WhatsApp personal con código de país (ej. +51999888777). El Master Bot de la agencia te enviará notificaciones instantáneas aquí cuando consigas un nuevo lead o agendes una cita.
+          Ingresa tu número de WhatsApp personal con código de país (ej. +51999888777). El Master Setter de la agencia te enviará notificaciones instantáneas aquí cuando consigas un nuevo lead o agendes una cita.
         </p>
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">

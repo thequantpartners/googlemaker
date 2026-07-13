@@ -226,7 +226,7 @@ export default function PublicMagicForm() {
               {result.ok ? (
                 <>
                   <div className="w-20 h-20 bg-neon-green/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_40px_rgba(37,211,102,0.3)]">
-                    <Bot size={40} className="text-neon-green" />
+                    <CheckCircle2 size={40} className="text-neon-green" />
                   </div>
                   <h2 className="text-3xl font-bold mb-4">¡Todo listo!</h2>
                   <p className="text-gray-300 text-lg leading-relaxed">{result.message}</p>

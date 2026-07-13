@@ -71,7 +71,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     {
       title: "3. SETTER VIRTUAL",
       items: [
-        { name: "Configuración Bot", href: "/dashboard/whatsapp", icon: Phone, locked: true },
+        { name: "Configuración Setter", href: "/dashboard/whatsapp", icon: Phone, locked: true },
         { name: "Smart Calendar", href: "/dashboard/calendar", icon: Calendar, locked: true },
         { name: "Cobros Auto", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
       ]

@@ -102,8 +102,8 @@ export default function MagicFormsPage() {
             <LayoutTemplate size={32} className="text-neon-purple" />
           </div>
           <h3 className="text-xl font-bold text-white">No tienes ningún Magic Form</h3>
-          <p className="text-gray-400 max-w-md mx-auto">
-            Crea tu primer formulario heurístico para empezar a filtrar curiosos y enviar solo leads ultra calificados a tu Master Bot.
+          <p className="text-gray-400 mb-8 max-w-md mx-auto">
+            Crea tu primer formulario heurístico para empezar a filtrar curiosos y enviar solo leads ultra calificados a tu Master Setter.
           </p>
         </div>
       ) : (

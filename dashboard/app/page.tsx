@@ -129,7 +129,7 @@ export default function LandingPage() {
               <ul className="space-y-6">
                 {[
                   "Un solo pago. Formularios, Calificación y Agendamiento en una sola plataforma.",
-                  "Atención al instante. El bot responde en menos de 2 segundos, 24/7.",
+                  "Atención al instante. El setter virtual responde en menos de 2 segundos, 24/7.",
                   "Atraes, filtras y agendas automáticamente. Sin intervención humana.",
                   "Tu equipo de ventas solo habla con prospectos precalificados listos para pagar."
                 ].map((item, i) => (
@@ -186,7 +186,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-bold mb-3">3. Setter Virtual (WhatsApp)</h3>
               <p className="text-gray-400 leading-relaxed">
-                En el instante que llenan el form, nuestro bot abre WhatsApp. Conversa fluidamente, rebate objeciones y revisa tu calendario para agendar la cita. Magia pura.
+                En el instante que llenan el form, nuestro setter virtual abre WhatsApp. Conversa fluidamente, rebate objeciones y revisa tu calendario para agendar la cita. Magia pura.
               </p>
             </div>
           </div>
@@ -252,7 +252,7 @@ export default function LandingPage() {
             Deja de Perder Dinero. <br className="hidden md:block"/>Sistematiza tus Ventas Hoy.
           </h2>
           <p className="text-xl text-gray-400 mb-16 max-w-2xl mx-auto">
-            No tienes que creernos. Llena el formulario a continuación y vive en carne propia cómo nuestro Master Bot califica y agenda, directo a tu WhatsApp.
+            No tienes que creernos. Llena el formulario a continuación y vive en carne propia cómo nuestro Master Setter califica y agenda, directo a tu WhatsApp.
           </p>
 
           <div className="bg-[#0A0D14]/80 backdrop-blur-2xl border border-white/10 p-2 rounded-[2.5rem] shadow-2xl mx-auto max-w-xl">
@@ -264,7 +264,7 @@ export default function LandingPage() {
                  </div>
                  <div>
                    <h3 className="text-2xl font-bold text-white">Empieza tu Demostración</h3>
-                   <p className="text-gray-400 text-sm">El bot te escribirá de inmediato por WhatsApp.</p>
+                   <p className="text-gray-400 text-sm">El setter virtual te escribirá de inmediato por WhatsApp.</p>
                  </div>
                </div>
                

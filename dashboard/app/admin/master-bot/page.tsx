@@ -71,12 +71,12 @@ export default function MasterBotPage() {
   }
 
   async function handleDisconnectBaileys() {
-    if (!confirm("¿Seguro que deseas eliminar la conexión del Master Bot?")) return;
+    if (!confirm("¿Seguro que deseas eliminar la conexión del Master Setter?")) return;
     try {
       await fetch(`${baileysUrl}/api/disconnect`, { method: "POST" }).catch(() => {});
       setBaileysStatus("disconnected");
       setBaileysQr(null);
-      setMsg({ type: "ok", text: "Conexión del Master Bot eliminada." });
+      setMsg({ type: "ok", text: "Conexión del Master Setter eliminada." });
       setTimeout(() => setMsg(null), 5000);
     } catch (e) {
       console.error(e);
@@ -94,7 +94,7 @@ export default function MasterBotPage() {
       <div>
         <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
           <Phone className="text-orange-500" size={32} />
-          Master Bot (Baileys)
+          Master Setter (Baileys)
         </h1>
         <p className="text-gray-400 text-lg">
           Servidor centralizado para notificar Leads a los clientes directamente a sus números personales.
@@ -114,9 +114,9 @@ export default function MasterBotPage() {
             <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <Phone size={32} className="text-orange-500" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Master Bot Desconectado</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Master Setter Desconectado</h2>
             <p className="text-gray-400 text-sm mb-8">
-              Genera un código QR para enlazar el número de la Agencia (Master Bot). Todos los leads de todos los clientes serán notificados desde este número.
+              Genera un código QR para enlazar el número de la Agencia (Master Setter). Todos los leads de todos los clientes serán notificados desde este número.
             </p>
             <button
               onClick={handleConnectBaileys}
@@ -150,28 +150,28 @@ export default function MasterBotPage() {
             <div className="w-24 h-24 bg-emerald-500/20 border border-emerald-500/30 rounded-full flex items-center justify-center mb-6 relative z-10 shadow-xl shadow-emerald-500/10">
               <CheckCircle2 size={48} className="text-emerald-500" />
             </div>
-            <h3 className="text-emerald-400 font-bold text-3xl mb-3 relative z-10">Master Bot Conectado</h3>
+            <h3 className="text-emerald-400 font-bold text-3xl mb-3 relative z-10">Master Setter Conectado</h3>
             <p className="text-gray-400 text-lg mb-10 max-w-md relative z-10">El motor IA de Baileys está enlazado exitosamente y listo para despachar leads.</p>
             
             <button
               onClick={handleDisconnectBaileys}
               className="px-8 py-3 bg-red-500/10 border border-red-500/30 text-red-400 font-bold rounded-xl hover:bg-red-500/20 transition-colors relative z-10"
             >
-              Desconectar Master Bot
+              Desconectar Master Setter
             </button>
           </div>
         )}
       </div>
 
       <div className="space-y-6 mt-12">
-        {/* Comportamiento del Bot */}
+        {/* Comportamiento del setter virtual */}
         <div className="bg-[#0a0c10] border border-gray-800/50 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-4">
             <MessageCircle className="text-purple-500" size={24} />
-            <h3 className="text-xl font-bold text-white">Comportamiento del Bot (WhatsApp)</h3>
+            <h3 className="text-xl font-bold text-white">Comportamiento del setter virtual (WhatsApp)</h3>
           </div>
           <p className="text-gray-400 text-sm mb-6">
-            Configura la velocidad con la que el bot responde a los mensajes en WhatsApp.
+            Configura la velocidad con la que el setter virtual responde a los mensajes en WhatsApp.
           </p>
           <div className="flex flex-col gap-2">
             <label className="text-xs font-semibold text-gray-500 tracking-wider">VELOCIDAD DE RESPUESTA</label>
@@ -202,7 +202,7 @@ export default function MasterBotPage() {
             <h3 className="text-xl font-bold text-white">Número para Transferencia de Leads</h3>
           </div>
           <p className="text-gray-400 text-sm mb-6">
-            Ingresa el número real del cliente (con código de país, sin el '+'). A este número se redirigirán los leads una vez que el bot los califique.
+            Ingresa el número real del cliente (con código de país, sin el '+'). A este número se redirigirán los leads una vez que el setter virtual los califique.
           </p>
           <div className="flex flex-col gap-2">
             <label className="text-xs font-semibold text-gray-500 tracking-wider">WHATSAPP DEL CLIENTE</label>
