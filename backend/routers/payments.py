@@ -2,10 +2,13 @@ import os
 import hmac
 import hashlib
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, Body
+import base64
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
+import uuid
+import json
 
 from database import get_db
 from models import User, UserTier
@@ -13,127 +16,137 @@ from auth import get_current_user
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
-CULQI_PRIVATE_KEY = os.getenv("CULQI_PRIVATE_KEY")
+IZIPAY_USERNAME = os.getenv("IZIPAY_USERNAME")
+IZIPAY_PASSWORD = os.getenv("IZIPAY_PASSWORD")
+IZIPAY_HMAC_KEY = os.getenv("IZIPAY_HMAC_KEY")
 
-# Mapping our system tiers to Culqi Plan IDs (These must be created in Culqi Panel)
-CULQI_PLAN_MAP = {
-    "starter": "pln_test_starter_97",
-    "growth": "pln_test_growth_199",
-    "pro": "pln_test_scale_499"
+IZIPAY_PRICES = {
+    "starter": 9700,   # 97.00 PEN (amount in cents)
+    "growth": 19900,  # 199.00 PEN
+    "pro": 49900      # 499.00 PEN
 }
 
-class SubscriptionRequest(BaseModel):
-    token_id: str
+class FormTokenRequest(BaseModel):
     tier: UserTier
 
 
-@router.post("/create-subscription")
-async def create_subscription(
-    request: SubscriptionRequest,
+@router.post("/create-form-token")
+async def create_form_token(
+    request: FormTokenRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Creates a Culqi Customer, adds the Card (Token), and subscribes them to a Plan.
-    """
-    if not CULQI_PRIVATE_KEY:
-        raise HTTPException(status_code=500, detail="Culqi credentials not configured")
+    \"\"\"
+    Calls Izipay (Lyra) API to generate a formToken for the Pop-In checkout.
+    \"\"\"
+    if not IZIPAY_USERNAME or not IZIPAY_PASSWORD:
+        raise HTTPException(status_code=500, detail="Izipay credentials not configured")
 
-    plan_id = CULQI_PLAN_MAP.get(request.tier.value)
-    if not plan_id:
+    amount = IZIPAY_PRICES.get(request.tier.value)
+    if not amount:
         raise HTTPException(status_code=400, detail="Invalid tier selected")
 
+    auth_str = f"{IZIPAY_USERNAME}:{IZIPAY_PASSWORD}"
+    auth_b64 = base64.b64encode(auth_str.encode()).decode("utf-8")
+
     headers = {
-        "Authorization": f"Bearer {CULQI_PRIVATE_KEY}",
+        "Authorization": f"Basic {auth_b64}",
         "Content-Type": "application/json",
     }
 
-    async with httpx.AsyncClient() as client:
-        # 1. Create Customer
-        customer_payload = {
-            "first_name": user.name.split(" ")[0] if user.name else "Cliente",
-            "last_name": user.name.split(" ")[1] if len(user.name.split(" ")) > 1 else "QSS",
+    payload = {
+        "amount": amount,
+        "currency": "PEN",
+        "orderId": f"order_{uuid.uuid4().hex[:8]}",
+        "customer": {
             "email": user.email,
-            "address": "Lima, Peru",
-            "address_city": "Lima",
-            "phone_number": "999999999", # Can be extracted from Lead or Profile later
-            "country_code": "PE"
-        }
-        res_cust = await client.post("https://api.culqi.com/v2/customers", headers=headers, json=customer_payload)
-        if res_cust.status_code >= 400:
-            raise HTTPException(status_code=400, detail=f"Culqi Customer Error: {res_cust.text}")
-        customer_id = res_cust.json().get("id")
+            "reference": str(user.id)
+        },
+        "metadata": {
+            "tier": request.tier.value,
+            "user_id": str(user.id)
+        },
+        "formAction": "ASK_REGISTER_PAY", 
+        "paymentRule": "RRULE:FREQ=MONTHLY" 
+    }
 
-        # 2. Create Card using the Token
-        card_payload = {
-            "customer_id": customer_id,
-            "token_id": request.token_id
-        }
-        res_card = await client.post("https://api.culqi.com/v2/cards", headers=headers, json=card_payload)
-        if res_card.status_code >= 400:
-            raise HTTPException(status_code=400, detail=f"Culqi Card Error: {res_card.text}")
-        card_id = res_card.json().get("id")
-
-        # 3. Create Subscription
-        sub_payload = {
-            "card_id": card_id,
-            "plan_id": plan_id,
-            "metadata": {
-                "user_id": str(user.id)
-            }
-        }
-        res_sub = await client.post("https://api.culqi.com/v2/subscriptions", headers=headers, json=sub_payload)
-        if res_sub.status_code >= 400:
-            raise HTTPException(status_code=400, detail=f"Culqi Subscription Error: {res_sub.text}")
-        
-        # Optimistically update user tier
-        user.tier = request.tier
-        await db.commit()
-
-        return {"status": "success", "subscription_id": res_sub.json().get("id")}
+    try:
+        async with httpx.AsyncClient() as client:
+            res = await client.post("https://api.micuentaweb.pe/api-payment/V4/Charge/CreatePayment", headers=headers, json=payload, timeout=10.0)
+            
+            if res.status_code == 200:
+                data = res.json()
+                if data.get("status") == "SUCCESS":
+                    return {"status": "success", "formToken": data["answer"]["formToken"]}
+                else:
+                    raise HTTPException(status_code=400, detail=f"Izipay Error: {data}")
+            else:
+                raise HTTPException(status_code=400, detail=f"Izipay API Error: {res.text}")
+    except Exception as e:
+        print(f"Error connecting to Izipay: {e}")
+        raise HTTPException(status_code=500, detail="Payment gateway unavailable")
 
 
 @router.post("/webhook")
-async def culqi_webhook(
+async def izipay_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Listens to Culqi Webhook events (e.g., subscription.created, charge.failed).
-    """
+    \"\"\"
+    Izipay IPN (Instant Payment Notification).
+    Validates the HMAC-SHA-256 signature and updates user tier.
+    \"\"\"
     try:
-        payload = await request.json()
+        form_data = await request.form()
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+        raise HTTPException(status_code=400, detail="Invalid form data")
 
-    event_type = payload.get("type")
-    data = payload.get("data", {})
-    print(f"Culqi webhook received: {event_type}")
+    kr_answer = form_data.get("kr-answer")
+    kr_hash = form_data.get("kr-hash")
+    kr_hash_algorithm = form_data.get("kr-hash-algorithm")
 
-    # The metadata contains our internal user_id
-    metadata = data.get("metadata", {})
+    if not kr_answer or not kr_hash:
+        raise HTTPException(status_code=400, detail="Missing Izipay parameters")
+
+    # Validate signature
+    if not IZIPAY_HMAC_KEY:
+        print("Webhook error: IZIPAY_HMAC_KEY not set")
+        return {"status": "error"}
+
+    calculated_hash = hmac.new(
+        IZIPAY_HMAC_KEY.encode("utf-8"),
+        kr_answer.encode("utf-8"),
+        hashlib.sha256
+    ).hexdigest()
+
+    if calculated_hash != kr_hash:
+        print("Webhook error: Invalid signature")
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    answer_data = json.loads(kr_answer)
+    order_status = answer_data.get("orderStatus")
+    
+    metadata = answer_data.get("metadata", {})
     user_id = metadata.get("user_id")
+    tier_str = metadata.get("tier")
 
     if not user_id:
-        # If it's a charge event, metadata might be nested or we might need to look up the customer
-        print("Webhook missing user_id in metadata, ignoring.")
-        return {"status": "ignored", "reason": "missing user_id"}
+        print("Webhook missing user_id")
+        return {"status": "ignored"}
 
-    if event_type in ("subscription.creation.succeeded", "charge.succeeded"):
-        # Payment successful, ensure user has the correct tier based on plan_id
-        # Note: In a robust implementation, you fetch the user and ensure they are active.
-        pass 
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        print(f"User {user_id} not found for webhook")
+        return {"status": "ignored"}
 
-    elif event_type in ("subscription.deleted", "charge.failed"):
-        # Downgrade user if payment fails
-        result = await db.execute(select(User).where(User.id == user_id))
-        user = result.scalar_one_or_none()
-
-        if user:
-            print(f"Downgrading user {user_id} tier to none due to {event_type}")
-            user.tier = UserTier.none
-            await db.commit()
-        else:
-            print(f"User {user_id} not found")
+    if order_status == "PAID":
+        print(f"Payment successful for user {user.email}. Upgrading to {tier_str}")
+        user.tier = UserTier(tier_str) if tier_str else UserTier.pro
+        await db.commit()
+    elif order_status in ["UNPAID", "REJECTED", "CANCELLED"]:
+        print(f"Payment failed/cancelled for user {user.email}. Downgrading to none.")
+        user.tier = UserTier.none
+        await db.commit()
 
     return {"status": "success"}

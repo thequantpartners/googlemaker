@@ -4,15 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
 import { CheckCircle2, AlertCircle, Activity } from "lucide-react";
 import PricingCards from "../../components/PricingCards";
-import Script from "next/script";
-
-// Define the global window object for Culqi
-declare global {
-  interface Window {
-    Culqi: any;
-    culqi: () => void;
-  }
-}
+import KRGlue from "@lyracom/embedded-form-glue";
 
 export default function PlanesPage() {
   const { data: session } = useSession();
@@ -20,7 +12,6 @@ export default function PlanesPage() {
   const [loading, setLoading] = useState(true);
   const [selectingPlan, setSelectingPlan] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const selectedTierRef = useRef<string | null>(null);
 
   const fetchProfile = async () => {
     if (!session?.backendToken) return;
@@ -43,85 +34,71 @@ export default function PlanesPage() {
     fetchProfile();
   }, [session]);
 
-  // Setup the global Culqi callback
-  useEffect(() => {
-    window.culqi = async () => {
-      if (window.Culqi.token) {
-        const token = window.Culqi.token.id;
-        const tier = selectedTierRef.current;
-        
-        if (!tier) {
-          setErrorMsg("Error: No se encontró el plan seleccionado.");
-          setSelectingPlan(false);
-          return;
-        }
-
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create-subscription`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${session?.backendToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ token_id: token, tier }),
-          });
-
-          if (res.ok) {
-            // Subscription created successfully!
-            window.location.href = "/dashboard/onboarding";
-          } else {
-            const errData = await res.json();
-            setErrorMsg(errData.detail || "Error al procesar la suscripción.");
-          }
-        } catch (err) {
-          setErrorMsg("Error de red al crear la suscripción.");
-        } finally {
-          setSelectingPlan(false);
-        }
-      } else {
-        console.error(window.Culqi.error);
-        setErrorMsg(window.Culqi.error.user_message);
-        setSelectingPlan(false);
-      }
-    };
-  }, [session]);
-
   const handleSelectPlan = async (tier: string) => {
-    if (!session?.backendToken || !window.Culqi) return;
+    if (!session?.backendToken) return;
     setSelectingPlan(true);
     setErrorMsg("");
-    selectedTierRef.current = tier;
 
-    // Define amount based on tier
-    let amountInCents = 0;
-    if (tier === "starter") amountInCents = 9700;
-    else if (tier === "growth") amountInCents = 19900;
-    else if (tier === "pro") amountInCents = 49900;
+    try {
+      // 1. Get form token from backend
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create-form-token`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.backendToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tier }),
+      });
 
-    if (amountInCents === 0) {
-      setErrorMsg("Plan inválido.");
-      setSelectingPlan(false);
-      return;
-    }
-
-    // Configure Culqi
-    window.Culqi.publicKey = process.env.NEXT_PUBLIC_CULQI_PUBLIC_KEY;
-    window.Culqi.settings({
-      title: 'QSS Suscripción',
-      currency: 'PEN',
-      amount: amountInCents,
-    });
-
-    window.Culqi.options({
-      lang: 'es',
-      modal: true,
-      style: {
-        logo: 'https://culqi.com/LogoCulqi.png', // Or custom QSS logo
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.detail || "Error al generar el pago.");
       }
-    });
 
-    // Open Checkout
-    window.Culqi.open();
+      const data = await res.json();
+      const formToken = data.formToken;
+
+      // 2. Load Lyra Pop-in
+      const { KR } = await KRGlue.loadLibrary(
+        "https://static.micuentaweb.pe", 
+        process.env.NEXT_PUBLIC_IZIPAY_PUBLIC_KEY!
+      );
+
+      await KR.setFormConfig({
+        formToken: formToken,
+        "kr-language": "es-ES",
+      });
+
+      // 3. Render and Open Pop-in
+      // We must create an element to attach the popin
+      let container = document.getElementById("izipay-container");
+      if (!container) {
+          container = document.createElement("div");
+          container.id = "izipay-container";
+          container.className = "kr-embedded";
+          container.setAttribute("kr-popin", "true");
+          document.body.appendChild(container);
+      }
+
+      await KR.attachForm("#izipay-container");
+
+      KR.onSubmit(async (paymentData) => {
+        if (paymentData.clientAnswer.orderStatus === "PAID") {
+           window.location.href = "/dashboard/onboarding";
+        } else {
+           setErrorMsg("El pago no fue procesado. Intenta con otra tarjeta.");
+        }
+        return false;
+      });
+
+      await KR.openPopin("#izipay-container");
+
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || "Error de conexión con la pasarela de pagos.");
+    } finally {
+      setSelectingPlan(false);
+    }
   };
 
   if (loading) {
@@ -135,11 +112,10 @@ export default function PlanesPage() {
 
   return (
     <div className="max-w-6xl mx-auto pb-20 animate-fade-in-up">
-      <Script src="https://checkout.culqi.com/js/v4" strategy="lazyOnload" />
       <div className="text-center md:text-left mb-12">
         <h1 className="text-3xl font-bold text-white mb-2">Mi Plan</h1>
         <p className="text-gray-400 text-lg">
-          Activa tu suscripción para darle vida a tu Recepcionista Inteligente.
+          Activa tu suscripción mensual para darle vida a tu Recepcionista Inteligente.
         </p>
       </div>
 
@@ -149,11 +125,26 @@ export default function PlanesPage() {
         </div>
       )}
 
+      {currentTier && currentTier !== "none" ? (
+        <div className="mb-12 bg-white/5 border border-white/10 p-6 rounded-2xl flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-white mb-1">Plan Actual</h3>
+            <p className="text-gray-400">
+              Tu cuenta está activa en el plan <span className="text-neon-purple font-bold uppercase">{currentTier}</span>
+            </p>
+          </div>
+          <div className="bg-neon-purple/20 text-neon-purple px-4 py-2 rounded-full font-bold flex items-center gap-2">
+            <CheckCircle2 size={18} /> Activo
+          </div>
+        </div>
+      ) : null}
+
       <PricingCards 
-        currentTier={currentTier} 
-        selectingPlan={selectingPlan} 
         onSelectPlan={handleSelectPlan} 
+        currentTier={currentTier}
       />
+      
+      {/* Container where Izipay will inject itself if needed, though we append it to body dynamically */}
     </div>
   );
 }
