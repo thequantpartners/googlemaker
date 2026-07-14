@@ -42,3 +42,5 @@
 - **2026-07-11 (Midnight)**: Migrated Autopilot notifications from Telegram to WhatsApp via the Master Bot (Baileys) architecture. Replaced interactive Telegram buttons with text-based numerical menus (1, 2) to protect the Master Bot from bans. Updated `orchestrator.py` to use `send_master_notification` and intercepted client replies in the `baileys` webhook to execute background Google Ads actions.
 - **2026-07-12**: Added Master Bot configuration options to the SuperAdmin UI (`/admin/master-bot`), allowing admins to configure the bot's response speed, the lead transfer WhatsApp number, and the Anti-Ban commercial hours schedule.
 2026-07-12T21:41:00Z: Sync after redesigning Landing Page and renaming bot to setter virtual.
+2 0 2 6 - 0 7 - 1 4   -   M i g r a t e d   t o   M e r c a d o   P a g o .   P r o m o t e d   s u p e r a d m i n .  
+ 
