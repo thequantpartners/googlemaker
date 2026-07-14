@@ -74,7 +74,7 @@ export default function MagicFormBuilder() {
       ...form,
       questions: [
         ...form.questions,
-        { id: `q_${Date.now()}`, question: "¿Nueva Pregunta?", options: [{ text: "Opción 1", score: 10 }] }
+        { id: `q_${Date.now()}`, type: "multiple_choice", question: "¿Nueva Pregunta?", options: [{ text: "Opción 1", score: 10 }] }
       ]
     });
   };
@@ -82,6 +82,13 @@ export default function MagicFormBuilder() {
   const removeQuestion = (idx: number) => {
     const q = [...form.questions];
     q.splice(idx, 1);
+    setForm({ ...form, questions: q });
+  };
+
+  const updateQuestionType = (idx: number, type: string) => {
+    const q = [...form.questions];
+    q[idx].type = type;
+    if (!q[idx].options) q[idx].options = [{ text: "Opción 1", score: 10 }];
     setForm({ ...form, questions: q });
   };
 
@@ -214,13 +221,32 @@ export default function MagicFormBuilder() {
                     className="flex-1 bg-transparent border-b border-white/20 px-2 py-1 text-white font-medium focus:border-neon-purple outline-none"
                     placeholder="Ej: ¿Cuál es tu presupuesto?"
                   />
+                  <select
+                    value={q.type || "multiple_choice"}
+                    onChange={e => updateQuestionType(qIdx, e.target.value)}
+                    className="bg-black/40 border border-white/10 rounded-lg px-3 py-1 text-sm text-gray-300 focus:border-neon-purple outline-none"
+                  >
+                    <option value="short_text">Texto corto</option>
+                    <option value="long_text">Párrafo</option>
+                    <option value="multiple_choice">Opción múltiple</option>
+                    <option value="checkboxes">Casillas</option>
+                  </select>
                   <button onClick={() => removeQuestion(qIdx)} className="text-gray-500 hover:text-red-500 p-2">
                     <Trash2 size={16} />
                   </button>
                 </div>
                 
+                {(q.type === 'short_text' || q.type === 'long_text') ? (
+                  <div className="pl-4 pt-2">
+                    <input 
+                      disabled 
+                      placeholder={q.type === 'short_text' ? "Texto de respuesta corta" : "Texto de respuesta larga"} 
+                      className="w-full bg-white/5 border border-dashed border-white/20 rounded-lg px-4 py-3 text-sm text-gray-500 cursor-not-allowed"
+                    />
+                  </div>
+                ) : (
                 <div className="space-y-2 pl-4">
-                  {q.options.map((opt: any, oIdx: number) => (
+                  {(q.options || []).map((opt: any, oIdx: number) => (
                     <div key={oIdx} className="flex gap-2 items-center">
                       <div className="w-2 h-2 rounded-full bg-neon-purple/50" />
                       <input 
@@ -247,6 +273,7 @@ export default function MagicFormBuilder() {
                     <Plus size={12} /> Añadir opción
                   </button>
                 </div>
+                )}
               </div>
             ))}
             

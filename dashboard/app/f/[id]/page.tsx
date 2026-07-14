@@ -47,8 +47,9 @@ export default function PublicMagicForm() {
       }
     } else if (step >= 0 && step < form.questions.length) {
       const q = form.questions[step];
-      if (!answers[q.id]) {
-        alert("Por favor selecciona una opción.");
+      const ans = answers[q.id];
+      if (!ans || (Array.isArray(ans) && ans.length === 0) || (typeof ans === 'string' && ans.trim() === '')) {
+        alert("Por favor responde a esta pregunta.");
         return;
       }
     }
@@ -68,11 +69,24 @@ export default function PublicMagicForm() {
     const answersRecord: Record<string, string> = {};
     
     form.questions.forEach((q: any) => {
-      const selectedOptionText = answers[q.id];
-      answersRecord[q.id] = selectedOptionText;
+      const ans = answers[q.id];
+      const qType = q.type || 'multiple_choice';
       
-      const opt = q.options.find((o: any) => o.text === selectedOptionText);
-      if (opt) totalScore += opt.score;
+      if (qType === 'short_text' || qType === 'long_text') {
+        answersRecord[q.id] = ans;
+      } else if (qType === 'checkboxes') {
+        answersRecord[q.id] = Array.isArray(ans) ? ans.join(', ') : ans;
+        if (Array.isArray(ans)) {
+          ans.forEach((selectedText: string) => {
+            const opt = (q.options || []).find((o: any) => o.text === selectedText);
+            if (opt) totalScore += (opt.score || 0);
+          });
+        }
+      } else {
+        answersRecord[q.id] = ans;
+        const opt = (q.options || []).find((o: any) => o.text === ans);
+        if (opt) totalScore += (opt.score || 0);
+      }
     });
 
     try {
@@ -197,25 +211,66 @@ export default function PublicMagicForm() {
             <div className="animate-fade-in-up" key={step}>
               <h2 className="text-2xl font-bold mb-6 text-center">{form.questions[step].question}</h2>
               <div className="space-y-3">
-                {form.questions[step].options.map((opt: any, i: number) => {
-                  const isSelected = answers[form.questions[step].id] === opt.text;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => setAnswers({...answers, [form.questions[step].id]: opt.text})}
-                      className={`w-full text-left px-5 py-4 rounded-xl border transition-all duration-200 ${
-                        isSelected 
-                          ? "bg-neon-purple/20 border-neon-purple text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] scale-[1.02]" 
-                          : "bg-black/20 border-white/10 text-gray-300 hover:border-white/30 hover:bg-white/5"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{opt.text}</span>
-                        {isSelected && <CheckCircle2 className="text-neon-purple" size={20} />}
+                {(() => {
+                  const q = form.questions[step];
+                  const qType = q.type || 'multiple_choice';
+
+                  if (qType === 'short_text' || qType === 'long_text') {
+                    return (
+                      <div className="mt-4">
+                        {qType === 'short_text' ? (
+                          <input 
+                            type="text"
+                            value={answers[q.id] || ""}
+                            onChange={e => setAnswers({...answers, [q.id]: e.target.value})}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:border-neon-purple focus:ring-1 focus:ring-neon-purple outline-none transition-all"
+                            placeholder="Tu respuesta..."
+                          />
+                        ) : (
+                          <textarea 
+                            value={answers[q.id] || ""}
+                            onChange={e => setAnswers({...answers, [q.id]: e.target.value})}
+                            rows={4}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:border-neon-purple focus:ring-1 focus:ring-neon-purple outline-none transition-all resize-none"
+                            placeholder="Tu respuesta..."
+                          />
+                        )}
                       </div>
-                    </button>
-                  );
-                })}
+                    );
+                  }
+
+                  return (q.options || []).map((opt: any, i: number) => {
+                    const isCheckbox = qType === 'checkboxes';
+                    const currentAnswers = answers[q.id] || (isCheckbox ? [] : "");
+                    const isSelected = isCheckbox ? currentAnswers.includes(opt.text) : currentAnswers === opt.text;
+                    
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          if (isCheckbox) {
+                            const newAnswers = isSelected 
+                              ? currentAnswers.filter((a: string) => a !== opt.text)
+                              : [...currentAnswers, opt.text];
+                            setAnswers({...answers, [q.id]: newAnswers});
+                          } else {
+                            setAnswers({...answers, [q.id]: opt.text});
+                          }
+                        }}
+                        className={`w-full text-left px-5 py-4 rounded-xl border transition-all duration-200 ${
+                          isSelected 
+                            ? "bg-neon-purple/20 border-neon-purple text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] scale-[1.02]" 
+                            : "bg-black/20 border-white/10 text-gray-300 hover:border-white/30 hover:bg-white/5"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{opt.text}</span>
+                          {isSelected && <CheckCircle2 className="text-neon-purple" size={20} />}
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}
