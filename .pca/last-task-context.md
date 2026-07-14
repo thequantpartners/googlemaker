@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-superadmin master bot
+Add WhatsApp Virtual Setter config, goals (charge and schedule), master prompt, and UI switches
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
-- [general] docs: close task and update context logs (2026-07-12T02:41:54.416Z)
-- [general] docs: close task and update context logs (2026-07-12T01:53:19.018Z)
-- [general] docs: close task and update context logs (2026-07-11T23:40:18.139Z)
+- [general] docs: close task and update context logs (2026-07-13T02:42:37.182Z)
+- [general] docs: close task and update context logs (2026-07-13T01:59:18.731Z)
+- [general] docs: close task and update context logs (2026-07-12T23:00:01.911Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

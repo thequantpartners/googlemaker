@@ -9,7 +9,6 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@lyracom/embedded-form-glue": "^1.4.4",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.40.0",
     "jszip": "^3.10.1",

@@ -76,3 +76,4 @@
 - [x] Developed internal Onboarding Creator to generate stateless, customized welcome portals (SOPs) for new agency clients (2026-07-11)
 - [x] Developed internal Landing Generator utilizing `jszip` to instantly compile and download static HTML/Tailwind templates for rapid deployment (2026-07-11)
 - [x] Added Master Bot configuration options (Response Speed, Lead Transfer Number, Anti-Ban Schedule) to the SuperAdmin UI (2026-07-12)
+- [x] Rediseño de Landing Page enfocado a beneficios (arquitectura GHL) `2026-07-12` `QSS` `Frontend`

@@ -1,10 +1,9 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, AlertCircle, Activity } from "lucide-react";
 import PricingCards from "../../components/PricingCards";
-import KRGlue from "@lyracom/embedded-form-glue";
 
 export default function PlanesPage() {
   const { data: session } = useSession();
@@ -40,8 +39,8 @@ export default function PlanesPage() {
     setErrorMsg("");
 
     try {
-      // 1. Get form token from backend
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create-form-token`, {
+      // 1. Ask backend to create a Mercado Pago subscription preapproval plan
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/create-subscription`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${session.backendToken}`,
@@ -52,38 +51,21 @@ export default function PlanesPage() {
 
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.detail || "Error al generar el pago.");
+        throw new Error(errData.detail || "Error al generar la suscripción.");
       }
 
       const data = await res.json();
-      const formToken = data.formToken;
-
-      // 2. Load Lyra Pop-in
-      const { KR } = await KRGlue.loadLibrary(
-        "https://static.micuentaweb.pe", 
-        process.env.NEXT_PUBLIC_IZIPAY_PUBLIC_KEY!
-      );
-
-      await KR.setFormConfig({
-        formToken: formToken,
-        "kr-language": "es-ES",
-      });
-
-      // 3. Render and Open Pop-in
-      KR.onSubmit(async (paymentData) => {
-        if (paymentData.clientAnswer.orderStatus === "PAID") {
-           window.location.href = "/dashboard/onboarding";
-        } else {
-           setErrorMsg("El pago no fue procesado. Intenta con otra tarjeta.");
-        }
-        return false;
-      });
-
-      await KR.openPopin();
+      
+      // 2. Redirect the user to Mercado Pago's secure checkout page
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        throw new Error("No se recibió el enlace de pago de Mercado Pago.");
+      }
 
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err?.message || "Error de conexión con la pasarela de pagos.");
+      setErrorMsg(err?.message || "Error de conexión con Mercado Pago.");
     } finally {
       setSelectingPlan(false);
     }
