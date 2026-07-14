@@ -95,7 +95,7 @@ export default function PlanesPage() {
 
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || "Error de conexión con la pasarela de pagos.");
+      setErrorMsg(err?.message || "Error de conexión con la pasarela de pagos.");
     } finally {
       setSelectingPlan(false);
     }
