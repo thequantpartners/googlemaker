@@ -70,18 +70,6 @@ export default function PlanesPage() {
       });
 
       // 3. Render and Open Pop-in
-      // We must create an element to attach the popin
-      let container = document.getElementById("izipay-container");
-      if (!container) {
-          container = document.createElement("div");
-          container.id = "izipay-container";
-          container.className = "kr-embedded";
-          container.setAttribute("kr-popin", "true");
-          document.body.appendChild(container);
-      }
-
-      await KR.attachForm("#izipay-container");
-
       KR.onSubmit(async (paymentData) => {
         if (paymentData.clientAnswer.orderStatus === "PAID") {
            window.location.href = "/dashboard/onboarding";
@@ -91,7 +79,7 @@ export default function PlanesPage() {
         return false;
       });
 
-      await KR.openPopin("#izipay-container");
+      await KR.openPopin();
 
     } catch (err: any) {
       console.error(err);
