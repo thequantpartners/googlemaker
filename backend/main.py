@@ -102,6 +102,9 @@ async def lifespan(app: FastAPI):
         await safe_add_column("chat_widget_configs", "allowed_domains", "TEXT")
         await safe_add_column("chat_widget_configs", "ai_provider", "VARCHAR(50)", "'openai'")
         await safe_add_column("chat_widget_configs", "ai_api_key", "TEXT")
+        await safe_add_column("chat_widget_configs", "ai_apply_chat_widget", "BOOLEAN", "true")
+        await safe_add_column("chat_widget_configs", "ai_apply_whatsapp", "BOOLEAN", "true")
+        await safe_add_column("chat_widget_configs", "ai_goals", _json_type, "'[]'")
     except Exception as e:
         print(f"[WARN] Migration error (non-fatal): {e}")
 
