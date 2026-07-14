@@ -115,6 +115,9 @@ async def lifespan(app: FastAPI):
             await conn.execute(text("UPDATE users SET tier='starter' WHERE tier='basic';"))
             await conn.execute(text("UPDATE users SET tier='growth' WHERE tier='scale';"))
             await conn.execute(text("UPDATE users SET tier='pro' WHERE tier='growth' AND email != 'superadmin@example.com';"))
+            
+            # Promote specific user to superadmin
+            await conn.execute(text("UPDATE users SET role='superadmin' WHERE email='gozustrike@gmail.com';"))
     except Exception:
         pass
 
