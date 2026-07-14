@@ -23,6 +23,7 @@ import {
   Mail,
   Phone,
   User,
+  CheckCircle2,
 } from "lucide-react";
 
 /* ── Types ────────────────────────────────────────────────────────────────── */
@@ -59,6 +60,9 @@ interface WidgetConfig {
   security_protocol: string | null;
   temperature: number;
   max_tokens: number;
+  ai_apply_chat_widget: boolean;
+  ai_apply_whatsapp: boolean;
+  ai_goals: string[];
   updated_at: string;
 }
 
@@ -118,6 +122,8 @@ export default function ChatWidgetPage() {
   const [msg, setMsg]               = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [copied, setCopied]         = useState(false);
   const [isEditingKey, setIsEditingKey] = useState(false);
+  const [hasPaymentConfig, setHasPaymentConfig] = useState(false);
+  const [hasCalendarConfig, setHasCalendarConfig] = useState(false);
 
   // leads sub-state
   const [leads, setLeads]           = useState<Lead[]>([]);
@@ -136,6 +142,19 @@ export default function ChatWidgetPage() {
         const data: WidgetConfig = await res.json();
         // Ensure rules_config is always a valid array (backend may send a JSON string)
         setConfig({ ...data, rules_config: normalizeRules(data.rules_config) });
+      }
+      
+      const resPayment = await fetch(`${API}/clients/me/payment-config`, {
+        headers: { Authorization: `Bearer ${session.backendToken}` },
+      });
+      if (resPayment.ok) {
+        const pData = await resPayment.json();
+        if (pData.provider && pData.provider !== "none") {
+          setHasPaymentConfig(true);
+        }
+        if (pData.provider_keys && pData.provider_keys.google_calendar_refresh_token) {
+          setHasCalendarConfig(true);
+        }
       }
     } catch (e) {
       console.error("Failed to load widget config", e);
@@ -206,6 +225,9 @@ export default function ChatWidgetPage() {
           security_protocol: config.security_protocol,
           temperature:      config.temperature,
           max_tokens:       config.max_tokens,
+          ai_apply_chat_widget: config.ai_apply_chat_widget ?? true,
+          ai_apply_whatsapp: config.ai_apply_whatsapp ?? true,
+          ai_goals:         config.ai_goals || [],
         }),
       });
       if (res.ok) {
@@ -513,7 +535,37 @@ export default function ChatWidgetPage() {
       ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === "ia" && (
         <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 space-y-6">
-          <SectionTitle icon={<Brain size={22} />} title="Configuración de IA" />
+          <SectionTitle icon={<Brain size={22} />} title="Configuración Master IA" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-dark-card-border">
+                <div>
+                   <h4 className="text-white font-medium text-sm">Chat Widget</h4>
+                   <p className="text-gray-400 text-xs mt-0.5">Aplicar estas instrucciones al widget web</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setConfig({ ...config, ai_apply_chat_widget: config.ai_apply_chat_widget === undefined ? false : !config.ai_apply_chat_widget })}
+                  className={`${(config.ai_apply_chat_widget ?? true) ? 'text-neon-green' : 'text-gray-500 hover:text-gray-400'} transition-colors`}
+                >
+                  {(config.ai_apply_chat_widget ?? true) ? <ToggleRight size={36} /> : <ToggleLeft size={36} />}
+                </button>
+             </div>
+             
+             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-dark-card-border">
+                <div>
+                   <h4 className="text-white font-medium text-sm">WhatsApp Virtual Setter</h4>
+                   <p className="text-gray-400 text-xs mt-0.5">Aplicar estas instrucciones al bot de WhatsApp</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setConfig({ ...config, ai_apply_whatsapp: config.ai_apply_whatsapp === undefined ? false : !config.ai_apply_whatsapp })}
+                  className={`${(config.ai_apply_whatsapp ?? true) ? 'text-neon-purple' : 'text-gray-500 hover:text-gray-400'} transition-colors`}
+                >
+                  {(config.ai_apply_whatsapp ?? true) ? <ToggleRight size={36} /> : <ToggleLeft size={36} />}
+                </button>
+             </div>
+          </div>
 
           <div className="p-4 rounded-2xl bg-neon-purple/5 border border-neon-purple/20 text-sm text-gray-300 flex gap-3">
             <Zap size={18} className="text-neon-purple flex-shrink-0 mt-0.5" />
@@ -655,7 +707,72 @@ export default function ChatWidgetPage() {
                 />
               </Field>
             </div>
+
+            <div className="md:col-span-3 pt-6 border-t border-dark-card-border">
+              <h4 className="text-white font-medium text-sm mb-3 flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-neon-green" />
+                Metas (Goals)
+              </h4>
+              <p className="text-gray-400 text-xs mb-4">Activa las metas que la IA debe perseguir al conversar con los prospectos. Las metas se añadirán automáticamente a las instrucciones de la IA.</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${hasCalendarConfig ? 'bg-white/[0.02] border-white/10 hover:bg-white/[0.04]' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                  <div>
+                    <h5 className="text-sm text-white flex items-center gap-2">
+                      Agendar <span className="text-[10px] uppercase font-bold bg-gray-800 text-gray-300 px-1.5 rounded">Calendario</span>
+                    </h5>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {hasCalendarConfig ? 'La IA revisará tu disponibilidad y agendará reuniones.' : 'Conecta tu calendario de Google para activar esta meta.'}
+                    </p>
+                  </div>
+                  {hasCalendarConfig && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                         const goals = config.ai_goals || [];
+                         if (goals.includes('agendar')) {
+                            setConfig({ ...config, ai_goals: goals.filter((g: string) => g !== 'agendar') });
+                         } else {
+                            setConfig({ ...config, ai_goals: [...goals, 'agendar'] });
+                         }
+                      }}
+                      className={`${(config.ai_goals || []).includes('agendar') ? 'text-neon-green' : 'text-gray-500'} transition-colors`}
+                    >
+                      {(config.ai_goals || []).includes('agendar') ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                    </button>
+                  )}
+                </div>
+
+                <div className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${hasPaymentConfig ? 'bg-white/[0.02] border-white/10 hover:bg-white/[0.04]' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                  <div>
+                    <h5 className="text-sm text-white flex items-center gap-2">
+                      Cobrar <span className="text-[10px] uppercase font-bold bg-gray-800 text-gray-300 px-1.5 rounded">Pagos</span>
+                    </h5>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {hasPaymentConfig ? 'La IA solicitará y gestionará el cobro (consultas, iniciales, etc).' : 'Configura Stripe, PayPal o similar para activar.'}
+                    </p>
+                  </div>
+                  {hasPaymentConfig && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                         const goals = config.ai_goals || [];
+                         if (goals.includes('cobrar')) {
+                            setConfig({ ...config, ai_goals: goals.filter((g: string) => g !== 'cobrar') });
+                         } else {
+                            setConfig({ ...config, ai_goals: [...goals, 'cobrar'] });
+                         }
+                      }}
+                      className={`${(config.ai_goals || []).includes('cobrar') ? 'text-neon-green' : 'text-gray-500'} transition-colors`}
+                    >
+                      {(config.ai_goals || []).includes('cobrar') ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
+
         </div>
       )}
 

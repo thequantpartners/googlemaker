@@ -191,6 +191,9 @@ class ChatWidgetConfigUpdate(BaseModel):
     security_protocol: str | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     max_tokens: int | None = Field(None, ge=64, le=8192)
+    ai_apply_chat_widget: bool | None = None
+    ai_apply_whatsapp: bool | None = None
+    ai_goals: list[str] | None = None
 
 
 class ChatWidgetConfigOut(BaseModel):
@@ -211,6 +214,9 @@ class ChatWidgetConfigOut(BaseModel):
     security_protocol: str | None = None
     temperature: float
     max_tokens: int
+    ai_apply_chat_widget: bool = True
+    ai_apply_whatsapp: bool = True
+    ai_goals: list[str] | None = []
     created_at: datetime
     updated_at: datetime
 

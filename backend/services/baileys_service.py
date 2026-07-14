@@ -2,8 +2,8 @@ import os
 import httpx
 
 # If Baileys is running locally with docker-compose or similar, use localhost:3000
-# But usually it's injected via env var. Fallback to localhost:3000
-BAILEYS_SERVER_URL = os.getenv("BAILEYS_SERVER_URL", "http://localhost:3000")
+# But usually it's injected via env var. Fallback to production URL
+BAILEYS_SERVER_URL = os.getenv("BAILEYS_SERVER_URL", "https://qss-baileys-server-production.up.railway.app")
 
 async def send_master_notification(phone: str, message: str) -> bool:
     """

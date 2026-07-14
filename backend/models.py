@@ -281,6 +281,9 @@ class ChatWidgetConfig(Base):
     security_protocol: Mapped[str | None] = mapped_column(Text, nullable=True)
     temperature: Mapped[float] = mapped_column(Float, nullable=False, default=0.7)
     max_tokens: Mapped[int] = mapped_column(Integer, nullable=False, default=1024)
+    ai_apply_chat_widget: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    ai_apply_whatsapp: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    ai_goals: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
 
     @property
     def has_api_key(self) -> bool:
