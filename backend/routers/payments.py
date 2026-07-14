@@ -36,9 +36,9 @@ async def create_form_token(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    \"\"\"
+    """
     Calls Izipay (Lyra) API to generate a formToken for the Pop-In checkout.
-    \"\"\"
+    """
     if not IZIPAY_USERNAME or not IZIPAY_PASSWORD:
         raise HTTPException(status_code=500, detail="Izipay credentials not configured")
 
@@ -92,10 +92,10 @@ async def izipay_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
-    \"\"\"
+    """
     Izipay IPN (Instant Payment Notification).
     Validates the HMAC-SHA-256 signature and updates user tier.
-    \"\"\"
+    """
     try:
         form_data = await request.form()
     except Exception:
