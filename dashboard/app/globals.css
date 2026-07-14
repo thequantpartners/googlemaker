@@ -32,6 +32,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -52,6 +54,8 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 a {
@@ -331,9 +335,23 @@ html {
     var(--bg-primary, #0a0a0b);
 }
 
-/* --- Mobile / touch device: subtle visual hint on scrollable areas --- */
-@supports (overscroll-behavior: contain) {
-  * {
-    overscroll-behavior: contain;
+/* --- Touch devices: smooth momentum scroll --- */
+@supports (-webkit-overflow-scrolling: touch) {
+  body {
+    -webkit-overflow-scrolling: touch;
   }
+}
+
+/* ============================================================
+   GLOWING PARTICLES CANVAS
+   ============================================================ */
+
+.glow-particles-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9998;
+  pointer-events: none;
 }
