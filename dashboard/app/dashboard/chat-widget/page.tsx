@@ -152,7 +152,7 @@ export default function ChatWidgetPage() {
         if (pData.provider && pData.provider !== "none") {
           setHasPaymentConfig(true);
         }
-        if (pData.provider_keys && pData.provider_keys.google_calendar_refresh_token) {
+        if (pData.has_google_calendar || (pData.cal_api_key && pData.cal_booking_link)) {
           setHasCalendarConfig(true);
         }
       }
