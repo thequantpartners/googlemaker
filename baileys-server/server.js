@@ -72,10 +72,18 @@ async function connectToWhatsApp() {
             const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
             if (!text) return;
 
-            const senderId = msg.key.remoteJid.replace('@s.whatsapp.net', '');
+            const isGroup = msg.key.remoteJid.endsWith('@g.us');
+            const respondToGroups = process.env.RESPOND_TO_GROUPS === 'true';
+
+            // Por defecto, ignorar mensajes de grupos a menos que RESPOND_TO_GROUPS sea 'true'
+            if (isGroup && !respondToGroups) {
+                return;
+            }
+
+            const senderId = msg.key.remoteJid.replace('@s.whatsapp.net', '').replace('@g.us', '');
             const senderName = msg.pushName || "Usuario";
             
-            console.log(`[+] Mensaje de ${senderName}: ${text}`);
+            console.log(`[+] Mensaje de ${senderName} (${isGroup ? 'Grupo' : 'Privado'}): ${text}`);
             
             if (!QSS_CLIENT_ID || !QSS_WEBHOOK_SECRET) {
                 console.log("[X] Faltan variables de entorno QSS_CLIENT_ID o QSS_WEBHOOK_SECRET");
@@ -163,6 +171,23 @@ app.post('/api/send', async (req, res) => {
     } catch (error) {
         console.error("[X] Error sending message via /api/send:", error);
         res.status(500).json({ error: "Failed to send message" });
+    }
+});
+
+let respondToGroupsState = process.env.RESPOND_TO_GROUPS === 'true';
+
+app.get('/api/config', (req, res) => {
+    res.json({ respondToGroups: respondToGroupsState });
+});
+
+app.post('/api/config', (req, res) => {
+    const { respondToGroups } = req.body;
+    if (typeof respondToGroups === 'boolean') {
+        respondToGroupsState = respondToGroups;
+        process.env.RESPOND_TO_GROUPS = respondToGroups.toString(); // Update global env too
+        res.json({ ok: true, respondToGroups: respondToGroupsState });
+    } else {
+        res.status(400).json({ error: "Invalid body" });
     }
 });
 

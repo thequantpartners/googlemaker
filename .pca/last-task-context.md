@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-Add WhatsApp Virtual Setter config, goals (charge and schedule), master prompt, and UI switches
+desactivar bot grupos y dar acceso izipay
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
+- [general] docs: close task and update context logs (2026-07-15T04:45:21.993Z)
+- [general] docs: close task and update context logs (2026-07-14T15:26:30.397Z)
 - [general] docs: close task and update context logs (2026-07-13T02:42:37.182Z)
-- [general] docs: close task and update context logs (2026-07-13T01:59:18.731Z)
-- [general] docs: close task and update context logs (2026-07-12T23:00:01.911Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

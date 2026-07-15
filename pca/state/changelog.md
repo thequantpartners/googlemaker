@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-07-14
+- Instalado el fragmento de código del Pixel de Facebook en el layout de Next.js (`app/layout.tsx`) para el seguimiento global de eventos y PageView en la landing.
 - Added Master AI configuration options (switches for Chat Widget and WhatsApp Virtual Setter).
 - Implemented Goals detection (Agendar/Cobrar) based on connected Google Calendar and Payment systems.
 - Updated Baileys master bot integration to default to the production URL, ensuring immediate WhatsApp message delivery for new leads.

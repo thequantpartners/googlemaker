@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { QRCodeSVG } from 'qrcode.react';
-import { AlertCircle, CheckCircle2, Phone, MessageCircle, Link2, Clock } from "lucide-react";
+import { AlertCircle, CheckCircle2, Phone, MessageCircle, Link2, Clock, Brain, Loader2 } from "lucide-react";
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-800/50 rounded-xl ${className}`} />;
 }
@@ -18,6 +19,49 @@ export default function MasterBotPage() {
   const [responseSpeed, setResponseSpeed] = useState("medium");
   const [transferNumber, setTransferNumber] = useState("");
   const [isScheduleActive, setIsScheduleActive] = useState(false);
+  const [respondToGroups, setRespondToGroups] = useState(false);
+  
+  // Prompt State
+  const { data: session } = useSession();
+  const [systemPrompt, setSystemPrompt] = useState("");
+  const [isLoadingPrompt, setIsLoadingPrompt] = useState(true);
+  const [isSavingPrompt, setIsSavingPrompt] = useState(false);
+
+  useEffect(() => {
+    async function fetchPrompt() {
+      if (!session?.backendToken) return;
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/chat-widget`, {
+          headers: { Authorization: `Bearer ${session.backendToken}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSystemPrompt(data.system_prompt || "");
+        }
+      } catch (e) {
+        console.error("Failed to fetch prompt", e);
+      } finally {
+        setIsLoadingPrompt(false);
+      }
+    }
+    fetchPrompt();
+  }, [session]);
+
+  useEffect(() => {
+    async function fetchConfig() {
+      if (!baileysUrl) return;
+      try {
+        const res = await fetch(`${baileysUrl}/api/config`);
+        if (res.ok) {
+          const data = await res.json();
+          setRespondToGroups(data.respondToGroups);
+        }
+      } catch (e) {
+        console.error("Failed to fetch Baileys config", e);
+      }
+    }
+    fetchConfig();
+  }, [baileysUrl]);
 
   useEffect(() => {
     async function checkBaileysStatus() {
@@ -87,6 +131,50 @@ export default function MasterBotPage() {
   const handleSaveConfig = (configName: string) => {
     setMsg({ type: "ok", text: `Configuración de ${configName} guardada exitosamente.` });
     setTimeout(() => setMsg(null), 3000);
+  };
+
+  const handleToggleGroups = async () => {
+    const newValue = !respondToGroups;
+    setRespondToGroups(newValue);
+    try {
+      await fetch(`${baileysUrl}/api/config`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ respondToGroups: newValue })
+      });
+      setMsg({ type: "ok", text: "Preferencia de grupos actualizada en el motor Baileys." });
+    } catch (e) {
+      console.error(e);
+      setMsg({ type: "err", text: "Error al actualizar la preferencia en el motor." });
+    }
+    setTimeout(() => setMsg(null), 3000);
+  };
+
+  const handleSavePrompt = async () => {
+    if (!session?.backendToken) return;
+    setIsSavingPrompt(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/chat-widget`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.backendToken}`
+        },
+        body: JSON.stringify({ system_prompt: systemPrompt || null })
+      });
+      
+      if (res.ok) {
+        setMsg({ type: "ok", text: "Prompt del Master Setter actualizado correctamente." });
+      } else {
+        setMsg({ type: "err", text: "Error al guardar el prompt." });
+      }
+    } catch (e) {
+      console.error(e);
+      setMsg({ type: "err", text: "Error de red al guardar el prompt." });
+    } finally {
+      setIsSavingPrompt(false);
+      setTimeout(() => setMsg(null), 3000);
+    }
   };
 
   return (
@@ -190,6 +278,72 @@ export default function MasterBotPage() {
                 className="px-6 py-3 bg-[#1a1c23] hover:bg-[#23252d] text-gray-300 font-medium rounded-xl transition-colors text-sm"
               >
                 Guardar Velocidad
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Responder en Grupos */}
+        <div className="bg-[#0a0c10] border border-gray-800/50 rounded-2xl p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MessageCircle className="text-blue-500" size={24} />
+              <div>
+                <h3 className="text-xl font-bold text-white">Responder en Grupos</h3>
+                <p className="text-gray-400 text-sm mt-1">
+                  Permite que el Master Setter procese y responda a mensajes dentro de grupos de WhatsApp.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleToggleGroups}
+              className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 ${
+                respondToGroups ? 'bg-blue-500' : 'bg-gray-700'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                  respondToGroups ? 'translate-x-7' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
+        {/* Panel de Prompt del Master Setter */}
+        <div className="bg-[#0a0c10] border border-gray-800/50 rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Brain className="text-pink-500" size={24} />
+              <div>
+                <h3 className="text-xl font-bold text-white">Cerebro e Instrucciones (Prompt)</h3>
+                <p className="text-gray-400 text-sm mt-1">
+                  Define el comportamiento, rol y objetivo de ventas para el Master Setter.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col gap-4">
+            {isLoadingPrompt ? (
+              <Skeleton className="w-full h-40" />
+            ) : (
+              <textarea
+                value={systemPrompt}
+                onChange={(e) => setSystemPrompt(e.target.value)}
+                placeholder="Ejemplo: Eres un vendedor experto. Tu objetivo es agendar reuniones. Sé breve y persuasivo."
+                className="w-full h-40 bg-[#13151a] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 resize-none font-mono text-sm leading-relaxed"
+              />
+            )}
+            
+            <div className="flex justify-end mt-2">
+              <button 
+                onClick={handleSavePrompt}
+                disabled={isLoadingPrompt || isSavingPrompt}
+                className="px-6 py-3 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white font-bold rounded-xl transition-colors flex items-center gap-2"
+              >
+                {isSavingPrompt && <Loader2 size={18} className="animate-spin" />}
+                Guardar Prompt
               </button>
             </div>
           </div>
