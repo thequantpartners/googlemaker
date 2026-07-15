@@ -77,12 +77,12 @@ def _to_gemini_history(history: list) -> list[dict]:
     return result
 
 
-def _build_system_instruction(config: ChatWidgetConfig, enable_tools: bool = False) -> str:
+def _build_system_instruction(config: ChatWidgetConfig, enable_tools: bool = False, pay_cfg = None, session_id: str = None) -> str:
     """
     Assemble the full system instruction for Gemini by concatenating:
       1. The operator-defined system_prompt
       2. The security_protocol
-      3. The calendar protocol (if tools enabled)
+      3. The goals protocol (cobrar/agendar)
       4. The immutable lead-capture protocol
     """
     parts: list[str] = []
@@ -96,13 +96,43 @@ def _build_system_instruction(config: ChatWidgetConfig, enable_tools: bool = Fal
             + config.security_protocol.strip()
         )
 
-    if enable_tools:
+    goals = config.ai_goals or []
+    has_cobrar = "cobrar" in goals
+    has_agendar = "agendar" in goals
+
+    if has_agendar and enable_tools:
+        from datetime import datetime, timezone
         parts.append(
             "--- PROTOCOLO DE CALENDARIO (AGENDAMIENTO) ---\n"
             f"Hoy es {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')} UTC. "
             "Tienes acceso a herramientas de calendario. Si el lead muestra intención de agendar una reunión o llamada, "
             "SIEMPRE usa la herramienta 'get_availability' para ofrecerle horarios reales disponibles. "
             "NUNCA inventes horarios. Una vez que el lead elija un horario de los disponibles, usa 'book_meeting' para confirmar la cita."
+        )
+
+    if has_cobrar and pay_cfg:
+        payment_url = ""
+        if pay_cfg.provider == "custom" and pay_cfg.custom_payment_link:
+            payment_url = pay_cfg.custom_payment_link
+        elif pay_cfg.provider == "stripe" or pay_cfg.provider == "culqi" or pay_cfg.provider == "mercadopago":
+            import os
+            api_url = os.getenv("NEXT_PUBLIC_API_URL", "https://qss.thequantpartners.com/api")
+            payment_url = f"{api_url}/widget/chat/{config.client_id}/pay/{session_id}"
+            
+        if payment_url:
+            parts.append(
+                "--- PROTOCOLO DE COBRO ---\n"
+                "Tu objetivo principal es cobrar por la consulta o servicio. Cuando corresponda, debes enviar el siguiente "
+                f"enlace exacto al usuario para que procese su pago en línea: {payment_url}"
+            )
+            
+    if has_cobrar and has_agendar:
+        parts.append(
+            "--- REGLA DE ORO (Cobro antes de Agendar) ---\n"
+            "Si no cobras, NO agendas. Es obligatorio que el usuario realice el pago ANTES de que utilices "
+            "la herramienta de calendario para confirmar una cita. Coordina la hora deseada, pide el pago usando "
+            "el enlace, y NO llames a la herramienta 'book_meeting' hasta recibir confirmación por parte del SISTEMA de "
+            "que el pago fue exitoso."
         )
 
     # Injected last so it always overrides anything the operator might write.
@@ -241,7 +271,12 @@ async def _call_ai_provider(
         
     enable_tools = bool((cal_api_key and cal_booking_link) or gcal_refresh_token)
     
-    system_prompt = _build_system_instruction(config, enable_tools=enable_tools)
+    system_prompt = _build_system_instruction(
+        config, 
+        enable_tools=enable_tools, 
+        pay_cfg=pay_cfg, 
+        session_id=session.session_id
+    )
     provider = config.ai_provider or "openai"
     raw_text = ""
 
@@ -669,3 +704,84 @@ async def process_chat_message(
         }],
         new_state=ChatSessionState.closed,
     )
+
+async def process_async_payment_injection(
+    db: AsyncSession,
+    session_id: str,
+    client_id: str,
+    payment_type: str,
+    amount: float = None
+):
+    """
+    Inyecta un mensaje del sistema en el historial de chat para avisarle a la IA
+    que el pago fue exitoso, forzándola a reaccionar (ej. confirmando la cita).
+    Luego envía el mensaje de vuelta al usuario vía Baileys o YCloud.
+    """
+    from models import ChatSession, ChatWidgetConfig, User
+    import httpx
+    import os
+
+    # 1. Cargar la sesión y configuración
+    session_result = await db.execute(
+        select(ChatSession).where(
+            ChatSession.session_id == session_id,
+            ChatSession.client_id == client_id
+        )
+    )
+    chat_session = session_result.scalar_one_or_none()
+    if not chat_session or chat_session.state == ChatSessionState.closed:
+        return
+
+    config_result = await db.execute(
+        select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id)
+    )
+    chat_config = config_result.scalar_one_or_none()
+    
+    user_result = await db.execute(select(User).where(User.id == client_id))
+    client_user = user_result.scalar_one_or_none()
+
+    if not chat_config or not chat_config.is_enabled or not client_user:
+        return
+
+    # 2. Construir e inyectar el mensaje del sistema
+    monto_str = f" (USD {amount})" if amount else ""
+    sys_msg = f"[SISTEMA: El pago del lead{monto_str} ha sido procesado con ÉXITO. Procede INMEDIATAMENTE a usar tu herramienta de calendario para confirmar/agendar la cita (si habían coordinado un horario) y envíale un mensaje de felicitaciones/confirmación al usuario indicándole que su pago fue recibido exitosamente.]"
+    
+    # 3. Llamar al AI Provider
+    # Reutilizamos la lógica de AI mode pasándole el mensaje del sistema
+    engine_result = await process_chat_message(
+        session=chat_session,
+        config=chat_config,
+        user_message=sys_msg,
+        db=db,
+        client_user=client_user
+    )
+
+    reply_lines = []
+    for msg in engine_result.messages:
+        reply_lines.append(msg["content"])
+        if msg.get("options"):
+            reply_lines.append("")
+            for i, opt in enumerate(msg["options"], 1):
+                reply_lines.append(f"{i}. {opt}")
+    
+    llm_reply_text = "\n".join(reply_lines)
+    if not llm_reply_text.strip():
+        return
+
+    # 4. Enviar el mensaje por WhatsApp
+    # Si el session_id parece un teléfono de WhatsApp (solo números o empieza con +, pero internamente guardamos sin el @s.whatsapp.net)
+    # ycloud webhooks también envían a wa_id
+    if any(c.isdigit() for c in session_id):
+        # Intentamos enviar vía Baileys Master Setter
+        baileys_url = os.getenv("BAILEYS_API_URL", "https://qss-baileys-server-production.up.railway.app")
+        try:
+            async with httpx.AsyncClient() as http_client:
+                await http_client.post(
+                    f"{baileys_url}/api/send",
+                    json={"to": session_id, "text": llm_reply_text},
+                    timeout=10.0
+                )
+        except Exception as e:
+            print(f"[Async Injection] Error sending message via Baileys: {e}")
+

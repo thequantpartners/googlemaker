@@ -541,6 +541,98 @@ async def create_stripe_checkout(
     return {"checkout_url": checkout_session.url}
 
 
+@public_router.get("/{client_id}/pay/{session_id}")
+async def redirect_to_payment(
+    client_id: str,
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Endpoint de redirección (GET) para uso en WhatsApp.
+    Permite al usuario hacer clic en un enlace estático que genera 
+    la sesión de pago al vuelo y lo redirige a Stripe/MercadoPago.
+    """
+    from fastapi.responses import RedirectResponse
+    
+    # 1. Verificar que la sesión de chat existe
+    session_res = await db.execute(
+        select(ChatSession).where(
+            ChatSession.session_id == session_id, 
+            ChatSession.client_id == client_id
+        )
+    )
+    chat_session = session_res.scalar_one_or_none()
+    if not chat_session:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada.")
+
+    # 2. Obtener config de pago
+    result = await db.execute(
+        select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id)
+    )
+    pay_cfg = result.scalar_one_or_none()
+    if not pay_cfg:
+        raise HTTPException(status_code=400, detail="El cliente no tiene pagos configurados.")
+        
+    amount = pay_cfg.consultation_fee
+    if not amount or amount <= 0:
+        raise HTTPException(status_code=400, detail="Monto a cobrar no configurado.")
+        
+    # 3. Buscar si ya hay un Lead asociado a esta sesión
+    lead_res = await db.execute(
+        select(Lead).where(Lead.session_id == session_id, Lead.client_id == client_id)
+    )
+    lead = lead_res.scalars().first()
+    lead_id = lead.id if lead else None
+
+    # Generar sesión dependiendo del proveedor
+    if pay_cfg.provider == "stripe":
+        try:
+            import stripe
+        except ImportError:
+            raise HTTPException(status_code=500, detail="Stripe no disponible.")
+            
+        keys = pay_cfg.provider_keys or {}
+        stripe_secret = keys.get("stripe_secret_key")
+        if not stripe_secret:
+            raise HTTPException(status_code=400, detail="API de Stripe no configurada.")
+            
+        stripe.api_key = stripe_secret
+        
+        # Base URL para los return URLs
+        # Asumimos que podemos regresar a una página genérica de éxito o al widget frontend
+        # Si es WhatsApp, el regreso no importa mucho, pero Stripe exige success_url
+        import os
+        frontend_url = os.getenv("NEXT_PUBLIC_APP_URL", "https://qss.thequantpartners.com")
+        
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": "Reserva de Sesión"},
+                    "unit_amount": int(amount * 100),
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            metadata={
+                "session_id": session_id,
+                "lead_id": lead_id or "",
+                "payment_type": "consultation",
+                "client_id": client_id,
+            },
+            success_url=f"{frontend_url}/payment-success",
+            cancel_url=f"{frontend_url}/",
+        )
+        return RedirectResponse(url=checkout_session.url, status_code=303)
+        
+    elif pay_cfg.provider == "custom" and pay_cfg.custom_payment_link:
+        return RedirectResponse(url=pay_cfg.custom_payment_link, status_code=303)
+        
+    else:
+        raise HTTPException(status_code=400, detail="Proveedor de pago no soportado para redirección directa.")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Public sub-app factory (called from main.py)
 # ─────────────────────────────────────────────────────────────────────────────

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-15
+- Added a configuration toggle to the Master Setter dashboard to control if the Baileys bot should respond in WhatsApp groups.
+- Added a dedicated Prompt configuration panel to the Master Setter dashboard for the Superadmin, integrated via `/api/chat-widget` so the bot's behavior can be updated directly from the admin panel.
+- Modified `baileys-server/server.js` to expose a new `/api/config` endpoint that allows dynamic updates to the `RESPOND_TO_GROUPS` environment variable.
+
 ## 2026-07-14
 - Instalado el fragmento de código del Pixel de Facebook en el layout de Next.js (`app/layout.tsx`) para el seguimiento global de eventos y PageView en la landing.
 - Added Master AI configuration options (switches for Chat Widget and WhatsApp Virtual Setter).

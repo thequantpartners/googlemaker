@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { QRCodeSVG } from 'qrcode.react';
-import { AlertCircle, CheckCircle2, Phone, MessageCircle, Link2, Clock, Brain, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Phone, MessageCircle, Link2, Clock, Brain, Loader2, ToggleLeft, ToggleRight } from "lucide-react";
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-800/50 rounded-xl ${className}`} />;
 }
@@ -21,9 +21,12 @@ export default function MasterBotPage() {
   const [isScheduleActive, setIsScheduleActive] = useState(false);
   const [respondToGroups, setRespondToGroups] = useState(false);
   
-  // Prompt State
+  // Prompt & Goals State
   const { data: session } = useSession();
   const [systemPrompt, setSystemPrompt] = useState("");
+  const [aiGoals, setAiGoals] = useState<string[]>([]);
+  const [hasPaymentConfig, setHasPaymentConfig] = useState(false);
+  const [hasCalendarConfig, setHasCalendarConfig] = useState(false);
   const [isLoadingPrompt, setIsLoadingPrompt] = useState(true);
   const [isSavingPrompt, setIsSavingPrompt] = useState(false);
 
@@ -37,9 +40,23 @@ export default function MasterBotPage() {
         if (res.ok) {
           const data = await res.json();
           setSystemPrompt(data.system_prompt || "");
+          setAiGoals(data.ai_goals || []);
+        }
+
+        const resPayment = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/payment-config`, {
+          headers: { Authorization: `Bearer ${session.backendToken}` }
+        });
+        if (resPayment.ok) {
+          const pData = await resPayment.json();
+          if (pData.provider && pData.provider !== "none") {
+            setHasPaymentConfig(true);
+          }
+          if (pData.provider_keys && pData.provider_keys.google_calendar_refresh_token) {
+            setHasCalendarConfig(true);
+          }
         }
       } catch (e) {
-        console.error("Failed to fetch prompt", e);
+        console.error("Failed to fetch widget data", e);
       } finally {
         setIsLoadingPrompt(false);
       }
@@ -160,7 +177,10 @@ export default function MasterBotPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.backendToken}`
         },
-        body: JSON.stringify({ system_prompt: systemPrompt || null })
+        body: JSON.stringify({ 
+          system_prompt: systemPrompt || null,
+          ai_goals: aiGoals 
+        })
       });
       
       if (res.ok) {
@@ -343,8 +363,70 @@ export default function MasterBotPage() {
                 className="px-6 py-3 bg-pink-500 hover:bg-pink-600 disabled:opacity-50 text-white font-bold rounded-xl transition-colors flex items-center gap-2"
               >
                 {isSavingPrompt && <Loader2 size={18} className="animate-spin" />}
-                Guardar Prompt
+                Guardar Cerebro
               </button>
+            </div>
+          </div>
+
+          <div className="pt-6 mt-6 border-t border-gray-800/50">
+            <h4 className="text-white font-medium text-sm mb-3 flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-neon-green" />
+              Metas (Goals)
+            </h4>
+            <p className="text-gray-400 text-xs mb-4">Activa las metas que el Master Setter debe perseguir. Las metas se añadirán automáticamente a sus instrucciones (ej. Regla de Oro: Si no cobra, no agenda).</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${hasCalendarConfig ? 'bg-white/[0.02] border-white/10 hover:bg-white/[0.04]' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                <div>
+                  <h5 className="text-sm text-white flex items-center gap-2">
+                    Agendar <span className="text-[10px] uppercase font-bold bg-gray-800 text-gray-300 px-1.5 rounded">Calendario</span>
+                  </h5>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {hasCalendarConfig ? 'La IA revisará tu disponibilidad y agendará reuniones.' : 'Conecta tu calendario de Google en el widget web para activar.'}
+                  </p>
+                </div>
+                {hasCalendarConfig && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                       if (aiGoals.includes('agendar')) {
+                          setAiGoals(aiGoals.filter(g => g !== 'agendar'));
+                       } else {
+                          setAiGoals([...aiGoals, 'agendar']);
+                       }
+                    }}
+                    className={`${aiGoals.includes('agendar') ? 'text-neon-green' : 'text-gray-500'} transition-colors`}
+                  >
+                    {aiGoals.includes('agendar') ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                  </button>
+                )}
+              </div>
+
+              <div className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${hasPaymentConfig ? 'bg-white/[0.02] border-white/10 hover:bg-white/[0.04]' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                <div>
+                  <h5 className="text-sm text-white flex items-center gap-2">
+                    Cobrar <span className="text-[10px] uppercase font-bold bg-gray-800 text-gray-300 px-1.5 rounded">Pagos</span>
+                  </h5>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {hasPaymentConfig ? 'La IA exigirá el pago antes de poder agendar.' : 'Configura Stripe, PayPal o similar en la vista de cliente para activar.'}
+                  </p>
+                </div>
+                {hasPaymentConfig && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                       if (aiGoals.includes('cobrar')) {
+                          setAiGoals(aiGoals.filter(g => g !== 'cobrar'));
+                       } else {
+                          setAiGoals([...aiGoals, 'cobrar']);
+                       }
+                    }}
+                    className={`${aiGoals.includes('cobrar') ? 'text-neon-green' : 'text-gray-500'} transition-colors`}
+                  >
+                    {aiGoals.includes('cobrar') ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

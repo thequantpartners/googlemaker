@@ -125,6 +125,7 @@ async def stripe_webhook(
     request: Request,
     stripe_signature: str | None = Header(None, alias="stripe-signature"),
     db: AsyncSession = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     """
     Stripe webhook endpoint (per-client).
@@ -164,12 +165,20 @@ async def stripe_webhook(
         session_obj = event["data"]["object"]
         metadata = session_obj.get("metadata", {})
         lead_id = metadata.get("lead_id")
+        chat_session_id = metadata.get("session_id")
         payment_type = metadata.get("payment_type", "consultation")
         amount_total = session_obj.get("amount_total")
         amount = (amount_total / 100) if amount_total else None
 
         if lead_id:
             await _update_lead_payment(db, lead_id, client_id, payment_type, amount)
+
+        if chat_session_id:
+            from services.chat_engine import process_async_payment_injection
+            background_tasks.add_task(
+                process_async_payment_injection, 
+                db, chat_session_id, client_id, payment_type, amount
+            )
 
     return {"received": True}
 
@@ -183,6 +192,7 @@ async def generic_webhook(
     request: Request,
     x_webhook_secret: str | None = Header(None, alias="x-webhook-secret"),
     db: AsyncSession = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
     """
     Generic webhook for any payment provider (LawPay, Square, custom, etc.).
@@ -216,19 +226,26 @@ async def generic_webhook(
         raise HTTPException(status_code=400, detail="Invalid JSON body.")
 
     lead_id = body.get("lead_id")
+    chat_session_id = body.get("session_id")
     payment_type = body.get("payment_type", "consultation")
     amount = body.get("amount")
 
-    if not lead_id:
-        raise HTTPException(status_code=400, detail="lead_id is required.")
+    if not lead_id and not chat_session_id:
+        raise HTTPException(status_code=400, detail="lead_id or session_id is required.")
 
-    lead = await _update_lead_payment(db, lead_id, client_id, payment_type, amount)
+    if lead_id:
+        lead = await _update_lead_payment(db, lead_id, client_id, payment_type, amount)
+        
+    if chat_session_id:
+        from services.chat_engine import process_async_payment_injection
+        background_tasks.add_task(
+            process_async_payment_injection, 
+            db, chat_session_id, client_id, payment_type, amount
+        )
+        
     return {
         "ok": True,
-        "lead_id": lead.id,
         "payment_type": payment_type,
-        "consultation_paid": lead.consultation_paid,
-        "full_case_paid": lead.full_case_paid,
     }
 
 # ── YCloud ─────────────────────────────────────────────────────────────────
