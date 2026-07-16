@@ -394,7 +394,7 @@ async def ycloud_master_webhook(
                 ChatSession.client_id == client_id,
             )
         )
-        chat_session = session_result.scalar_one_or_none()
+        chat_session = session_result.scalars().first()
         if not chat_session:
             chat_session = ChatSession(
                 id=str(uuid.uuid4()),
@@ -410,11 +410,11 @@ async def ycloud_master_webhook(
         config_result = await db.execute(
             select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id)
         )
-        chat_config = config_result.scalar_one_or_none()
+        chat_config = config_result.scalars().first()
         
         # Recuperar el Client User para desencriptar llaves
         user_result = await db.execute(select(User).where(User.id == client_id))
-        client_user = user_result.scalar_one_or_none()
+        client_user = user_result.scalars().first()
 
         if chat_config and chat_config.is_enabled and getattr(chat_config, 'ai_apply_whatsapp', True) and client_user:
             # Enviar el mensaje al cerebro QSS (Reglas + IA)

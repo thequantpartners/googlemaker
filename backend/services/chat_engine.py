@@ -179,7 +179,7 @@ async def _call_ai_provider(
     from sqlalchemy import select
     from zoneinfo import ZoneInfo
     pay_cfg_res = await db.execute(select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_user.id))
-    pay_cfg = pay_cfg_res.scalar_one_or_none()
+    pay_cfg = pay_cfg_res.scalars().first()
     
     if pay_cfg and pay_cfg.provider_keys:
         keys = pay_cfg.provider_keys
