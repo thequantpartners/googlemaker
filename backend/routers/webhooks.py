@@ -313,14 +313,32 @@ async def ycloud_master_webhook(
             message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
             wa_id = message["from"]
             text_body = message.get("text", {}).get("body", "")
-        elif "whatsappInboundMessageReceived" in payload:
-            message = payload["whatsappInboundMessageReceived"]["message"]
-            wa_id = message["from"]
-            text_body = message.get("text", {}).get("body", "")
+        elif "whatsappInboundMessage" in payload:
+            msg_obj = payload["whatsappInboundMessage"]
+            wa_id = msg_obj.get("from")
+            msg_type = msg_obj.get("type", "text")
+            
+            if msg_type == "text":
+                text_body = msg_obj.get("text", "")
+            elif msg_type == "interactive":
+                interactive_obj = msg_obj.get("interactive", {})
+                inter_type = interactive_obj.get("type", "")
+                if inter_type == "button_reply":
+                    text_body = interactive_obj.get("button_reply", {}).get("title", "")
+                elif inter_type == "list_reply":
+                    text_body = interactive_obj.get("list_reply", {}).get("title", "")
+                else:
+                    text_body = ""
+            else:
+                text_body = ""
+                
+            if not text_body:
+                return {"ok": True, "detail": "Formato de mensaje no soportado o vacío."}
         else:
             return {"ok": True, "detail": "Formato de payload no reconocido."}
-    except (KeyError, IndexError, TypeError):
-        return {"ok": True, "detail": "No text message found."}
+    except Exception as e:
+        print(f"Webhook parse error: {e}")
+        return {"ok": True, "detail": "Error en el parseo del mensaje."}
 
     # 3. Lógica Combinada (Conversión Upsert + Chat)
     
