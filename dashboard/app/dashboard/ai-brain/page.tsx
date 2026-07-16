@@ -87,7 +87,7 @@ export default function AIBrainPage() {
     setMsg(null);
     try {
       const res = await fetch(`${API}/clients/me/chat-widget`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${session.backendToken}`,
           "Content-Type": "application/json",
