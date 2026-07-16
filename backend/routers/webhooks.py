@@ -312,6 +312,10 @@ async def ycloud_master_webhook(
             message = payload["entry"][0]["changes"][0]["value"]["messages"][0]
             wa_id = message["from"]
             text_body = message.get("text", {}).get("body", "")
+        elif "whatsappInboundMessageReceived" in payload:
+            message = payload["whatsappInboundMessageReceived"]["message"]
+            wa_id = message["from"]
+            text_body = message.get("text", {}).get("body", "")
         else:
             return {"ok": True, "detail": "Formato de payload no reconocido."}
     except (KeyError, IndexError, TypeError):
@@ -382,7 +386,7 @@ async def ycloud_master_webhook(
         user_result = await db.execute(select(User).where(User.id == client_id))
         client_user = user_result.scalar_one_or_none()
 
-        if chat_config and chat_config.is_enabled and client_user:
+        if chat_config and chat_config.is_enabled and getattr(chat_config, 'ai_apply_whatsapp', True) and client_user:
             # Enviar el mensaje al cerebro QSS (Reglas + IA)
             engine_result = await process_chat_message(
                 session=chat_session,
@@ -613,7 +617,7 @@ async def baileys_webhook(
         user_result = await db.execute(select(User).where(User.id == client_id))
         client_user = user_result.scalar_one_or_none()
 
-        if chat_config and chat_config.is_enabled and client_user:
+        if chat_config and chat_config.is_enabled and getattr(chat_config, 'ai_apply_whatsapp', True) and client_user:
             engine_result = await process_chat_message(
                 session=chat_session,
                 config=chat_config,
