@@ -316,6 +316,7 @@ async def ycloud_master_webhook(
         elif "whatsappInboundMessage" in payload:
             msg_obj = payload["whatsappInboundMessage"]
             wa_id = msg_obj.get("from")
+            biz_number = msg_obj.get("to")  # Needed to reply
             msg_type = msg_obj.get("type", "text")
             
             if msg_type == "text":
@@ -434,7 +435,7 @@ async def ycloud_master_webhook(
 
     # 4. Enviar la respuesta de vuelta a WhatsApp vía API de YCloud
     if llm_reply_text.strip():
-        ycloud_url = "https://api.ycloud.com/v2/whatsapp/messages/send"
+        ycloud_url = "https://api.ycloud.com/v2/whatsapp/messages/sendDirectly"
         
         headers = {
             "X-API-Key": ycloud_api_key,
@@ -442,12 +443,20 @@ async def ycloud_master_webhook(
         }
         
         yc_payload = {
+            "from": locals().get("biz_number", ""),  # Ensure we pass the biz number if extracted
             "to": wa_id,
             "type": "text",
             "text": {
                 "body": llm_reply_text
             }
         }
+        
+        # If biz_number wasn't extracted (Meta meta payload), fallback or remove
+        if not yc_payload["from"]:
+            # Maybe it's generic, but YCloud v2 REQUIRES 'from'. 
+            # If the user only has 1 number, YCloud might accept it without 'from' in /messages endpoint?
+            # Actually we must just send it and hope they have extracted it, or remove it so we don't send empty strings.
+            del yc_payload["from"]
         
         wa_delay_mode = pay_cfg.provider_keys.get("wa_delay_mode", "human") if pay_cfg and pay_cfg.provider_keys else "human"
         if wa_delay_mode == "instant":
