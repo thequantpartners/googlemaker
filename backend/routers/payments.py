@@ -52,7 +52,11 @@ async def create_subscription(
             "frequency": 1,
             "frequency_type": "months",
             "transaction_amount": amount,
-            "currency_id": "PEN"
+            "currency_id": "PEN",
+            "free_trial": {
+                "frequency": 7,
+                "frequency_type": "days"
+            }
         },
         "back_url": "https://qss.thequantpartners.com/dashboard/onboarding",
         "payer_email": user.email,

@@ -494,3 +494,61 @@ def remove_conversion_action(client: GoogleAdsClient, customer_id: str, conversi
         errors = [error.message for error in ex.failure.errors]
         raise ValueError(f"Error removing conversion: {'; '.join(errors)}")
 
+def create_offline_conversion_action(client: GoogleAdsClient, customer_id: str, name: str = "QSS Offline Conversion") -> str:
+    """
+    Creates an offline conversion action (Import from Clicks).
+    Returns the conversion action resource name.
+    """
+    customer_id_clean = customer_id.replace("-", "")
+    
+    conversion_action_service = client.get_service("ConversionActionService")
+    conversion_action_operation = client.get_type("ConversionActionOperation")
+    
+    conversion_action = conversion_action_operation.create
+    conversion_action.name = f"{name} ({uuid.uuid4().hex[:4]})"
+    conversion_action.type_ = client.enums.ConversionActionTypeEnum.UPLOAD_CLICKS
+    conversion_action.status = client.enums.ConversionActionStatusEnum.ENABLED
+    conversion_action.category = client.enums.ConversionActionCategoryEnum.LEAD
+    
+    conversion_action.value_settings.default_value = 1.0
+    conversion_action.value_settings.always_use_default_value = True
+
+    try:
+        response = conversion_action_service.mutate_conversion_actions(
+            customer_id=customer_id_clean, operations=[conversion_action_operation]
+        )
+        return response.results[0].resource_name
+    except GoogleAdsException as ex:
+        errors = [error.message for error in ex.failure.errors]
+        raise ValueError(f"Error creando conversión offline: {'; '.join(errors)}")
+
+def upload_offline_conversion(client: GoogleAdsClient, customer_id: str, conversion_action_resource_name: str, gclid: str, conversion_time: str, conversion_value: float = 1.0) -> bool:
+    """
+    Uploads an offline conversion using GCLID.
+    conversion_time format: yyyy-mm-dd hh:mm:ss+|-hh:mm
+    """
+    customer_id_clean = customer_id.replace("-", "")
+    conversion_upload_service = client.get_service("ConversionUploadService")
+    
+    click_conversion = client.get_type("ClickConversion")
+    click_conversion.conversion_action = conversion_action_resource_name
+    click_conversion.gclid = gclid
+    click_conversion.conversion_date_time = conversion_time
+    click_conversion.conversion_value = conversion_value
+    click_conversion.currency_code = "PEN"
+    
+    request = client.get_type("UploadClickConversionsRequest")
+    request.customer_id = customer_id_clean
+    request.conversions.append(click_conversion)
+    request.partial_failure = True
+    
+    try:
+        response = conversion_upload_service.upload_click_conversions(request=request)
+        if response.partial_failure_error.message:
+            print(f"Partial failure uploading conversion: {response.partial_failure_error.message}")
+            return False
+        return True
+    except GoogleAdsException as ex:
+        print(f"Failed to upload conversion: {ex}")
+        return False
+

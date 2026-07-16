@@ -73,6 +73,7 @@ class MagicFormSubmitRequest(BaseModel):
     phone: str
     score: int
     answers: dict
+    gclid: str | None = None
 
 async def _send_client_welcome_whatsapp(name: str, phone: str, client_id: str):
     message = (
@@ -103,9 +104,44 @@ async def submit_public_form(
         email=req.email,
         phone=req.phone,
         source="magic_form",
+        gclid=req.gclid,
     )
     db.add(lead)
     await db.commit()
     
     background_tasks.add_task(_send_client_welcome_whatsapp, req.name, req.phone, form.client_id)
+    
+    if req.gclid:
+        background_tasks.add_task(_process_offline_conversion, form.client_id, req.gclid)
+        
     return {"ok": True, "rejected": False, "message": "Lead qualified and WA initiated."}
+
+async def _process_offline_conversion(client_id: str, gclid: str):
+    from database import SessionLocal
+    from models import GoogleAdsCredential
+    from services.google_ads_service import get_google_ads_client, upload_offline_conversion, fetch_conversion_actions, create_offline_conversion_action
+    from datetime import datetime, timezone
+    
+    async with SessionLocal() as db:
+        result = await db.execute(select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == client_id))
+        cred = result.scalars().first()
+        if not cred or not cred.refresh_token:
+            return
+            
+        try:
+            client = get_google_ads_client(cred.refresh_token, cred.login_customer_id)
+            actions = fetch_conversion_actions(client, cred.target_customer_id)
+            
+            # Find the offline conversion action
+            offline_action = next((a for a in actions if a['type'] == 'UPLOAD_CLICKS'), None)
+            if not offline_action:
+                # Create it automatically
+                rn = create_offline_conversion_action(client, cred.target_customer_id)
+            else:
+                customer_id_clean = cred.target_customer_id.replace("-", "")
+                rn = f"customers/{customer_id_clean}/conversionActions/{offline_action['id']}"
+                
+            conversion_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S+00:00")
+            upload_offline_conversion(client, cred.target_customer_id, rn, gclid, conversion_time)
+        except Exception as e:
+            print(f"Error processing offline conversion: {e}")

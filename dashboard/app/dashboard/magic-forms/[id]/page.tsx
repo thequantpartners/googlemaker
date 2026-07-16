@@ -184,6 +184,35 @@ export default function MagicFormBuilder() {
           </div>
         </div>
 
+        {/* Share Section */}
+        <div className="bg-dark-card border border-dark-card-border rounded-2xl p-6">
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <ExternalLink size={18} className="text-neon-green" />
+            Compartir y Embeber
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Enlace Público (Quiz Interactivo)</label>
+              <input 
+                readOnly
+                value={`${typeof window !== 'undefined' ? window.location.origin : ''}/f/${form.id}`}
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-gray-300 focus:outline-none"
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-1">Código Embebido (Iframe para tu web)</label>
+              <textarea 
+                readOnly
+                value={`<iframe src="${typeof window !== 'undefined' ? window.location.origin : ''}/embed/f/${form.id}" width="100%" style="border:none;min-height:600px;" title="Magic Form"></iframe>`}
+                rows={3}
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-gray-300 focus:outline-none resize-none font-mono text-sm"
+                onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Heuristics Config */}
         <div className="bg-dark-card border border-dark-card-border rounded-2xl p-6">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">

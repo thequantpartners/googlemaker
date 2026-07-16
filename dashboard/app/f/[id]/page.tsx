@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { CheckCircle2, ChevronRight, AlertCircle, Bot, Loader2 } from "lucide-react";
 
 export default function PublicMagicForm() {
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const gclid = searchParams.get("gclid");
   
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -98,7 +100,8 @@ export default function PublicMagicForm() {
           email: contact.email,
           phone: contact.phone,
           score: totalScore,
-          answers: answersRecord
+          answers: answersRecord,
+          gclid: gclid || undefined
         })
       });
       

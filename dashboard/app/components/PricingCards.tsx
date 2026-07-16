@@ -34,7 +34,7 @@ export default function PricingCards({
         ? "Procesando..."
         : isCurrent
         ? "Plan Actual"
-        : "Seleccionar Plan",
+        : "Iniciar Prueba de 7 Días",
     };
   };
 

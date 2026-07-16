@@ -404,7 +404,7 @@ function DashboardContent() {
               <ChevronDown size={20} />
             </div>
           </summary>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-5 gap-6 animate-fade-in-up">
             
             {/* Conversions */}
             <div className="bg-white/[0.02] border border-white/[0.05] p-5 rounded-2xl">
@@ -422,6 +422,29 @@ function DashboardContent() {
                   ${globalMetrics.avgCpa.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h2>
               )}
+            </div>
+
+            {/* CPL */}
+            <div className="bg-white/[0.02] border border-white/[0.05] p-5 rounded-2xl">
+              <p className="text-gray-400 text-sm mb-2">Costo por Lead (CPL)</p>
+              {metricsLoading ? <Skeleton className="h-8 w-24 mt-1" /> : (() => {
+                const leads = crmMetrics?.total_leads_tracked || 0;
+                const cpl = leads > 0 ? globalMetrics.cost / leads : 0;
+                return <h2 className="text-2xl font-bold text-white">${cpl.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>;
+              })()}
+            </div>
+
+            {/* ROI */}
+            <div className="bg-white/[0.02] border border-white/[0.05] p-5 rounded-2xl">
+              <p className="text-gray-400 text-sm mb-2">Return on Ad Spend (ROAS/ROI)</p>
+              {metricsLoading ? <Skeleton className="h-8 w-24 mt-1" /> : (() => {
+                const revenue = (crmMetrics as any)?.total_revenue ?? 0;
+                const cost = globalMetrics.cost;
+                const roi = cost > 0 ? ((revenue - cost) / cost) * 100 : 0;
+                return <h2 className={`text-2xl font-bold ${roi >= 0 ? 'text-neon-green' : 'text-red-400'}`}>
+                  {roi > 0 ? '+' : ''}{roi.toLocaleString("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
+                </h2>;
+              })()}
             </div>
 
             {/* Autopilot Status */}
