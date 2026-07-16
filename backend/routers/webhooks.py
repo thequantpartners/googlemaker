@@ -254,6 +254,7 @@ async def generic_webhook(
 async def ycloud_master_webhook(
     request: Request,
     client_id: str,
+    background_tasks: BackgroundTasks,
     ycloud_signature: str | None = Header(None, alias="YCloud-Signature"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -449,7 +450,7 @@ async def ycloud_master_webhook(
                     print(f"YCloud API Error: {yc_res.text}")
 
         import asyncio
-        asyncio.create_task(_delayed_ycloud_send(delay_sec, ycloud_url, headers, yc_payload))
+        background_tasks.add_task(_delayed_ycloud_send, delay_sec, ycloud_url, headers, yc_payload)
 
     return {"ok": True, "status": "processed"}
 
