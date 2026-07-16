@@ -6,7 +6,6 @@ import {
   MessageSquare,
   Palette,
   ListChecks,
-  Brain,
   Code2,
   Users,
   Plus,
@@ -17,9 +16,6 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
-  Zap,
-  ToggleLeft,
-  ToggleRight,
   Mail,
   Phone,
   User,
@@ -102,7 +98,6 @@ function normalizeRules(raw: unknown): RuleQuestion[] {
 const TABS = [
   { id: "apariencia",  label: "Apariencia",    icon: Palette },
   { id: "reglas",      label: "Reglas",         icon: ListChecks },
-  { id: "ia",          label: "Intención IA",   icon: Brain },
   { id: "instalacion", label: "Instalación",    icon: Code2 },
   { id: "leads",       label: "Leads",          icon: Users },
 ] as const;
@@ -530,251 +525,7 @@ export default function ChatWidgetPage() {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          TAB: INTENCIÓN IA
-      ══════════════════════════════════════════════════════════════════════ */}
-      {activeTab === "ia" && (
-        <div className="bg-dark-card backdrop-blur-xl border border-dark-card-border rounded-[2rem] p-6 md:p-8 space-y-6">
-          <SectionTitle icon={<Brain size={22} />} title="Configuración Master IA" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-dark-card-border">
-                <div>
-                   <h4 className="text-white font-medium text-sm">Chat Widget</h4>
-                   <p className="text-gray-400 text-xs mt-0.5">Aplicar estas instrucciones al widget web</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setConfig({ ...config, ai_apply_chat_widget: config.ai_apply_chat_widget === undefined ? false : !config.ai_apply_chat_widget })}
-                  className={`${(config.ai_apply_chat_widget ?? true) ? 'text-neon-green' : 'text-gray-500 hover:text-gray-400'} transition-colors`}
-                >
-                  {(config.ai_apply_chat_widget ?? true) ? <ToggleRight size={36} /> : <ToggleLeft size={36} />}
-                </button>
-             </div>
-             
-             <div className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-dark-card-border">
-                <div>
-                   <h4 className="text-white font-medium text-sm">WhatsApp Virtual Setter</h4>
-                   <p className="text-gray-400 text-xs mt-0.5">Aplicar estas instrucciones al bot de WhatsApp</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setConfig({ ...config, ai_apply_whatsapp: config.ai_apply_whatsapp === undefined ? false : !config.ai_apply_whatsapp })}
-                  className={`${(config.ai_apply_whatsapp ?? true) ? 'text-neon-purple' : 'text-gray-500 hover:text-gray-400'} transition-colors`}
-                >
-                  {(config.ai_apply_whatsapp ?? true) ? <ToggleRight size={36} /> : <ToggleLeft size={36} />}
-                </button>
-             </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-neon-purple/5 border border-neon-purple/20 text-sm text-gray-300 flex gap-3">
-            <Zap size={18} className="text-neon-purple flex-shrink-0 mt-0.5" />
-            <span>
-              Gemini 2.0 Flash toma el control cuando el score acumula ≥{" "}
-              <span className="text-neon-purple font-semibold">{config.intent_threshold} pts</span>.
-              Define aquí cómo debe comportarse el asistente una vez en modo IA.
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-1">
-              <Field label="Proveedor de IA" hint="Selecciona el modelo de Inteligencia Artificial">
-                <select
-                  value={config.ai_provider || "openai"}
-                  onChange={(e) => setConfig({ ...config, ai_provider: e.target.value })}
-                  className={inputCls}
-                >
-                  <option value="openai">OpenAI (GPT-4o Mini)</option>
-                  <option value="anthropic">Anthropic (Claude 3.5 Haiku)</option>
-                  <option value="gemini">Google (Gemini 2.0 Flash)</option>
-                </select>
-              </Field>
-            </div>
-
-            <div className="md:col-span-1">
-              <Field label={
-                <div className="flex items-center gap-2">
-                  API Key
-                  {config.has_api_key && (
-                    <span className="text-[10px] uppercase tracking-wider font-bold bg-neon-green/20 text-neon-green px-2 py-0.5 rounded-full">
-                      ✓ Configurada
-                    </span>
-                  )}
-                </div>
-              } hint={config.has_api_key ? "API Key guardada." : "Pega tu clave secreta de la API."}>
-                {config.has_api_key && !isEditingKey ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="password"
-                      value="sk-...*********************************"
-                      disabled
-                      className={`${inputCls} opacity-50 cursor-not-allowed`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingKey(true)}
-                      className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm font-medium transition-colors border border-white/10 whitespace-nowrap"
-                    >
-                      Cambiar
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="password"
-                      value={config.ai_api_key || ""}
-                      onChange={(e) => setConfig({ ...config, ai_api_key: e.target.value })}
-                      className={inputCls}
-                      placeholder="sk-..."
-                      autoFocus
-                    />
-                    {config.has_api_key && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsEditingKey(false);
-                          setConfig({ ...config, ai_api_key: "" });
-                        }}
-                        className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-medium transition-colors border border-red-500/20"
-                      >
-                        Cancelar
-                      </button>
-                    )}
-                  </div>
-                )}
-              </Field>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-dark-card-border">
-            <Field label="Umbral de intención (pts)" hint="Score mínimo para activar IA">
-              <input
-                type="number"
-                min={0} max={9999}
-                value={config.intent_threshold}
-                onChange={(e) => setConfig({ ...config, intent_threshold: parseInt(e.target.value) || 0 })}
-                className={inputCls}
-              />
-            </Field>
-
-            <Field label="Temperatura" hint={`Creatividad del modelo (${config.temperature.toFixed(1)})`}>
-              <input
-                type="range" min={0} max={2} step={0.1}
-                value={config.temperature}
-                onChange={(e) => setConfig({ ...config, temperature: parseFloat(e.target.value) })}
-                className="w-full accent-neon-purple mt-2"
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>Preciso</span>
-                <span className="text-neon-purple font-semibold">{config.temperature.toFixed(1)}</span>
-                <span>Creativo</span>
-              </div>
-            </Field>
-
-            <Field label="Máx. tokens" hint="Longitud máxima de respuesta">
-              <input
-                type="number"
-                min={64} max={8192}
-                value={config.max_tokens}
-                onChange={(e) => setConfig({ ...config, max_tokens: parseInt(e.target.value) || 1024 })}
-                className={inputCls}
-              />
-            </Field>
-
-            <div className="md:col-span-3">
-              <Field label="System Prompt" hint="Instrucciones base para la IA (rol, tono, objetivo)">
-                <textarea
-                  rows={6}
-                  value={config.system_prompt ?? ""}
-                  onChange={(e) => setConfig({ ...config, system_prompt: e.target.value || null })}
-                  className={textareaCls}
-                  placeholder="Ej: Eres un asistente comercial amigable de [Tu Empresa]. Tu objetivo es entender las necesidades del cliente y guiarlo hacia una consulta. Habla siempre en español, con tono profesional pero cercano..."
-                />
-              </Field>
-            </div>
-
-            <div className="md:col-span-3">
-              <Field
-                label="Protocolo de Seguridad"
-                hint="Reglas que la IA nunca puede violar (inyectadas al final del prompt)"
-              >
-                <textarea
-                  rows={4}
-                  value={config.security_protocol ?? ""}
-                  onChange={(e) => setConfig({ ...config, security_protocol: e.target.value || null })}
-                  className={textareaCls}
-                  placeholder="Ej: Nunca prometas precios exactos. No hagas declaraciones legales. Si el usuario menciona competidores, redirige la conversación hacia nuestras fortalezas..."
-                />
-              </Field>
-            </div>
-
-            <div className="md:col-span-3 pt-6 border-t border-dark-card-border">
-              <h4 className="text-white font-medium text-sm mb-3 flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-neon-green" />
-                Metas (Goals)
-              </h4>
-              <p className="text-gray-400 text-xs mb-4">Activa las metas que la IA debe perseguir al conversar con los prospectos. Las metas se añadirán automáticamente a las instrucciones de la IA.</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${hasCalendarConfig ? 'bg-white/[0.02] border-white/10 hover:bg-white/[0.04]' : 'bg-black/20 border-white/5 opacity-60'}`}>
-                  <div>
-                    <h5 className="text-sm text-white flex items-center gap-2">
-                      Agendar <span className="text-[10px] uppercase font-bold bg-gray-800 text-gray-300 px-1.5 rounded">Calendario</span>
-                    </h5>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {hasCalendarConfig ? 'La IA revisará tu disponibilidad y agendará reuniones.' : 'Conecta tu calendario de Google para activar esta meta.'}
-                    </p>
-                  </div>
-                  {hasCalendarConfig && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                         const goals = config.ai_goals || [];
-                         if (goals.includes('agendar')) {
-                            setConfig({ ...config, ai_goals: goals.filter((g: string) => g !== 'agendar') });
-                         } else {
-                            setConfig({ ...config, ai_goals: [...goals, 'agendar'] });
-                         }
-                      }}
-                      className={`${(config.ai_goals || []).includes('agendar') ? 'text-neon-green' : 'text-gray-500'} transition-colors`}
-                    >
-                      {(config.ai_goals || []).includes('agendar') ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
-                    </button>
-                  )}
-                </div>
-
-                <div className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${hasPaymentConfig ? 'bg-white/[0.02] border-white/10 hover:bg-white/[0.04]' : 'bg-black/20 border-white/5 opacity-60'}`}>
-                  <div>
-                    <h5 className="text-sm text-white flex items-center gap-2">
-                      Cobrar <span className="text-[10px] uppercase font-bold bg-gray-800 text-gray-300 px-1.5 rounded">Pagos</span>
-                    </h5>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {hasPaymentConfig ? 'La IA solicitará y gestionará el cobro (consultas, iniciales, etc).' : 'Configura Stripe, PayPal o similar para activar.'}
-                    </p>
-                  </div>
-                  {hasPaymentConfig && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                         const goals = config.ai_goals || [];
-                         if (goals.includes('cobrar')) {
-                            setConfig({ ...config, ai_goals: goals.filter((g: string) => g !== 'cobrar') });
-                         } else {
-                            setConfig({ ...config, ai_goals: [...goals, 'cobrar'] });
-                         }
-                      }}
-                      className={`${(config.ai_goals || []).includes('cobrar') ? 'text-neon-green' : 'text-gray-500'} transition-colors`}
-                    >
-                      {(config.ai_goals || []).includes('cobrar') ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      )}
 
       {/* ══════════════════════════════════════════════════════════════════════
           TAB: INSTALACIÓN

@@ -4,7 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks, Lock, MessageSquare, Wallet, Phone, Calendar, LayoutTemplate } from "lucide-react";
+import { LayoutDashboard, Megaphone, Activity, CreditCard, Settings, LogOut, Menu, X, ListChecks, Lock, MessageSquare, Wallet, Phone, Calendar, LayoutTemplate, BrainCircuit } from "lucide-react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -62,18 +62,24 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       ]
     },
     {
-      title: "2. ATERRIZAJE",
+      title: "2. CEREBRO IA",
       items: [
-        { name: "Magic Forms", href: "/dashboard/magic-forms", icon: LayoutTemplate, locked: true },
-        { name: "Web Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
+        { name: "Configuración IA", href: "/dashboard/ai-brain", icon: BrainCircuit, locked: true },
       ]
     },
     {
-      title: "3. SETTER VIRTUAL",
+      title: "3. HERRAMIENTAS",
       items: [
-        { name: "Configuración Setter", href: "/dashboard/whatsapp", icon: Phone, locked: true },
         { name: "Smart Calendar", href: "/dashboard/calendar", icon: Calendar, locked: true },
         { name: "Cobros Auto", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
+      ]
+    },
+    {
+      title: "4. CANALES",
+      items: [
+        { name: "Web Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
+        { name: "WhatsApp Setter", href: "/dashboard/whatsapp", icon: Phone, locked: true },
+        { name: "Magic Forms", href: "/dashboard/magic-forms", icon: LayoutTemplate, locked: true },
       ]
     },
     {
