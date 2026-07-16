@@ -397,10 +397,8 @@ async def ycloud_master_webhook(
         chat_session = session_result.scalars().first()
         if not chat_session:
             chat_session = ChatSession(
-                id=str(uuid.uuid4()),
                 session_id=wa_id,
-                client_id=client_id,
-                origin="whatsapp"
+                client_id=client_id
             )
             db.add(chat_session)
             await db.commit()
