@@ -440,8 +440,10 @@ async def ycloud_master_webhook(
             llm_reply_text = "El asistente virtual no está activado en este momento."
             
     except Exception as e:
-        print(f"Error procesando mensaje en chat_engine: {e}")
-        llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
+        import traceback
+        err_msg = str(e)
+        print(f"Error procesando mensaje en chat_engine: {traceback.format_exc()}")
+        llm_reply_text = f"Lo siento, estamos experimentando dificultades técnicas. (Debug: {err_msg})"
 
     # 4. Enviar la respuesta de vuelta a WhatsApp vía API de YCloud
     if llm_reply_text.strip():
