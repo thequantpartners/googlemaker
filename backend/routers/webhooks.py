@@ -283,10 +283,10 @@ async def ycloud_master_webhook(
     if not ycloud_signature:
         raise HTTPException(status_code=401, detail="Firma de YCloud requerida.")
 
-    # Parsear t=timestamp, s=signature
+    # Parsear t=timestamp, v1=signature (YCloud v2 format)
     sig_parts = dict(kv.split("=") for kv in ycloud_signature.split(","))
     req_timestamp = sig_parts.get("t")
-    req_sig = sig_parts.get("s")
+    req_sig = sig_parts.get("v1") or sig_parts.get("s")
 
     if not req_timestamp or not req_sig:
         raise HTTPException(status_code=401, detail="Firma de YCloud mal formada.")
