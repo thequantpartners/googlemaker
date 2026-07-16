@@ -16,6 +16,7 @@ import httpx
 from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, BackgroundTasks
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
