@@ -413,6 +413,41 @@ async def ycloud_master_webhook(
         # Recuperar el Client User para desencriptar llaves
         user_result = await db.execute(select(User).where(User.id == client_id))
         client_user = user_result.scalars().first()
+        
+        if chat_config:
+            debounce_secs = getattr(chat_config, 'debounce_seconds', 5)
+            
+            # 1. Agregar a la cola de pendientes
+            pending = list(chat_session.pending_messages or [])
+            pending.append(text_body)
+            chat_session.pending_messages = pending
+            
+            if getattr(chat_session, 'is_processing', False):
+                # Candado activo: otro proceso ya está durmiendo/esperando.
+                # Guardamos nuestro mensaje en la lista y salimos.
+                await db.commit()
+                return JSONResponse(content={"status": "buffered"})
+            
+            # Candado inactivo: somos el proceso líder.
+            chat_session.is_processing = True
+            await db.commit()
+            
+            # 2. Dormir para amortiguar (Debounce)
+            import asyncio
+            if debounce_secs > 0:
+                await asyncio.sleep(debounce_secs)
+            
+            # 3. Despertar y recolectar todos los mensajes acumulados
+            await db.refresh(chat_session)
+            pending_all = list(chat_session.pending_messages or [])
+            
+            # Unir todos los mensajes con un salto de línea
+            text_body = "\n".join(pending_all)
+            
+            # Vaciar la cola y liberar el candado
+            chat_session.pending_messages = []
+            chat_session.is_processing = False
+            await db.commit()
 
         if chat_config and chat_config.is_enabled and getattr(chat_config, 'ai_apply_whatsapp', True) and client_user:
             # Enviar el mensaje al cerebro QSS (Reglas + IA)

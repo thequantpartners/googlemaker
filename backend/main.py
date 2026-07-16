@@ -97,7 +97,10 @@ async def lifespan(app: FastAPI):
         await safe_add_column("leads", "full_case_amount", "FLOAT")
         # UTM tracking stored on the session for later transfer to lead
         await safe_add_column("chat_sessions", "tracking_data", _json_type)
+        await safe_add_column("chat_sessions", "pending_messages", _json_type, "'[]'")
+        await safe_add_column("chat_sessions", "is_processing", "BOOLEAN", "false")
         await safe_add_column("chat_widget_configs", "rejection_message", "TEXT", "'¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad.'")
+        await safe_add_column("chat_widget_configs", "debounce_seconds", "INTEGER", "5")
         await safe_add_column("chat_widget_configs", "downsell_url", "TEXT")
         await safe_add_column("chat_widget_configs", "allowed_domains", "TEXT")
         await safe_add_column("chat_widget_configs", "ai_provider", "VARCHAR(50)", "'openai'")

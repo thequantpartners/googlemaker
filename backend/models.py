@@ -284,6 +284,7 @@ class ChatWidgetConfig(Base):
     ai_apply_chat_widget: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     ai_apply_whatsapp: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     ai_goals: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
+    debounce_seconds: Mapped[int] = mapped_column(Integer, nullable=False, default=5)
 
     @property
     def has_api_key(self) -> bool:
@@ -330,6 +331,10 @@ class ChatSession(Base):
     history: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     # UTM / gclid tracking captured from the visitor's URL on widget open
     tracking_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    # Debounce buffer
+    pending_messages: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    is_processing: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(

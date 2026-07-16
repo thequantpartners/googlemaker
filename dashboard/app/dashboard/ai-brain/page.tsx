@@ -25,6 +25,7 @@ interface WidgetConfig {
   max_tokens: number;
   ai_apply_chat_widget: boolean;
   ai_apply_whatsapp: boolean;
+  debounce_seconds?: number;
   ai_goals: string[];
 }
 
@@ -296,7 +297,7 @@ export default function AIBrainPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-dark-card-border">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-6 border-t border-dark-card-border">
           <div>
             <label className="block text-sm font-semibold text-white mb-1">Umbral de intención (pts)</label>
             <p className="text-xs text-gray-400 mb-2">Score mínimo para activar IA</p>
@@ -336,7 +337,22 @@ export default function AIBrainPage() {
             />
           </div>
 
-          <div className="md:col-span-3">
+          <div>
+            <label className="block text-sm font-semibold text-white mb-1">Amortiguación</label>
+            <p className="text-xs text-gray-400 mb-2">Espera ({config.debounce_seconds ?? 5}s)</p>
+            <input
+              type="range" min={0} max={15} step={1}
+              value={config.debounce_seconds ?? 5}
+              onChange={(e) => setConfig({ ...config, debounce_seconds: parseInt(e.target.value) })}
+              className="w-full accent-neon-purple mt-2"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>0s</span>
+              <span>15s</span>
+            </div>
+          </div>
+
+          <div className="md:col-span-2 lg:col-span-4">
             <label className="block text-sm font-semibold text-white mb-1">System Prompt</label>
             <p className="text-xs text-gray-400 mb-2">Instrucciones base para la IA (rol, tono, objetivo principal)</p>
             <textarea
