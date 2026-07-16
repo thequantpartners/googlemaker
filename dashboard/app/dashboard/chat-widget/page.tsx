@@ -16,6 +16,8 @@ import {
   Loader2,
   ChevronDown,
   ChevronUp,
+  ToggleLeft,
+  ToggleRight,
   Mail,
   Phone,
   User,
