@@ -86,7 +86,7 @@ export default function WhatsAppPage() {
   });
 
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
-  const masterWebhookUrl = `${webhookBaseUrl}/api/webhooks/ycloud/webhook${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
+  const masterWebhookUrl = `${webhookBaseUrl}/webhooks/ycloud/webhook${config?.user_id ? `?client_id=${config.user_id}` : ""}`;
 
   useEffect(() => {
     if (!session?.backendToken) return;
