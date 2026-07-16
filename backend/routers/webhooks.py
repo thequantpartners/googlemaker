@@ -315,12 +315,22 @@ async def ycloud_master_webhook(
             text_body = message.get("text", {}).get("body", "")
         elif "whatsappInboundMessage" in payload:
             msg_obj = payload["whatsappInboundMessage"]
-            wa_id = msg_obj.get("from")
-            biz_number = msg_obj.get("to")  # Needed to reply
+            wa_id = msg_obj.get("from", "")
+            if wa_id and not wa_id.startswith("+"):
+                wa_id = f"+{wa_id}"
+                
+            biz_number = msg_obj.get("to", "")
+            if biz_number and not biz_number.startswith("+"):
+                biz_number = f"+{biz_number}"
+                
             msg_type = msg_obj.get("type", "text")
             
             if msg_type == "text":
-                text_body = msg_obj.get("text", "")
+                raw_text = msg_obj.get("text", "")
+                if isinstance(raw_text, dict):
+                    text_body = raw_text.get("body", "")
+                else:
+                    text_body = str(raw_text)
             elif msg_type == "interactive":
                 interactive_obj = msg_obj.get("interactive", {})
                 inter_type = interactive_obj.get("type", "")
