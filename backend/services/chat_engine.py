@@ -87,6 +87,10 @@ def _build_system_instruction(config: ChatWidgetConfig, enable_tools: bool = Fal
     """
     parts: list[str] = []
 
+    from datetime import datetime, timezone
+    current_date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')
+    parts.append(f"[INFORMACIÓN DEL SISTEMA]\nHoy es: {current_date} UTC\n")
+
     if config.system_prompt:
         parts.append(config.system_prompt.strip())
 
@@ -104,7 +108,6 @@ def _build_system_instruction(config: ChatWidgetConfig, enable_tools: bool = Fal
         from datetime import datetime, timezone
         parts.append(
             "--- PROTOCOLO DE CALENDARIO (AGENDAMIENTO) ---\n"
-            f"Hoy es {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')} UTC. "
             "Tienes acceso a herramientas de calendario. Si el lead muestra intención de agendar una reunión o llamada, "
             "SIEMPRE usa la herramienta 'get_availability' para ofrecerle horarios reales disponibles. "
             "NUNCA inventes horarios. Una vez que el lead elija un horario de los disponibles, usa 'book_meeting' para confirmar la cita."
