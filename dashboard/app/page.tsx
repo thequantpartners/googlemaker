@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { CheckCircle2, PlayCircle, XCircle, ArrowRight, TrendingUp, Clock, DollarSign, Target, MessageSquare, Megaphone, Zap } from "lucide-react";
 import LeadForm from "@/components/LeadForm";
+import GlowParticles from "@/app/components/GlowParticles";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#06080F] text-white selection:bg-neon-green/30 selection:text-white font-sans overflow-x-hidden">
+      <GlowParticles />
       
       {/* GLOBAL NAVBAR */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#06080F]/80 backdrop-blur-xl border-b border-white/5 transition-all">

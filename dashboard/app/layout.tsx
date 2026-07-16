@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import ReadingProgressBar from "@/app/components/ReadingProgressBar";
-import GlowParticles from "@/app/components/GlowParticles";
 import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -47,7 +46,6 @@ export default function RootLayout({
           />
         </noscript>
         <ReadingProgressBar />
-        <GlowParticles />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
