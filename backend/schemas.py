@@ -293,11 +293,12 @@ class LeadOut(BaseModel):
 
 
 class ClientPaymentConfigUpdate(BaseModel):
-    provider: str | None = Field(None, pattern=r"^(stripe|paypal|custom)$")
+    provider: str | None = Field(None, pattern=r"^(stripe|paypal|custom|mercadopago)$")
     stripe_secret_key: str | None = None
     stripe_webhook_secret: str | None = None
     paypal_client_id: str | None = None
     paypal_client_secret: str | None = None
+    mp_access_token: str | None = None
     custom_payment_link: str | None = None
     consultation_fee: float | None = Field(None, ge=0)
     ycloud_api_key: str | None = None
@@ -332,6 +333,7 @@ class ClientPaymentConfigOut(BaseModel):
     has_google_calendar: bool = False
     has_stripe_key: bool = False
     has_paypal_key: bool = False
+    has_mp_access_token: bool = False
     created_at: datetime
     updated_at: datetime
 

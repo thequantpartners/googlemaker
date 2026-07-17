@@ -115,6 +115,59 @@ async def _update_lead_payment(
 
     await db.commit()
     return lead
+# ── Mercado Pago ──────────────────────────────────────────────────────────────
+
+@router.post("/mercadopago/client/{client_id}")
+async def mercadopago_client_webhook(
+    client_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(status_code=200, content={"status": "ok"})
+        
+    topic = request.query_params.get("topic") or body.get("type")
+    
+    if topic == "payment":
+        payment_id = body.get("data", {}).get("id")
+        if not payment_id:
+            return JSONResponse(status_code=200, content={"status": "ok"})
+            
+        result = await db.execute(select(ClientPaymentConfig).where(ClientPaymentConfig.user_id == client_id))
+        pay_cfg = result.scalar_one_or_none()
+        if not pay_cfg:
+            return JSONResponse(status_code=200, content={"status": "ok"})
+            
+        keys = pay_cfg.provider_keys or {}
+        mp_access_token = keys.get("mp_access_token")
+        if not mp_access_token:
+            return JSONResponse(status_code=200, content={"status": "ok"})
+            
+        try:
+            import httpx
+            async with httpx.AsyncClient() as client_http:
+                resp = await client_http.get(
+                    f"https://api.mercadopago.com/v1/payments/{payment_id}",
+                    headers={"Authorization": f"Bearer {mp_access_token}"}
+                )
+                if resp.status_code == 200:
+                    payment_data = resp.json()
+                    if payment_data.get("status") == "approved":
+                        metadata = payment_data.get("metadata", {})
+                        lead_id = metadata.get("lead_id")
+                        payment_type = metadata.get("payment_type")
+                        
+                        if lead_id and payment_type:
+                            await _update_lead_payment(db, lead_id, client_id, payment_type, payment_data.get("transaction_amount"))
+                            await db.commit()
+        except Exception as e:
+            print("MP Webhook Error:", e)
+            
+    return JSONResponse(status_code=200, content={"status": "ok"})
+
 
 
 # ── Stripe ────────────────────────────────────────────────────────────────────

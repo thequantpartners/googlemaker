@@ -168,3 +168,8 @@
 -   * * 2 0 2 6 - 0 7 - 1 4 * * :   M i g r a t e d   p a y m e n t   i n f r a s t r u c t u r e   f r o m   I z i p a y   t o   M e r c a d o   P a g o   S u b s c r i p t i o n s .   U p d a t e d   b a c k e n d   t o   c r e a t e   \ p r e a p p r o v a l _ p l a n \   i n s t a n c e s   a n d   h a n d l e   \ s u b s c r i p t i o n _ p r e a p p r o v a l \   w e b h o o k s .   R e f a c t o r e d   f r o n t e n d   t o   r e m o v e   K R G l u e   a n d   r e d i r e c t   d i r e c t l y   t o   M e r c a d o   P a g o   \ i n i t _ p o i n t \ .   P r o m o t e d   s e c o n d a r y   e m a i l   t o   s u p e r a d m i n   v i a   d e p l o y m e n t   s c r i p t .  
  -   A d d e d   i n d e p e n d e n t   A I   G o a l s   ( A g e n d a r / C o b r a r )   t o   C h a t   W i d g e t   a n d   M a s t e r   B o t ,   w i t h   a n   a s y n c h r o n o u s   w e b h o o k   i n j e c t i o n   l o o p   a l l o w i n g   t h e   A I   t o   s u c c e s s f u l l y   f o r c e   u p f r o n t   p a y m e n t s   v i a   S t r i p e / C u s t o m   p r o v i d e r s   b e f o r e   b o o k i n g   c a l e n d a r   m e e t i n g s .  
  
+## 2026-07-16
+- Implemented Mercado Pago 7-day free trial on the backend and checkout UI.
+- Implemented Dual Magic Forms (public quiz UI and embedded iframe UI) with a Share section.
+- Integrated Google Ads Offline Conversions triggered automatically by Magic Form captures containing gclid.
+- Added CPL and ROI widgets to the Google Ads dashboard (Más Métricas).

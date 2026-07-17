@@ -175,6 +175,7 @@ async def get_payment_config(
         has_google_calendar=bool(keys.get("google_calendar_refresh_token")),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
+        has_mp_access_token=bool(keys.get("mp_access_token")),
         created_at=config.created_at,
         updated_at=config.updated_at,
     )
@@ -206,6 +207,8 @@ async def update_payment_config(
         keys["paypal_client_id"] = data["paypal_client_id"]
     if data.get("paypal_client_secret") is not None:
         keys["paypal_client_secret"] = data["paypal_client_secret"]
+    if data.get("mp_access_token") is not None:
+        keys["mp_access_token"] = data["mp_access_token"]
     if data.get("ycloud_api_key") is not None:
         keys["ycloud_api_key"] = data["ycloud_api_key"]
     if data.get("ycloud_webhook_secret") is not None:
@@ -249,8 +252,10 @@ async def update_payment_config(
         wa_client_handoff_number=keys.get("wa_client_handoff_number"),
         cal_api_key=keys.get("cal_api_key"),
         cal_booking_link=keys.get("cal_booking_link"),
+        has_google_calendar=bool(keys.get("google_calendar_refresh_token")),
         has_stripe_key=bool(keys.get("stripe_secret_key")),
         has_paypal_key=bool(keys.get("paypal_client_id")),
+        has_mp_access_token=bool(keys.get("mp_access_token")),
         created_at=config.created_at,
         updated_at=config.updated_at,
     )
@@ -626,6 +631,55 @@ async def redirect_to_payment(
         )
         return RedirectResponse(url=checkout_session.url, status_code=303)
         
+    elif pay_cfg.provider == "mercadopago":
+        try:
+            import mercadopago
+        except ImportError:
+            raise HTTPException(status_code=500, detail="mercadopago SDK no disponible.")
+        
+        keys = pay_cfg.provider_keys or {}
+        mp_access_token = keys.get("mp_access_token")
+        if not mp_access_token:
+            raise HTTPException(status_code=400, detail="API de Mercado Pago no configurada.")
+            
+        sdk = mercadopago.SDK(mp_access_token)
+        import os
+        frontend_url = os.getenv("NEXT_PUBLIC_APP_URL", "https://qss.thequantpartners.com")
+        api_url = os.getenv("NEXT_PUBLIC_API_URL", "https://qss.thequantpartners.com/api")
+        
+        preference_data = {
+            "items": [
+                {
+                    "title": "Pago por Servicio / Consulta",
+                    "quantity": 1,
+                    "currency_id": "PEN",
+                    "unit_price": float(amount)
+                }
+            ],
+            "metadata": {
+                "session_id": session_id,
+                "lead_id": lead_id or "",
+                "payment_type": "consultation",
+                "client_id": client_id
+            },
+            "back_urls": {
+                "success": f"{frontend_url}/payment-success",
+                "failure": f"{frontend_url}/",
+                "pending": f"{frontend_url}/"
+            },
+            "auto_return": "approved",
+            "notification_url": f"{api_url}/webhooks/mercadopago/client/{client_id}"
+        }
+        
+        try:
+            preference_response = sdk.preference().create(preference_data)
+            preference = preference_response["response"]
+            if "init_point" not in preference:
+                raise HTTPException(status_code=500, detail="Error al generar link de Mercado Pago.")
+            return RedirectResponse(url=preference["init_point"], status_code=303)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"MP Error: {str(e)}")
+
     elif pay_cfg.provider == "custom" and pay_cfg.custom_payment_link:
         return RedirectResponse(url=pay_cfg.custom_payment_link, status_code=303)
         

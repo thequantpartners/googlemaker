@@ -45,3 +45,4 @@
 - **2026-07-14**: Migrated to Mercado Pago. Promoted superadmin. Installed Facebook Pixel in layout.tsx.# # #   2 0 2 6 - 0 7 - 1 5 
  -   S y n c e d   c o n t e x t   r e g a r d i n g   A I   G o a l s   a n d   A s y n c h r o n o u s   W e b h o o k   P a y m e n t s .   T h e   s y s t e m   n o w   e n f o r c e s   u p f r o n t   p a y m e n t s   v i a   b a c k g r o u n d   t a s k s   t h a t   w a k e   u p   t h e   L L M   a n d   p a s s   t h e   c a l e n d a r   t o o l s   d y n a m i c a l l y .  
  
+[2026-07-16] Implemented Mercado Pago 7-day trial, Dual Magic Forms (Iframe/Public), Google Ads Offline Conversions via gclid, and Dashboard CPL/ROI widgets.

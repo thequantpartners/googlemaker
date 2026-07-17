@@ -11,7 +11,7 @@ function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-800/50 rounded-xl ${className}`} />;
 }
 
-type Provider = "stripe" | "paypal" | "custom";
+type Provider = "stripe" | "paypal" | "custom" | "mercadopago";
 
 interface PaymentConfig {
   id: string;
@@ -21,9 +21,15 @@ interface PaymentConfig {
   consultation_fee: number | null;
   has_stripe_key: boolean;
   has_paypal_key: boolean;
+  has_mp_access_token: boolean;
 }
 
 const PROVIDER_META: Record<Provider, { label: string; color: string; desc: string }> = {
+  mercadopago: {
+    label: "Mercado Pago",
+    color: "from-[#009EE3]/20 to-[#009EE3]/5 border-[#009EE3]/30",
+    desc: "Recomendado para Latam. Soporta Yape, tarjetas y PagoEfectivo.",
+  },
   stripe: {
     label: "Stripe",
     color: "from-[#635BFF]/20 to-[#0A2540]/10 border-[#635BFF]/30",
@@ -56,15 +62,17 @@ export default function PaymentSettingsPage() {
   const [copied, setCopied] = useState(false);
   const [showStripeKey, setShowStripeKey] = useState(false);
   const [showPaypalSecret, setShowPaypalSecret] = useState(false);
+  const [showMpToken, setShowMpToken] = useState(false);
 
   // Form state
-  const [provider, setProvider] = useState<Provider>("custom");
+  const [provider, setProvider] = useState<Provider>("mercadopago");
   const [consultationFee, setConsultationFee] = useState("");
   const [customLink, setCustomLink] = useState("");
   const [stripeSecretKey, setStripeSecretKey] = useState("");
   const [stripeWebhookSecret, setStripeWebhookSecret] = useState("");
   const [paypalClientId, setPaypalClientId] = useState("");
   const [paypalClientSecret, setPaypalClientSecret] = useState("");
+  const [mpAccessToken, setMpAccessToken] = useState("");
 
   const webhookBaseUrl = API?.replace("/api", "") ?? "";
   const stripeWebhookUrl = `${webhookBaseUrl}/webhooks/stripe/${session?.user?.id ?? "{your_client_id}"}`;
@@ -115,6 +123,9 @@ export default function PaymentSettingsPage() {
         if (paypalClientId) body.paypal_client_id = paypalClientId;
         if (paypalClientSecret) body.paypal_client_secret = paypalClientSecret;
       }
+      if (provider === "mercadopago") {
+        if (mpAccessToken) body.mp_access_token = mpAccessToken;
+      }
 
       const res = await fetch(`${API}/clients/me/payment-config`, {
         method: "PUT",
@@ -133,6 +144,7 @@ export default function PaymentSettingsPage() {
         setStripeSecretKey("");
         setStripeWebhookSecret("");
         setPaypalClientSecret("");
+        setMpAccessToken("");
       } else {
         const err = await res.json().catch(() => ({}));
         setMsg({ type: "err", text: err.detail ?? "Failed to save." });
@@ -217,8 +229,8 @@ export default function PaymentSettingsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-              {(["stripe", "paypal", "custom"] as Provider[]).map((p) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              {(["mercadopago", "stripe", "paypal", "custom"] as Provider[]).map((p) => {
                 const meta = PROVIDER_META[p];
                 const isActive = provider === p;
                 return (
@@ -302,6 +314,39 @@ export default function PaymentSettingsPage() {
                   <p className="text-[11px] text-gray-600 mt-2">
                     Add this URL in Stripe → Developers → Webhooks. Listen to{" "}
                     <code className="text-gray-400">checkout.session.completed</code>.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* ── Mercado Pago fields ── */}
+            {provider === "mercadopago" && (
+              <div className="space-y-4 border-t border-white/[0.06] pt-5">
+                <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Mercado Pago Credentials</p>
+
+                <div>
+                  <label className="text-xs text-gray-400 mb-1.5 block">Access Token (Producción)
+                    {config?.has_mp_access_token && (
+                      <span className="ml-2 text-neon-green text-[10px]">● Connected</span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showMpToken ? "text" : "password"}
+                      placeholder={config?.has_mp_access_token ? "APP_USR-••••••••••••••••" : "APP_USR-..."}
+                      value={mpAccessToken}
+                      onChange={(e) => setMpAccessToken(e.target.value)}
+                      className={`${inputCls} pr-10`}
+                    />
+                    <button
+                      onClick={() => setShowMpToken(!showMpToken)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                    >
+                      {showMpToken ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-gray-600 mt-1">
+                    Encuéntralo en tu Dashboard de Mercado Pago → Tus Integraciones → Credenciales de Producción.
                   </p>
                 </div>
               </div>
