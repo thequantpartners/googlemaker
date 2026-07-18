@@ -23,6 +23,12 @@ MP_PRICES = {
 class SubscriptionRequest(BaseModel):
     tier: UserTier
 
+MP_PLAN_INIT_POINTS = {
+    "starter": "https://www.mercadopago.com.pe/subscriptions/checkout?preapproval_plan_id=e7a857ce5c7842249497861b725e8210",
+    "growth": "https://www.mercadopago.com.pe/subscriptions/checkout?preapproval_plan_id=66d940c577894065b42c36dcd1ef132b",
+    "pro": "https://www.mercadopago.com.pe/subscriptions/checkout?preapproval_plan_id=c0ff7e942eef4f5d98877ae599a21a10"
+}
+
 
 @router.post("/create-subscription")
 async def create_subscription(
@@ -31,50 +37,16 @@ async def create_subscription(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Creates a Mercado Pago Preapproval Plan and returns the init_point URL.
+    Returns the init_point URL for the corresponding fixed Mercado Pago Plan.
     """
     if not MERCADOPAGO_ACCESS_TOKEN:
         raise HTTPException(status_code=500, detail="Mercado Pago token not configured")
 
-    amount = MP_PRICES.get(request.tier.value)
-    if not amount:
+    init_point = MP_PLAN_INIT_POINTS.get(request.tier.value)
+    if not init_point:
         raise HTTPException(status_code=400, detail="Invalid tier selected")
 
-    headers = {
-        "Authorization": f"Bearer {MERCADOPAGO_ACCESS_TOKEN}",
-        "Content-Type": "application/json",
-    }
-
-    # Store user_id and tier in the external_reference and reason for webhook parsing
-    payload = {
-        "reason": f"QSS Plan {request.tier.value.capitalize()} - {user.id}",
-        "auto_recurring": {
-            "frequency": 1,
-            "frequency_type": "months",
-            "transaction_amount": amount,
-            "currency_id": "PEN",
-            "free_trial": {
-                "frequency": 7,
-                "frequency_type": "days"
-            }
-        },
-        "back_url": "https://qss.thequantpartners.com/dashboard/onboarding",
-        "payer_email": user.email,
-        "external_reference": f"{user.id}|{request.tier.value}"
-    }
-
-    try:
-        async with httpx.AsyncClient() as client:
-            res = await client.post("https://api.mercadopago.com/preapproval_plan", headers=headers, json=payload, timeout=10.0)
-            
-            if res.status_code == 201:
-                data = res.json()
-                return {"status": "success", "init_point": data["init_point"]}
-            else:
-                raise HTTPException(status_code=400, detail=f"MP API Error: {res.text}")
-    except Exception as e:
-        print(f"Error connecting to Mercado Pago: {e}")
-        raise HTTPException(status_code=500, detail="Payment gateway unavailable")
+    return {"status": "success", "init_point": init_point}
 
 
 @router.post("/webhook")
@@ -116,6 +88,8 @@ async def mercadopago_webhook(
                 external_reference = data.get("external_reference") or ""
                 reason = data.get("reason") or ""
                 
+                payer_email = data.get("payer_email")
+                
                 # Parse user_id and tier
                 user_id = None
                 tier_str = None
@@ -128,6 +102,16 @@ async def mercadopago_webhook(
                     if len(parts) >= 2:
                         user_id = parts[-1]
                         tier_str = parts[0].split(" ")[-1].lower()
+
+                # If still no tier_str, infer from reason
+                if not tier_str and "QSS Plan " in reason:
+                    tier_str = reason.replace("QSS Plan ", "").strip().lower()
+
+                if not user_id and payer_email:
+                    result = await db.execute(select(User).where(User.email == payer_email))
+                    matched_user = result.scalar_one_or_none()
+                    if matched_user:
+                        user_id = matched_user.id
 
                 if user_id and tier_str:
                     result = await db.execute(select(User).where(User.id == user_id))
@@ -143,3 +127,39 @@ async def mercadopago_webhook(
                             print(f"MP Webhook: Downgraded {user.email} to none")
 
     return {"status": "success"}
+
+class LinkSubscriptionRequest(BaseModel):
+    preapproval_id: str
+
+@router.post("/link-subscription")
+async def link_subscription(
+    request: LinkSubscriptionRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Links a Mercado Pago subscription to the current user (used when they return via back_url).
+    """
+    if not MERCADOPAGO_ACCESS_TOKEN:
+        raise HTTPException(status_code=500, detail="Mercado Pago token not configured")
+        
+    headers = {"Authorization": f"Bearer {MERCADOPAGO_ACCESS_TOKEN}"}
+    async with httpx.AsyncClient() as client:
+        res = await client.get(f"https://api.mercadopago.com/preapproval/{request.preapproval_id}", headers=headers)
+        
+        if res.status_code == 200:
+            data = res.json()
+            if data.get("status") == "authorized":
+                reason = data.get("reason", "")
+                tier_str = None
+                if "QSS Plan " in reason:
+                    tier_str = reason.replace("QSS Plan ", "").strip().lower()
+                    
+                if tier_str:
+                    user.tier = UserTier(tier_str)
+                    await db.commit()
+                    return {"status": "success", "tier": tier_str}
+            
+            raise HTTPException(status_code=400, detail="Subscription is not authorized or not found.")
+        else:
+            raise HTTPException(status_code=400, detail="Invalid preapproval ID.")

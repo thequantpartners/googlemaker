@@ -21,7 +21,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           headers: { Authorization: `Bearer ${session.backendToken}` },
         });
         if (res.status === 401) {
-          signOut({ callbackUrl: "/login?error=session_expired" });
+          setTier("free");
           return;
         }
         if (res.ok) {
@@ -43,6 +43,33 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
       router.push("/dashboard/setup-guide");
     }
   }, [tier, pathname, router]);
+
+  // Link Mercado Pago subscription if returning from checkout
+  useEffect(() => {
+    if (typeof window !== "undefined" && session?.backendToken) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const preapproval_id = urlParams.get("preapproval_id");
+      
+      if (preapproval_id) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/link-subscription`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.backendToken}`
+          },
+          body: JSON.stringify({ preapproval_id })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success" && data.tier) {
+            setTier(data.tier);
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        })
+        .catch(err => console.error("Error linking subscription:", err));
+      }
+    }
+  }, [session]);
 
   const hasPlan = tier && tier !== "free" && tier !== "none" && tier !== "";
 
