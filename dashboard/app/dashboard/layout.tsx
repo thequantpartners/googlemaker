@@ -54,32 +54,25 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         { name: "Setup Guide", href: "/dashboard/setup-guide", icon: ListChecks, locked: false },
       ]
     },
+
     {
-      title: "1. ADQUISICIÓN",
-      items: [
-        { name: "Campañas Ads", href: "/dashboard/campaigns", icon: Megaphone, locked: true },
-        { name: "Ads Copilot", href: "/dashboard/logs", icon: Activity, locked: true },
-      ]
-    },
-    {
-      title: "2. CEREBRO IA",
+      title: "1. CEREBRO IA",
       items: [
         { name: "Configuración IA", href: "/dashboard/ai-brain", icon: BrainCircuit, locked: true },
       ]
     },
     {
-      title: "3. HERRAMIENTAS",
+      title: "2. HERRAMIENTAS",
       items: [
         { name: "Smart Calendar", href: "/dashboard/calendar", icon: Calendar, locked: true },
         { name: "Cobros Auto", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
       ]
     },
     {
-      title: "4. CANALES",
+      title: "3. CANALES",
       items: [
         { name: "Web Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
         { name: "WhatsApp Setter", href: "/dashboard/whatsapp", icon: Phone, locked: true },
-        { name: "Magic Forms", href: "/dashboard/magic-forms", icon: LayoutTemplate, locked: true },
       ]
     },
     {

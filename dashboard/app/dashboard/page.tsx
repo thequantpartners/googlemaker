@@ -234,30 +234,6 @@ function DashboardContent() {
         </div>
       )}
 
-      {!metricsLoading && statusData?.ad_spend_limit > 0 && globalMetrics.cost >= statusData.ad_spend_limit && (
-        <div className="mb-8 p-6 bg-amber-500/10 border border-amber-500/50 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_30px_rgba(245,158,11,0.15)]">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-amber-500/20 rounded-full text-amber-500">
-              <AlertCircle size={28} />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-amber-500">Ad Spend Limit Exceeded</h3>
-              <p className="text-amber-500/80 mt-1">
-                Your campaigns are still running, but the <strong className="text-white">Autopilot</strong> is currently paused. Upgrade your plan to resume automatic optimizations.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => window.scrollTo(0, document.body.scrollHeight)}
-            className="px-6 py-3 bg-amber-500 text-black font-bold rounded-full hover:bg-amber-400 transition-colors whitespace-nowrap"
-          >
-            Upgrade Plan
-          </button>
-        </div>
-      )}
-
-
-
       {/* 5 Main Business KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
         
@@ -399,7 +375,7 @@ function DashboardContent() {
       <div className="mb-8">
         <details className="bg-dark-card border border-dark-card-border rounded-[2rem] p-6 group [&_summary::-webkit-details-marker]:hidden">
           <summary className="text-gray-300 font-semibold cursor-pointer flex items-center justify-between outline-none">
-            <span className="text-lg">Más Métricas (Google Ads & Autopilot)</span>
+            <span className="text-lg">Más Métricas (Google Ads)</span>
             <div className="p-2 bg-white/5 rounded-full group-open:rotate-180 transition-transform duration-300">
               <ChevronDown size={20} />
             </div>
@@ -447,23 +423,6 @@ function DashboardContent() {
               })()}
             </div>
 
-            {/* Autopilot Status */}
-            <div className="bg-white/[0.02] border border-white/[0.05] p-5 rounded-2xl">
-              <p className="text-gray-400 text-sm mb-2">Autopilot Status</p>
-              {metricsLoading ? <Skeleton className="h-8 w-32 mt-1" /> : (
-                <div className="flex items-center gap-2 mt-2">
-                  {globalMetrics.cost >= statusData?.ad_spend_limit ? (
-                    <span className="flex items-center gap-1.5 text-amber-500 font-bold bg-amber-500/10 px-3 py-1.5 rounded-lg text-sm">
-                      <AlertCircle size={16} /> Limit Reached
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 text-neon-green font-bold bg-neon-green/10 px-3 py-1.5 rounded-lg text-sm">
-                      <CheckCircle2 size={16} /> Active
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
 
           </div>
         </details>

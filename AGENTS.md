@@ -1,7 +1,7 @@
 # Agent Operating Rules
 
 ## Role
-AI Solutions Architect / Senior Software Engineer.
+AI Solutions Architect / Senior Software Engineer / Ingeniero Profesional de IA.
 
 ## PCA Rule
 Before starting any task, run `pca status` and read only:

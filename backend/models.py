@@ -109,12 +109,6 @@ class User(Base):
     credentials: Mapped[list["GoogleAdsCredential"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
-    logs: Mapped[list["OrchestratorLog"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
-    )
-    saved_strategies: Mapped[list["SavedStrategy"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
-    )
     chat_widget_config: Mapped["ChatWidgetConfig | None"] = relationship(
         back_populates="client",
         foreign_keys="ChatWidgetConfig.client_id",
@@ -136,10 +130,6 @@ class User(Base):
         foreign_keys="ClientPaymentConfig.user_id",
         cascade="all, delete-orphan",
         uselist=False,
-    )
-    magic_forms: Mapped[list["MagicForm"]] = relationship(
-        back_populates="client",
-        cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
@@ -177,47 +167,6 @@ class GoogleAdsCredential(Base):
         return f"<GoogleAdsCredential user_id={self.user_id} verified={self.is_verified}>"
 
 
-class OrchestratorLog(Base):
-    __tablename__ = "orchestrator_logs"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
-    user_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    campaign_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    campaign_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    action: Mapped[str] = mapped_column(String(100), nullable=False)
-    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
-    details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    is_dry_run: Mapped[bool] = mapped_column(Boolean, default=True)
-    status: Mapped[str] = mapped_column(String(20), nullable=False, default="auto_applied")
-    executed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-
-    # Relationships
-    user: Mapped["User"] = relationship(back_populates="logs")
-
-    def __repr__(self) -> str:
-        return f"<OrchestratorLog action={self.action} campaign={self.campaign_name}>"
-
-
-class SavedStrategy(Base):
-    __tablename__ = "saved_strategies"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
-    user_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    campaign_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    keywords: Mapped[list[str]] = mapped_column(JSON, nullable=False)
-    headlines: Mapped[list[str]] = mapped_column(JSON, nullable=False)
-    descriptions: Mapped[list[str]] = mapped_column(JSON, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-
-    # Relationships
-    user: Mapped["User"] = relationship(back_populates="saved_strategies")
-
-    def __repr__(self) -> str:
-        return f"<SavedStrategy campaign={self.campaign_name}>"
 
 
 # ── Chat Widget Enums ─────────────────────────────────────────────────────────
@@ -435,46 +384,4 @@ class ClientPaymentConfig(Base):
     def __repr__(self) -> str:
         return f"<ClientPaymentConfig user_id={self.user_id} provider={self.provider}>"
 
-# ── Magic Forms (Aterrizaje) ───────────────────────────────────────────────────
-
-class MagicForm(Base):
-    """
-    Hosted mini-landing pages with heuristic forms.
-    questions shape (JSONB array):
-    [
-      {
-        "id": "q1",
-        "question": "¿Cuál es tu presupuesto?",
-        "options": [
-          {"text": "Menos de $500", "score": -10},
-          {"text": "Más de $1,000", "score": 10}
-        ]
-      }
-    ]
-    """
-    __tablename__ = "magic_forms"
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
-    client_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
-    )
-    
-    title: Mapped[str] = mapped_column(String(255), nullable=False, default="Inicia tu consulta")
-    subtitle: Mapped[str | None] = mapped_column(Text, nullable=True)
-    
-    questions: Mapped[list | None] = mapped_column(JSON, nullable=True, default=list)
-    min_score_to_qualify: Mapped[int] = mapped_column(Integer, nullable=False, default=10)
-    rejection_message: Mapped[str] = mapped_column(
-        Text, nullable=False, default="Lamentablemente, en este momento no podemos tomar tu caso. Gracias por tu interés."
-    )
-    
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
-    )
-
-    client: Mapped["User"] = relationship(back_populates="magic_forms")
-
-    def __repr__(self) -> str:
-        return f"<MagicForm {self.id} client_id={self.client_id}>"
 

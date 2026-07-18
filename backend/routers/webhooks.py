@@ -113,6 +113,10 @@ async def _update_lead_payment(
         if amount:
             lead.full_case_amount = amount
 
+    if lead.gclid:
+        from services.google_ads_service import trigger_offline_conversion
+        asyncio.create_task(trigger_offline_conversion(db, client_id, lead.gclid, amount or 1.0))
+
     await db.commit()
     return lead
 # ── Mercado Pago ──────────────────────────────────────────────────────────────

@@ -125,226 +125,8 @@ def fetch_campaign_metrics(client: GoogleAdsClient, target_customer_id: str) -> 
             print(f"Error: {error.message}")
         raise ValueError(f"Failed to fetch campaigns: {ex.failure.errors[0].message if ex.failure.errors else str(ex)}")
 
-def apply_campaign_action(client: GoogleAdsClient, target_customer_id: str, campaign_id: str, action: str):
-    """
-    Apply a recommendation action (e.g. PAUSAR) to a specific campaign.
-    """
-    customer_id_clean = target_customer_id.replace("-", "")
-    campaign_service = client.get_service("CampaignService")
-    campaign_operation = client.get_type("CampaignOperation")
-
-    campaign = campaign_operation.update
-    campaign.resource_name = campaign_service.campaign_path(customer_id_clean, campaign_id)
-
-    status_enum = client.enums.CampaignStatusEnum
-    if action == "PAUSAR":
-        campaign.status = status_enum.PAUSED
-    elif action == "ACTIVAR":
-        campaign.status = status_enum.ENABLED
-    else:
-        # We only support PAUSAR at the moment for status updates
-        # AUMENTAR PRESUPUESTO could be implemented later via budget operations
-        return
-
-    # Update field mask
-    campaign_operation.update_mask.paths.append("status")
-
-    try:
-        campaign_service.mutate_campaigns(
-            customer_id=customer_id_clean, operations=[campaign_operation]
-        )
-    except GoogleAdsException as ex:
-        print(f"GoogleAdsException: {ex}")
-        for error in ex.failure.errors:
-            print(f"Error: {error.message}")
-        raise ValueError(f"Failed to mutate campaign: {ex.failure.errors[0].message if ex.failure.errors else str(ex)}")
 
 
-# ── Campaign Creation ────────────────────────────────────────────────────────
-
-
-import datetime
-import uuid
-
-
-def _create_campaign_budget(client: GoogleAdsClient, customer_id: str,
-                            budget_name: str, daily_budget_usd: float) -> str:
-    """Creates a campaign budget. Returns the budget resource_name."""
-    budget_service = client.get_service("CampaignBudgetService")
-    budget_operation = client.get_type("CampaignBudgetOperation")
-
-    budget = budget_operation.create
-    budget.name = f"{budget_name} ({uuid.uuid4().hex[:8]})"
-    budget.amount_micros = int(daily_budget_usd * 1_000_000)
-    budget.delivery_method = client.enums.BudgetDeliveryMethodEnum.STANDARD
-    budget.explicitly_shared = False
-
-    response = budget_service.mutate_campaign_budgets(
-        customer_id=customer_id, operations=[budget_operation]
-    )
-    return response.results[0].resource_name
-
-
-def _create_search_campaign(client: GoogleAdsClient, customer_id: str,
-                             campaign_name: str, budget_resource_name: str) -> str:
-    """Creates a SEARCH campaign in PAUSED state. Returns campaign resource_name."""
-    campaign_service = client.get_service("CampaignService")
-    campaign_operation = client.get_type("CampaignOperation")
-
-    campaign = campaign_operation.create
-    campaign.name = campaign_name
-    campaign.advertising_channel_type = client.enums.AdvertisingChannelTypeEnum.SEARCH
-    campaign.status = client.enums.CampaignStatusEnum.PAUSED
-    campaign.campaign_budget = budget_resource_name
-
-    # Bidding: Manual CPC (safest default, doesn't require conversion tracking enabled)
-    campaign.manual_cpc = client.get_type("ManualCpc")()
-    campaign.manual_cpc.enhanced_cpc_enabled = False
-
-    # Network settings
-    campaign.network_settings.target_google_search = True
-    campaign.network_settings.target_search_network = True
-    campaign.network_settings.target_content_network = False
-    campaign.network_settings.target_partner_search_network = False
-
-    response = campaign_service.mutate_campaigns(
-        customer_id=customer_id, operations=[campaign_operation]
-    )
-    return response.results[0].resource_name
-
-
-def _create_ad_group(client: GoogleAdsClient, customer_id: str,
-                     campaign_resource_name: str, ad_group_name: str) -> str:
-    """Creates a SEARCH_STANDARD ad group. Returns ad group resource_name."""
-    ad_group_service = client.get_service("AdGroupService")
-    ad_group_operation = client.get_type("AdGroupOperation")
-
-    ad_group = ad_group_operation.create
-    ad_group.name = ad_group_name
-    ad_group.campaign = campaign_resource_name
-    ad_group.type_ = client.enums.AdGroupTypeEnum.SEARCH_STANDARD
-    ad_group.status = client.enums.AdGroupStatusEnum.ENABLED
-
-    response = ad_group_service.mutate_ad_groups(
-        customer_id=customer_id, operations=[ad_group_operation]
-    )
-    return response.results[0].resource_name
-
-
-def _add_keywords(client: GoogleAdsClient, customer_id: str,
-                  ad_group_resource_name: str, keywords: list[str]) -> int:
-    """Adds BROAD match keywords to an ad group. Returns count of keywords added."""
-    criterion_service = client.get_service("AdGroupCriterionService")
-
-    operations = []
-    for kw_text in keywords:
-        kw_text = kw_text.strip()
-        if not kw_text:
-            continue
-        operation = client.get_type("AdGroupCriterionOperation")
-        criterion = operation.create
-        criterion.ad_group = ad_group_resource_name
-        criterion.keyword.text = kw_text
-        criterion.keyword.match_type = client.enums.KeywordMatchTypeEnum.BROAD
-        criterion.status = client.enums.AdGroupCriterionStatusEnum.ENABLED
-        operations.append(operation)
-
-    if not operations:
-        return 0
-
-    response = criterion_service.mutate_ad_group_criteria(
-        customer_id=customer_id, operations=operations
-    )
-    return len(response.results)
-
-
-def _create_responsive_search_ad(client: GoogleAdsClient, customer_id: str,
-                                  ad_group_resource_name: str, final_url: str,
-                                  headlines: list[str], descriptions: list[str]) -> str:
-    """Creates a Responsive Search Ad. Returns ad resource_name."""
-    ad_group_ad_service = client.get_service("AdGroupAdService")
-    ad_group_ad_operation = client.get_type("AdGroupAdOperation")
-
-    ad_group_ad = ad_group_ad_operation.create
-    ad_group_ad.ad_group = ad_group_resource_name
-    ad_group_ad.status = client.enums.AdGroupAdStatusEnum.ENABLED
-
-    ad_group_ad.ad.final_urls.append(final_url)
-
-    for headline_text in headlines:
-        headline = client.get_type("AdTextAsset")
-        headline.text = headline_text[:30]  # Enforce 30 char limit
-        ad_group_ad.ad.responsive_search_ad.headlines.append(headline)
-
-    for desc_text in descriptions:
-        description = client.get_type("AdTextAsset")
-        description.text = desc_text[:90]  # Enforce 90 char limit
-        ad_group_ad.ad.responsive_search_ad.descriptions.append(description)
-
-    response = ad_group_ad_service.mutate_ad_group_ads(
-        customer_id=customer_id, operations=[ad_group_ad_operation]
-    )
-    return response.results[0].resource_name
-
-
-def create_full_search_campaign(client: GoogleAdsClient, customer_id: str,
-                                 config: dict) -> dict:
-    """
-    Creates a complete search campaign end-to-end.
-
-    config keys:
-        campaign_name, daily_budget, keywords (list[str]),
-        headlines (list[str]), descriptions (list[str]), final_url (str)
-    """
-    customer_id_clean = customer_id.replace("-", "")
-
-    try:
-        # Step 1: Budget
-        budget_rn = _create_campaign_budget(
-            client, customer_id_clean,
-            budget_name=config["campaign_name"],
-            daily_budget_usd=config["daily_budget"],
-        )
-
-        # Step 2: Campaign (PAUSED)
-        campaign_rn = _create_search_campaign(
-            client, customer_id_clean,
-            campaign_name=config["campaign_name"],
-            budget_resource_name=budget_rn,
-        )
-
-        # Step 3: Ad Group
-        ad_group_rn = _create_ad_group(
-            client, customer_id_clean,
-            campaign_resource_name=campaign_rn,
-            ad_group_name=f"{config['campaign_name']} - Grupo 1",
-        )
-
-        # Step 4: Keywords
-        kw_count = _add_keywords(
-            client, customer_id_clean,
-            ad_group_resource_name=ad_group_rn,
-            keywords=config["keywords"],
-        )
-
-        # Step 5: Responsive Search Ad
-        ad_rn = _create_responsive_search_ad(
-            client, customer_id_clean,
-            ad_group_resource_name=ad_group_rn,
-            final_url=config["final_url"],
-            headlines=config["headlines"],
-            descriptions=config["descriptions"],
-        )
-
-        return {
-            "status": "success",
-            "campaign_name": config["campaign_name"],
-            "keywords_added": kw_count,
-        }
-
-    except GoogleAdsException as ex:
-        errors = [error.message for error in ex.failure.errors]
-        raise ValueError(f"Error de Google Ads: {'; '.join(errors)}")
 
 # ── Conversion Tracking ──────────────────────────────────────────────────────
 
@@ -551,4 +333,77 @@ def upload_offline_conversion(client: GoogleAdsClient, customer_id: str, convers
     except GoogleAdsException as ex:
         print(f"Failed to upload conversion: {ex}")
         return False
+
+import asyncio
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+async def trigger_offline_conversion(db: AsyncSession, user_id: str, gclid: str, amount: float = 1.0):
+    """
+    Asynchronously finds credentials, fetches/creates the Offline Conversion action,
+    and uploads the click conversion.
+    Safe to use as a background task.
+    """
+    try:
+        from models import GoogleAdsCredential
+        from encryption import decrypt_value
+        from datetime import datetime
+        import pytz
+
+        # 1. Fetch credentials
+        result = await db.execute(select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user_id))
+        creds = result.scalars().all()
+        if not creds:
+            print(f"[trigger_offline_conversion] No Google Ads creds for user {user_id}")
+            return
+
+        cred = creds[0] # Pick the first one (or we could loop if multiple, but usually 1 per user)
+        
+        refresh_token = decrypt_value(cred.refresh_token)
+        login_id = decrypt_value(cred.login_customer_id)
+        target_id = decrypt_value(cred.target_customer_id)
+        
+        # 2. Init client
+        client = await asyncio.to_thread(get_google_ads_client, refresh_token, login_id)
+        
+        # 3. Find or Create Conversion Action
+        actions = await asyncio.to_thread(fetch_conversion_actions, client, target_id)
+        
+        action_rn = None
+        for action in actions:
+            if action["name"] == "QSS Offline Conversion" and action["type"] == "UPLOAD_CLICKS":
+                # GAQL returns id, we need resource name
+                customer_id_clean = target_id.replace("-", "")
+                action_rn = f"customers/{customer_id_clean}/conversionActions/{action['id']}"
+                break
+                
+        if not action_rn:
+            action_rn = await asyncio.to_thread(create_offline_conversion_action, client, target_id, "QSS Offline Conversion")
+            
+        # 4. Upload Conversion
+        # Format time: yyyy-mm-dd hh:mm:ss+|-hh:mm. We use current time in Lima/UTC
+        lima_tz = pytz.timezone("America/Lima")
+        now = datetime.now(lima_tz)
+        conversion_time = now.strftime('%Y-%m-%d %H:%M:%S%z')
+        # Insert a colon in timezone offset to match required format (e.g., -05:00)
+        conversion_time = conversion_time[:-2] + ':' + conversion_time[-2:]
+        
+        success = await asyncio.to_thread(
+            upload_offline_conversion,
+            client,
+            target_id,
+            action_rn,
+            gclid,
+            conversion_time,
+            float(amount)
+        )
+        
+        if success:
+            print(f"[trigger_offline_conversion] Success for user {user_id}, gclid {gclid[:8]}...")
+        else:
+            print(f"[trigger_offline_conversion] Failed for user {user_id}")
+            
+    except Exception as e:
+        print(f"[trigger_offline_conversion] Error: {str(e)}")
+
 

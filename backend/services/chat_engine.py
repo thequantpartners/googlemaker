@@ -164,6 +164,21 @@ def _build_system_instruction(config: ChatWidgetConfig, enable_tools: bool = Fal
 
 # ── AI Provider Call ─────────────────────────────────────────────────────────
 
+async def _handle_successful_booking(result_str: str, session: ChatSession, db: AsyncSession, client_id: str):
+    try:
+        res = json.loads(result_str)
+        if res.get("success"):
+            tracking = session.tracking_data or {}
+            gclid = tracking.get("gclid")
+            if gclid:
+                from services.google_ads_service import trigger_offline_conversion
+                import asyncio
+                # By default we pass 1.0 or a default value for bookings.
+                asyncio.create_task(trigger_offline_conversion(db, client_id, gclid, 1.0))
+    except Exception:
+        pass
+
+
 
 async def _call_ai_provider(
     session: ChatSession,
@@ -313,6 +328,9 @@ async def _call_ai_provider(
                     func_name = tool_call.function.name
                     args = json.loads(tool_call.function.arguments)
                     result = await execute_tool_call(func_name, args, cal_api_key, cal_booking_link, gcal_refresh_token)
+                    if func_name == "book_meeting":
+                        await _handle_successful_booking(result, session, db, client_user.id)
+                        
                     oai_history.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
@@ -359,6 +377,9 @@ async def _call_ai_provider(
                 for block in response.content:
                     if block.type == "tool_use":
                         result = await execute_tool_call(block.name, block.input, cal_api_key, cal_booking_link, gcal_refresh_token)
+                        if block.name == "book_meeting":
+                            await _handle_successful_booking(result, session, db, client_user.id)
+                            
                         tool_results.append({
                             "type": "tool_result",
                             "tool_use_id": block.id,
@@ -414,6 +435,9 @@ async def _call_ai_provider(
             if fc:
                 args = type(fc.args).to_dict(fc.args) if hasattr(fc.args, "to_dict") else dict(fc.args)
                 result = await execute_tool_call(fc.name, args, cal_api_key, cal_booking_link, gcal_refresh_token)
+                if fc.name == "book_meeting":
+                    await _handle_successful_booking(result, session, db, client_user.id)
+                    
                 
                 resp2 = await chat.send_message_async(
                     genai.types.Part.from_function_response(

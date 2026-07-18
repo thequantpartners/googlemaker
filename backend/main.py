@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from auth import create_jwt, get_current_user, verify_google_token
 from database import Base, engine, get_db
 from models import User, UserRole, UserStatus, UserTier, ChatWidgetConfig, ChatSession, Lead, ClientPaymentConfig  # noqa: F401 – registers new tables with Base.metadata
-from routers import admin, clients, orchestrator, auth_google, auth_google_calendar, payments, telegram, public
+from routers import admin, clients, auth_google, auth_google_calendar, payments, telegram, public
 from routers.chat_widget import router as chat_widget_router, create_widget_app
 from routers.webhooks import router as webhooks_router
 from routers.metrics import router as metrics_router
@@ -123,7 +123,7 @@ app.add_middleware(WidgetCORSMiddleware)
 # Include routers
 app.include_router(admin.router)
 app.include_router(clients.router)
-app.include_router(orchestrator.router)
+
 app.include_router(auth_google.router)
 app.include_router(auth_google_calendar.router)
 app.include_router(payments.router)
@@ -151,17 +151,6 @@ app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
 async def health_check():
     return {"status": "healthy", "service": "google-ads-orchestrator"}
 
-
-@app.get("/test-logs", tags=["Test"])
-async def test_logs(db: AsyncSession = Depends(get_db)):
-    try:
-        from models import OrchestratorLog
-        result = await db.execute(select(OrchestratorLog).limit(1))
-        logs = result.scalars().all()
-        return {"status": "success", "count": len(logs), "logs": [{"id": l.id, "details": type(l.details).__name__} for l in logs]}
-    except Exception as e:
-        import traceback
-        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
 
 
 # ── Auth endpoints ───────────────────────────────────────────────────────────
