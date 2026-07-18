@@ -42,7 +42,8 @@
 - **2026-07-11 (Midnight)**: Migrated Autopilot notifications from Telegram to WhatsApp via the Master Bot (Baileys) architecture. Replaced interactive Telegram buttons with text-based numerical menus (1, 2) to protect the Master Bot from bans. Updated `orchestrator.py` to use `send_master_notification` and intercepted client replies in the `baileys` webhook to execute background Google Ads actions.
 - **2026-07-12**: Added Master Bot configuration options to the SuperAdmin UI (`/admin/master-bot`), allowing admins to configure the bot's response speed, the lead transfer WhatsApp number, and the Anti-Ban commercial hours schedule.
 2026-07-12T21:41:00Z: Sync after redesigning Landing Page and renaming bot to setter virtual.
-- **2026-07-14**: Migrated to Mercado Pago. Promoted superadmin. Installed Facebook Pixel in layout.tsx.# # #   2 0 2 6 - 0 7 - 1 5 
- -   S y n c e d   c o n t e x t   r e g a r d i n g   A I   G o a l s   a n d   A s y n c h r o n o u s   W e b h o o k   P a y m e n t s .   T h e   s y s t e m   n o w   e n f o r c e s   u p f r o n t   p a y m e n t s   v i a   b a c k g r o u n d   t a s k s   t h a t   w a k e   u p   t h e   L L M   a n d   p a s s   t h e   c a l e n d a r   t o o l s   d y n a m i c a l l y .  
- 
+- **2026-07-14**: Migrated to Mercado Pago. Promoted superadmin. Installed Facebook Pixel in layout.tsx.# # #   2 0 2 6 - 0 7 - 1 5 
+ -   S y n c e d   c o n t e x t   r e g a r d i n g   A I   G o a l s   a n d   A s y n c h r o n o u s   W e b h o o k   P a y m e n t s .   T h e   s y s t e m   n o w   e n f o r c e s   u p f r o n t   p a y m e n t s   v i a   b a c k g r o u n d   t a s k s   t h a t   w a k e   u p   t h e   L L M   a n d   p a s s   t h e   c a l e n d a r   t o o l s   d y n a m i c a l l y .  
+ 
 [2026-07-16] Implemented Mercado Pago 7-day trial, Dual Magic Forms (Iframe/Public), Google Ads Offline Conversions via gclid, and Dashboard CPL/ROI widgets.
+- **2026-07-18**: Fixed backend production crash caused by legacy imports and endpoints attempting to load removed Autopilot models. Purged orphaned routes in admin, clients, public, webhooks, and removed telegram.

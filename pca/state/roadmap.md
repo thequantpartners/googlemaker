@@ -87,3 +87,4 @@
 - [x] Implement Mercado Pago Dynamic Payment Links for Client Users and Webhook IPN Listener.
 - [x] Implement Alembic for asynchronous database migrations and remove raw lifespan logic.
 - [x] Refined Dashboard and removed Magic Forms and Ads Copilot to focus strictly on Google Ads Offline Conversions.
+- [x] Fixed production deployment crash caused by orphaned router imports and cleaned up legacy endpoints.

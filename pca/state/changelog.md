@@ -5,7 +5,7 @@
 - Integrated fully asynchronous Google Ads Offline Conversions triggered automatically upon successful Stripe/MercadoPago payment webhooks or Cal.com/Google Calendar meeting confirmations via the AI Chat Engine.
 - Cleaned up the Frontend Dashboard: removed Magic Forms, Campañas Ads, and Ads Copilot sections to focus the UI strictly on the CRM, Smart Calendar, and Lead KPIs.
 - Updated agent role to "Ingeniero Profesional de IA".
-
+- Fixed Railway deployment crash caused by orphaned router endpoints importing purged features. Cleaned up backend routers and removed obsolete telegram webhook.
 ## 2026-07-15
 - Added a configuration toggle to the Master Setter dashboard to control if the Baileys bot should respond in WhatsApp groups.
 - Added a dedicated Prompt configuration panel to the Master Setter dashboard for the Superadmin, integrated via `/api/chat-widget` so the bot's behavior can be updated directly from the admin panel.
