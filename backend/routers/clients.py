@@ -8,9 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth import require_client
 from database import get_db
-from models import OrchestratorLog, User, SavedStrategy
-from schemas import LogOut, UserOut, ClientUpdateMe
-from services.google_ads_service import apply_campaign_action
+from models import User
+from schemas import UserOut, ClientUpdateMe
 
 router = APIRouter(prefix="/clients", tags=["Clients"])
 
@@ -175,7 +174,7 @@ async def get_my_campaigns(
             return []
         raise HTTPException(status_code=500, detail=f"Google Ads error: {type(e).__name__} - {str(e)}")
 
-from schemas import GenerateCampaignCopyRequest, GenerateCampaignCopyResponse, SavedStrategyCreate, SavedStrategyOut, FindCompetitorsRequest, FindCompetitorsResponse
+from schemas import GenerateCampaignCopyRequest, GenerateCampaignCopyResponse, FindCompetitorsRequest, FindCompetitorsResponse
 from services.ai_service import generate_campaign_copy, find_competitors
 
 @router.post("/me/campaigns/competitors", response_model=FindCompetitorsResponse)
@@ -210,56 +209,6 @@ async def generate_my_campaign_copy(
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/me/campaigns/saved", response_model=SavedStrategyOut)
-async def save_campaign_strategy(
-    strategy: SavedStrategyCreate,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    """Saves a generated strategy to the user's account."""
-    new_strategy = SavedStrategy(
-        user_id=user.id,
-        campaign_name=strategy.campaign_name,
-        keywords=strategy.keywords,
-        headlines=strategy.headlines,
-        descriptions=strategy.descriptions
-    )
-    db.add(new_strategy)
-    await db.commit()
-    await db.refresh(new_strategy)
-    return new_strategy
-
-@router.get("/me/campaigns/saved", response_model=list[SavedStrategyOut])
-async def get_saved_strategies(
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    """Retrieves all saved strategies for the authenticated user."""
-    result = await db.execute(
-        select(SavedStrategy)
-        .where(SavedStrategy.user_id == user.id)
-        .order_by(SavedStrategy.created_at.desc())
-    )
-    return result.scalars().all()
-
-@router.delete("/me/campaigns/saved/{strategy_id}", status_code=204)
-async def delete_saved_strategy(
-    strategy_id: str,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    """Deletes a saved strategy for the authenticated user."""
-    result = await db.execute(
-        select(SavedStrategy)
-        .where(SavedStrategy.id == strategy_id, SavedStrategy.user_id == user.id)
-    )
-    strategy = result.scalar_one_or_none()
-    if not strategy:
-        raise HTTPException(status_code=404, detail="Strategy not found")
-        
-    await db.delete(strategy)
-    await db.commit()
 
 @router.delete("/me/credentials", status_code=204)
 async def delete_my_credentials(
@@ -407,96 +356,6 @@ async def delete_tracking_pixel(
 
 
 
-# ── Get own orchestrator logs ────────────────────────────────────────────────
-
-
-@router.get("/me/logs", response_model=list[LogOut])
-async def get_my_logs(
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    try:
-        result = await db.execute(
-            select(OrchestratorLog)
-            .where(OrchestratorLog.user_id == user.id)
-            .order_by(OrchestratorLog.executed_at.desc())
-            .limit(100)
-        )
-        return result.scalars().all()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/me/logs/{log_id}/approve")
-async def approve_log(
-    log_id: str,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
-        select(OrchestratorLog).where(
-            OrchestratorLog.id == log_id,
-            OrchestratorLog.user_id == user.id,
-            OrchestratorLog.status == "pending"
-        )
-    )
-    log = result.scalar_one_or_none()
-    if not log:
-        raise HTTPException(status_code=404, detail="Log not found or already processed")
-
-    # Get credentials to apply action
-    cred_result = await db.execute(
-        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == user.id)
-    )
-    cred = cred_result.scalars().first()
-    if not cred:
-        raise HTTPException(status_code=400, detail="No Google Ads credentials")
-
-    try:
-        refresh_token = decrypt_value(cred.refresh_token)
-        target = decrypt_value(cred.target_customer_id)
-        login = decrypt_value(cred.login_customer_id)
-        
-        client = get_google_ads_client(refresh_token, login)
-        
-        import asyncio
-        await asyncio.to_thread(
-            apply_campaign_action,
-            client,
-            target,
-            log.campaign_id,
-            log.action
-        )
-        
-        log.status = "approved"
-        await db.commit()
-        return {"status": "success", "message": "Action applied and approved"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/me/logs/{log_id}/reject")
-async def reject_log(
-    log_id: str,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(
-        select(OrchestratorLog).where(
-            OrchestratorLog.id == log_id,
-            OrchestratorLog.user_id == user.id,
-            OrchestratorLog.status == "pending"
-        )
-    )
-    log = result.scalar_one_or_none()
-    if not log:
-        raise HTTPException(status_code=404, detail="Log not found or already processed")
-
-    log.status = "rejected"
-    await db.commit()
-    return {"status": "success", "message": "Action rejected"}
-
-
 # ── Get own credential status ───────────────────────────────────────────────
 
 
@@ -536,99 +395,4 @@ async def get_my_credentials_status(
         user_status=user.status.value if hasattr(user.status, 'value') else user.status
     )
 
-
-# ── Magic Forms ───────────────────────────────────────────────────────────────
-
-from models import MagicForm
-from pydantic import BaseModel
-from typing import List
-
-class MagicFormQuestionOption(BaseModel):
-    text: str
-    score: int
-
-class MagicFormQuestion(BaseModel):
-    id: str
-    question: str
-    options: List[MagicFormQuestionOption]
-
-class MagicFormCreate(BaseModel):
-    title: str
-    subtitle: str | None = None
-    questions: List[MagicFormQuestion]
-    min_score_to_qualify: int
-    rejection_message: str
-
-class MagicFormOut(BaseModel):
-    id: str
-    title: str
-    subtitle: str | None
-    questions: List[MagicFormQuestion]
-    min_score_to_qualify: int
-    rejection_message: str
-    
-    class Config:
-        from_attributes = True
-
-@router.get("/me/magic-forms", response_model=List[MagicFormOut])
-async def get_my_magic_forms(
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(select(MagicForm).where(MagicForm.client_id == user.id))
-    return result.scalars().all()
-
-@router.post("/me/magic-forms", response_model=MagicFormOut)
-async def create_magic_form(
-    data: MagicFormCreate,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    form = MagicForm(
-        client_id=user.id,
-        title=data.title,
-        subtitle=data.subtitle,
-        questions=[q.model_dump() for q in data.questions],
-        min_score_to_qualify=data.min_score_to_qualify,
-        rejection_message=data.rejection_message
-    )
-    db.add(form)
-    await db.commit()
-    await db.refresh(form)
-    return form
-
-@router.put("/me/magic-forms/{form_id}", response_model=MagicFormOut)
-async def update_magic_form(
-    form_id: str,
-    data: MagicFormCreate,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(select(MagicForm).where(MagicForm.id == form_id, MagicForm.client_id == user.id))
-    form = result.scalar_one_or_none()
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-        
-    form.title = data.title
-    form.subtitle = data.subtitle
-    form.questions = [q.model_dump() for q in data.questions]
-    form.min_score_to_qualify = data.min_score_to_qualify
-    form.rejection_message = data.rejection_message
-    
-    await db.commit()
-    await db.refresh(form)
-    return form
-
-@router.delete("/me/magic-forms/{form_id}", status_code=204)
-async def delete_magic_form(
-    form_id: str,
-    user: User = Depends(require_client),
-    db: AsyncSession = Depends(get_db),
-):
-    result = await db.execute(select(MagicForm).where(MagicForm.id == form_id, MagicForm.client_id == user.id))
-    form = result.scalar_one_or_none()
-    if not form:
-        raise HTTPException(status_code=404, detail="Form not found")
-    await db.delete(form)
-    await db.commit()
 

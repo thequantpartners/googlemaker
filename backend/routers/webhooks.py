@@ -585,94 +585,6 @@ async def ycloud_master_webhook(
     return {"ok": True, "status": "processed"}
 
 
-async def execute_whatsapp_action_background(log_id: str, wa_id: str):
-    """Background task to execute the Google Ads action."""
-    from database import async_session
-    from models import OrchestratorLog, GoogleAdsCredential
-    from sqlalchemy import select
-    import asyncio
-    
-    async with async_session() as db:
-        result = await db.execute(select(OrchestratorLog).where(OrchestratorLog.id == log_id))
-        log = result.scalar_one_or_none()
-        
-        if not log:
-            return
-            
-        try:
-            # We need the user's credentials
-            cred_result = await db.execute(
-                select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == log.user_id)
-            )
-            creds = cred_result.scalars().all()
-            if not creds:
-                raise Exception("Credentials not found")
-                
-            cred = creds[0]
-            
-            from encryption import decrypt_value
-            from services.google_ads_service import get_google_ads_client, apply_campaign_action
-            from services.baileys_service import send_master_notification
-            
-            refresh_token = decrypt_value(cred.refresh_token)
-            login_id = decrypt_value(cred.login_customer_id)
-            target_id = decrypt_value(cred.target_customer_id)
-
-            client = await asyncio.to_thread(get_google_ads_client, refresh_token, login_id)
-            
-            # Execute action
-            await asyncio.to_thread(
-                apply_campaign_action,
-                client,
-                target_id,
-                log.campaign_id,
-                log.action
-            )
-            
-            log.status = "approved"
-            await db.commit()
-            
-            await send_master_notification(wa_id, f"✅ *Acción Ejecutada Exitosamente:*\n{log.action} en la campaña '{log.campaign_name}'.")
-        except Exception as e:
-            print(f"Error executing action from WhatsApp: {e}")
-            from services.baileys_service import send_master_notification
-            await send_master_notification(wa_id, f"❌ *Error al ejecutar la acción:*\n{str(e)}")
-
-
-async def handle_autopilot_command(text: str, client_user: User, db: AsyncSession, background_tasks: BackgroundTasks):
-    from sqlalchemy import select
-    from models import OrchestratorLog
-    from services.baileys_service import send_master_notification
-    
-    text = text.strip()
-    if text not in ["1", "2"]:
-        await send_master_notification(client_user.whatsapp_phone, "⚠️ Opción inválida. Responde '1' para aceptar la sugerencia del Autopiloto o '2' para ignorar.")
-        return {"ok": True, "reply": "Comando inválido de autopiloto."}
-        
-    # Get latest pending log for this user
-    result = await db.execute(
-        select(OrchestratorLog)
-        .where(OrchestratorLog.user_id == client_user.id, OrchestratorLog.status == "pending")
-        .order_by(OrchestratorLog.created_at.desc())
-        .limit(1)
-    )
-    log = result.scalar_one_or_none()
-    
-    if not log:
-        await send_master_notification(client_user.whatsapp_phone, "✅ No tienes acciones pendientes de Autopiloto en este momento.")
-        return {"ok": True, "reply": "Sin acciones pendientes."}
-        
-    if text == "1":
-        await send_master_notification(client_user.whatsapp_phone, "⏳ Ejecutando acción en Google Ads...")
-        # Dispatch background task
-        background_tasks.add_task(execute_whatsapp_action_background, log.id, client_user.whatsapp_phone)
-    else:
-        log.status = "rejected"
-        await db.commit()
-        await send_master_notification(client_user.whatsapp_phone, f"🚫 Acción ignorada manualmente:\n{log.action} en la campaña '{log.campaign_name}'.")
-
-    return {"ok": True, "reply": "Comando de autopiloto procesado."}
-
 # ── Baileys (Experimental) ──────────────────────────────────────────────────
 
 class BaileysPayload(BaseModel):
@@ -710,9 +622,6 @@ async def baileys_webhook(
     user_result = await db.execute(select(User).where(User.whatsapp_phone == payload.wa_id))
     client_user = user_result.scalar_one_or_none()
     
-    if client_user:
-        # This is a platform client sending a message to the Master Bot!
-        return await handle_autopilot_command(payload.text, client_user, db, background_tasks)
 
     # 2. Llamada al Cerebro LLM (Para leads normales)
     try:

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from auth import require_superadmin
 from database import get_db
 from encryption import encrypt_value
-from models import GoogleAdsCredential, OrchestratorLog, User, UserRole, UserStatus
+from models import GoogleAdsCredential, User, UserRole, UserStatus
 from schemas import (
     ClientCreate,
     ClientOut,
@@ -34,14 +34,9 @@ async def get_admin_stats(
     result = await db.execute(select(User).where(User.role == UserRole.client))
     total_clients = len(result.scalars().all())
 
-    # Total Logs (Decisions)
-    result_logs = await db.execute(select(OrchestratorLog))
-    total_logs = len(result_logs.scalars().all())
-
     return {
         "total_clients": total_clients,
         "active_campaigns": 0,  # Placeholder until Google Ads integration is complete
-        "total_decisions": total_logs,
     }
 
 

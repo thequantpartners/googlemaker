@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from auth import create_jwt, get_current_user, verify_google_token
 from database import Base, engine, get_db
 from models import User, UserRole, UserStatus, UserTier, ChatWidgetConfig, ChatSession, Lead, ClientPaymentConfig  # noqa: F401 – registers new tables with Base.metadata
-from routers import admin, clients, auth_google, auth_google_calendar, payments, telegram, public
+from routers import admin, clients, auth_google, auth_google_calendar, payments, public
 from routers.chat_widget import router as chat_widget_router, create_widget_app
 from routers.webhooks import router as webhooks_router
 from routers.metrics import router as metrics_router
@@ -127,7 +127,6 @@ app.include_router(clients.router)
 app.include_router(auth_google.router)
 app.include_router(auth_google_calendar.router)
 app.include_router(payments.router)
-app.include_router(telegram.router)
 app.include_router(public.router)
 app.include_router(chat_widget_router)   # private: GET/PUT /clients/me/chat-widget
 app.include_router(webhooks_router)      # /webhooks/stripe/{id} + /webhooks/generic/{id}
