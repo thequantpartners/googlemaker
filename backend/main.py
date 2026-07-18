@@ -46,104 +46,30 @@ from sqlalchemy import select, text
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create tables & seed superadmin
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        
-        # Add new columns if they don't exist (poor man's migration)
-        try:
-            await conn.execute(text("ALTER TABLE users ADD COLUMN whatsapp_phone VARCHAR(50);"))
-        except Exception:
-            pass
-
-    # Run DB migrations using isolated connections (not the shared session)
-    # This prevents PostgreSQL session corruption after rollbacks
-    from sqlalchemy import text
-
-    async def safe_add_column(table: str, column: str, col_type: str, default: str | None = None):
-        """Add a column only if it doesn't already exist. Uses its own connection."""
-        async with engine.begin() as conn:
-            # Check if column exists using information_schema (works on both SQLite and PostgreSQL)
-            result = await conn.execute(text(
-                f"SELECT 1 FROM pragma_table_info('{table}') WHERE name='{column}'"
-                if str(engine.url).startswith("sqlite")
-                else f"SELECT 1 FROM information_schema.columns WHERE table_name='{table}' AND column_name='{column}'"
-            ))
-            if result.first() is None:
-                default_clause = f" DEFAULT {default}" if default else ""
-                await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}{default_clause};"))
-
-    # Detect SQLite vs PostgreSQL for JSON column type
-    _is_sqlite = str(engine.url).startswith("sqlite")
-    _json_type = "TEXT" if _is_sqlite else "JSON"
-
-    try:
-        await safe_add_column("users", "tier", "VARCHAR(50)", "'none'")
-        await safe_add_column("users", "telegram_chat_id", "VARCHAR(100)")
-        await safe_add_column("users", "telegram_link_token", "VARCHAR(100)")
-        await safe_add_column("users", "whatsapp_phone", "VARCHAR(50)")
-        await safe_add_column("users", "industry_niche", "VARCHAR(50)")
-        await safe_add_column("users", "monthly_message_count", "INTEGER", "0")
-        await safe_add_column("orchestrator_logs", "status", "VARCHAR(20)", "'auto_applied'")
-        await safe_add_column("orchestrator_logs", "is_dry_run", "BOOLEAN", "true")
-        # QSS CRM: UTM/gclid + payment tracking on leads
-        await safe_add_column("leads", "gclid", "VARCHAR(200)")
-        await safe_add_column("leads", "utm_source", "VARCHAR(100)")
-        await safe_add_column("leads", "utm_medium", "VARCHAR(100)")
-        await safe_add_column("leads", "utm_campaign", "VARCHAR(200)")
-        await safe_add_column("leads", "consultation_paid", "BOOLEAN", "false")
-        await safe_add_column("leads", "consultation_amount", "FLOAT")
-        await safe_add_column("leads", "full_case_paid", "BOOLEAN", "false")
-        await safe_add_column("leads", "full_case_amount", "FLOAT")
-        # UTM tracking stored on the session for later transfer to lead
-        await safe_add_column("chat_sessions", "tracking_data", _json_type)
-        await safe_add_column("chat_sessions", "pending_messages", _json_type, "'[]'")
-        await safe_add_column("chat_sessions", "is_processing", "BOOLEAN", "false")
-        await safe_add_column("chat_widget_configs", "rejection_message", "TEXT", "'¡Muchas gracias por tus respuestas! Un asesor revisará tu caso y se pondrá en contacto contigo a la brevedad.'")
-        await safe_add_column("chat_widget_configs", "debounce_seconds", "INTEGER", "5")
-        await safe_add_column("chat_widget_configs", "downsell_url", "TEXT")
-        await safe_add_column("chat_widget_configs", "allowed_domains", "TEXT")
-        await safe_add_column("chat_widget_configs", "ai_provider", "VARCHAR(50)", "'openai'")
-        await safe_add_column("chat_widget_configs", "ai_api_key", "TEXT")
-        await safe_add_column("chat_widget_configs", "ai_apply_chat_widget", "BOOLEAN", "true")
-        await safe_add_column("chat_widget_configs", "ai_apply_whatsapp", "BOOLEAN", "true")
-        await safe_add_column("chat_widget_configs", "ai_goals", _json_type, "'[]'")
-    except Exception as e:
-        print(f"[WARN] Migration error (non-fatal): {e}")
-
-    # Fix legacy tier enums
-    try:
-        async with engine.begin() as conn:
-            await conn.execute(text("UPDATE users SET tier='none' WHERE tier='free' OR tier='enterprise';"))
-            await conn.execute(text("UPDATE users SET tier='starter' WHERE tier='basic';"))
-            await conn.execute(text("UPDATE users SET tier='growth' WHERE tier='scale';"))
-            await conn.execute(text("UPDATE users SET tier='pro' WHERE tier='growth' AND email != 'superadmin@example.com';"))
-            
-            # Promote specific user to superadmin
-            await conn.execute(text("UPDATE users SET role='superadmin' WHERE email='gozustrike@gmail.com';"))
-    except Exception:
-        pass
-
-    print("[OK] DB Migrations completed.")
-
-    # Seed superadmin if not exists
+    # Ya no creamos tablas aquí; Alembic se encarga de las migraciones.
+    # Solo inicializamos el superadmin si es necesario.
+    
     from database import async_session
-    async with async_session() as session:
-        result = await session.execute(
-            select(User).where(User.email == SUPERADMIN_EMAIL)
-        )
-        if result.scalar_one_or_none() is None:
-            admin_user = User(
-                email=SUPERADMIN_EMAIL,
-                name="SuperAdmin",
-                role=UserRole.superadmin,
-                status=UserStatus.active,
+    try:
+        async with async_session() as session:
+            result = await session.execute(
+                select(User).where(User.email == SUPERADMIN_EMAIL)
             )
-            session.add(admin_user)
-            await session.commit()
-            print(f"[OK] Seeded superadmin user: {SUPERADMIN_EMAIL}")
-        else:
-            print(f"[INFO] Superadmin already exists: {SUPERADMIN_EMAIL}")
+            if result.scalar_one_or_none() is None:
+                admin_user = User(
+                    email=SUPERADMIN_EMAIL,
+                    name="SuperAdmin",
+                    role=UserRole.superadmin,
+                    status=UserStatus.active,
+                )
+                session.add(admin_user)
+                await session.commit()
+                print(f"[OK] Seeded superadmin user: {SUPERADMIN_EMAIL}")
+            else:
+                print(f"[INFO] Superadmin already exists: {SUPERADMIN_EMAIL}")
+    except Exception as e:
+        # Si la tabla users no existe aún (ej: antes de correr alembic), ignorar el error silenciosamente
+        print(f"[WARN] Superadmin seeding skipped (tables might not exist yet): {e}")
 
     yield
 
