@@ -14,9 +14,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Clientes", href: "/admin/clients", icon: Users },
-    { name: "Master Setter", href: "/admin/master-bot", icon: Target },
-    { name: "Creador Onboarding", href: "/admin/onboarding-creator", icon: Rocket },
-    { name: "Gen. Landings", href: "/admin/landing-generator", icon: LayoutTemplate },
   ];
 
   return (
