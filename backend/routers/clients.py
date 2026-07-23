@@ -47,8 +47,9 @@ async def update_my_profile(
         import asyncio
         from services.baileys_service import send_master_notification
 
+        user_display_name = getattr(user, "name", None) or getattr(user, "full_name", None) or "Emprendedor"
         welcome_msg = (
-            f"🚀 *¡Hola {user.full_name or 'Emprendedor'}! Bienvenido a QSS (Quant Sales System).*\n\n"
+            f"🚀 *¡Hola {user_display_name}! Bienvenido a QSS (Quant Sales System).*\n\n"
             "Tu número de WhatsApp ha sido vinculado exitosamente con el **Autopiloto de Ads**.\n\n"
             "A partir de ahora, recibirás alertas automáticas y podrás operarlo directamente desde este chat.\n\n"
             "💡 *Puedes probar enviándome comandos como:*\n"
