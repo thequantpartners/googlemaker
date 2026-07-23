@@ -248,7 +248,7 @@ export default function ConfiguracionPage() {
             <select
               value={selectedCountryCode}
               onChange={(e) => handleCountryChange(e.target.value)}
-              className="bg-white/5 border border-white/10 text-white rounded-xl px-3 py-3 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-colors text-sm shrink-0 cursor-pointer"
+              className="w-[28%] sm:w-[25%] max-w-[120px] bg-white/5 border border-white/10 text-white rounded-xl px-2 sm:px-3 py-3 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-colors text-xs sm:text-sm shrink-0 cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"
             >
               {COUNTRIES.map((c, idx) => (
                 <option key={`${c.code}-${c.flag}-${idx}`} value={c.code} className="bg-[#0a0c10] text-white">
@@ -261,7 +261,7 @@ export default function ConfiguracionPage() {
               value={localPhone}
               onChange={(e) => handleLocalPhoneChange(e.target.value)}
               placeholder="902105668"
-              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green text-sm w-full"
+              className="flex-1 w-[72%] sm:w-[75%] px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green text-sm"
             />
           </div>
           <button 

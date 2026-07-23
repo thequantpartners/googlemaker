@@ -278,11 +278,11 @@ export default function OnboardingPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Tu Número de WhatsApp (Alertas)</label>
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full">
                       <select
                         value={selectedCountryCode}
                         onChange={(e) => handleCountryChange(e.target.value)}
-                        className="bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-3 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-sm shrink-0 cursor-pointer"
+                        className="w-[28%] sm:w-[25%] max-w-[120px] bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-2 sm:px-3 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-xs sm:text-sm shrink-0 cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"
                       >
                         {COUNTRIES.map((c, idx) => (
                           <option key={`${c.code}-${c.flag}-${idx}`} value={c.code} className="bg-[#0a0c10] text-white">
@@ -295,7 +295,7 @@ export default function OnboardingPage() {
                         value={localPhone}
                         onChange={(e) => handleLocalPhoneChange(e.target.value)}
                         placeholder="Ej: 902105668"
-                        className="flex-1 bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-sm"
+                        className="flex-1 w-[72%] sm:w-[75%] bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-sm"
                       />
                     </div>
                     {whatsappPhone && (
