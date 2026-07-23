@@ -14,6 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { name: "Clientes", href: "/admin/clients", icon: Users },
+    { name: "Master Bot WhatsApp", href: "/admin/master-bot", icon: Target },
   ];
 
   return (
