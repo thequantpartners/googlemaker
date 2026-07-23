@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { QRCodeSVG } from 'qrcode.react';
-import { AlertCircle, CheckCircle2, Phone, Brain, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Phone } from "lucide-react";
 
 function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-gray-800/50 rounded-xl ${className}`} />;
@@ -15,32 +14,6 @@ export default function MasterBotPage() {
   const [baileysQr, setBaileysQr] = useState<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
-
-  // Prompt State
-  const { data: session } = useSession();
-  const [systemPrompt, setSystemPrompt] = useState("");
-  const [isLoadingPrompt, setIsLoadingPrompt] = useState(true);
-  const [isSavingPrompt, setIsSavingPrompt] = useState(false);
-
-  useEffect(() => {
-    async function fetchPrompt() {
-      if (!session?.backendToken) return;
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/chat-widget`, {
-          headers: { Authorization: `Bearer ${session.backendToken}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setSystemPrompt(data.system_prompt || "");
-        }
-      } catch (e) {
-        console.error("Failed to fetch widget data", e);
-      } finally {
-        setIsLoadingPrompt(false);
-      }
-    }
-    fetchPrompt();
-  }, [session]);
 
   useEffect(() => {
     async function checkBaileysStatus() {
@@ -107,44 +80,15 @@ export default function MasterBotPage() {
     }
   }
 
-  const handleSavePrompt = async () => {
-    if (!session?.backendToken) return;
-    setIsSavingPrompt(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/chat-widget`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.backendToken}`
-        },
-        body: JSON.stringify({ 
-          system_prompt: systemPrompt || null
-        })
-      });
-      
-      if (res.ok) {
-        setMsg({ type: "ok", text: "Prompt del Autopiloto de Ads actualizado correctamente." });
-      } else {
-        setMsg({ type: "err", text: "Error al guardar el prompt." });
-      }
-    } catch (e) {
-      console.error(e);
-      setMsg({ type: "err", text: "Error de red al guardar el prompt." });
-    } finally {
-      setIsSavingPrompt(false);
-      setTimeout(() => setMsg(null), 3000);
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
           <Phone className="text-orange-500" size={32} />
-          QSS Master Bot (WhatsApp Autopilot Central)
+          Ads OPS Master Bot (WhatsApp Central)
         </h1>
         <p className="text-gray-400 text-lg">
-          Servidor centralizado 24/7 para notificaciones y ejecución de comandos de Ads por WhatsApp.
+          Servidor centralizado para ejecutar comandos de Ads Operations en WhatsApp 24/7.
         </p>
       </div>
 
@@ -162,9 +106,9 @@ export default function MasterBotPage() {
             <div className="w-20 h-20 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <Phone size={32} className="text-orange-500" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Master Bot Desconectado</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Ads OPS Master Bot Desconectado</h2>
             <p className="text-gray-400 text-sm mb-8">
-              Genera un código QR para enlazar el número central del QSS Autopilot.
+              Genera un código QR para enlazar el número central del Autopiloto de Ads.
             </p>
             <button
               onClick={handleConnectBaileys}
@@ -197,9 +141,9 @@ export default function MasterBotPage() {
             <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 size={36} className="text-emerald-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Master Bot Conectado 24/7</h2>
+            <h2 className="text-xl font-bold text-white mb-2">Ads OPS Master Bot Conectado 24/7</h2>
             <p className="text-gray-400 text-sm mb-6">
-              El motor de WhatsApp está listo para recibir comandos de tus clientes a cualquier hora (10 PM, 2 AM) sin depender de una PC.
+              El motor de operaciones de anuncios está listo para recibir comandos de los clientes a cualquier hora.
             </p>
             <button
               onClick={handleDisconnectBaileys}
@@ -207,41 +151,6 @@ export default function MasterBotPage() {
             >
               Desconectar Master Bot
             </button>
-          </div>
-        )}
-      </div>
-
-      {/* Autopilot System Prompt Section */}
-      <div className="bg-[#0a0c10] border border-dark-card-border rounded-2xl p-8 space-y-6">
-        <div className="flex items-center gap-3">
-          <Brain className="text-orange-500" size={24} />
-          <div>
-            <h2 className="text-xl font-bold text-white">Instrucciones del Autopiloto de Ads (System Prompt)</h2>
-            <p className="text-gray-400 text-sm">Define el comportamiento y las reglas de análisis de métricas (CTR, CPA, presupuestos) para la IA.</p>
-          </div>
-        </div>
-
-        {isLoadingPrompt ? (
-          <Skeleton className="h-40 w-full" />
-        ) : (
-          <div className="space-y-4">
-            <textarea
-              rows={6}
-              value={systemPrompt}
-              onChange={(e) => setSystemPrompt(e.target.value)}
-              placeholder="Ejemplo: Eres el Director de Ads de QSS. Cuando el usuario te pida revisar el CTR, consulta sus campañas de TikTok y Google Ads. Si un anuncio tiene CTR menor a 0.8%, recomiéndale pausarlo..."
-              className="w-full bg-[#12161f] border border-gray-800 text-white rounded-xl p-4 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 font-mono text-sm leading-relaxed"
-            />
-            <div className="flex justify-end">
-              <button
-                onClick={handleSavePrompt}
-                disabled={isSavingPrompt}
-                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-orange-500/20 disabled:opacity-50"
-              >
-                {isSavingPrompt && <Loader2 size={16} className="animate-spin" />}
-                Guardar Prompt de Autopiloto
-              </button>
-            </div>
           </div>
         )}
       </div>
