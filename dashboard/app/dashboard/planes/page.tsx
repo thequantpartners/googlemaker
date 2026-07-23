@@ -85,7 +85,7 @@ export default function PlanesPage() {
       <div className="text-center md:text-left mb-12">
         <h1 className="text-3xl font-bold text-white mb-2">Mi Plan</h1>
         <p className="text-gray-400 text-lg">
-          Activa tu suscripción mensual para darle vida a tu Recepcionista Inteligente.
+          Activa tu suscripción mensual para desbloquear tu Autopiloto de Ads por WhatsApp.
         </p>
       </div>
 
