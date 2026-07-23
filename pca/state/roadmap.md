@@ -12,6 +12,7 @@
 
 ## Done
 
+- [x] Optimize Client Dashboard UX: Purged legacy routes (`/whatsapp`, `/chat-widget`, `/magic-forms`, `/ai-brain`, `/calendar`), removed redundant "Centro de Control" cards, added phone confirmation modal in step 1 onboarding, and enforced exact country code digit validation (2026-07-22).
 - [x] Add International Country Selector dropdown (flag + dial code) and fix WhatsApp connection status to reflect user registration status (2026-07-22).
 - [x] Simplify SaaS Pricing to a single unified plan (QSS Autopilot Pro) at S/ 99/mes with a 7-day free trial across Frontend and Backend (2026-07-22).
 - [x] Pivot product focus to WhatsApp AI Ads Autopilot & 3-Step Setup Onboarding (2026-07-22).

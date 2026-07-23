@@ -1,5 +1,6 @@
 # Active Decisions
 
+- **2026-07-22 - Dashboard UI/UX Optimization:** Purged legacy dead routes (`/whatsapp`, `/chat-widget`, `/magic-forms`, `/ai-brain`, `/calendar`) and removed redundant "Centro de Control" cards. Standardized sidebar to Dashboard, Conexión 3 Pasos, Cuentas Conectadas, and Mi Plan & Facturación for maximum clarity and focus.
 - **Architecture**: Adopted a Monorepo structure to simplify version control and deployment pipelines.
 - **WhatsApp Master Bot Architecture**: Adopted a hybrid WhatsApp deployment model. Clients use YCloud (Official WhatsApp API) to handle incoming leads scalably, while the Agency (QSS) runs a central "Master Bot" using Baileys (WhatsApp Web Node.js) to push administrative alerts (e.g. New Lead notifications) directly to the clients' personal WhatsApp numbers.
 - **Backend Hosting**: Selected Railway's $5/mo plan to avoid cold starts and ensure high availability for the Python API.

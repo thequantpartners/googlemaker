@@ -1,6 +1,7 @@
 # Changelog
 
 ## 2026-07-22
+- Optimized Client Dashboard UI/UX: Purged dead routes (`/whatsapp`, `/chat-widget`, `/magic-forms`, `/ai-brain`, `/calendar`), removed redundant "Centro de Control" cards, added phone confirmation modal in step 1 onboarding, and enforced exact country code digit validation.
 - Added International Country Selector (flag + dial code) across Setup Guide and Settings, auto-parsing phone numbers into E.164 international format.
 - Fixed WhatsApp connection status indicator to display "Connected" only when the client's phone number is saved and registered.
 - Simplified SaaS Pricing into a single unified plan (QSS Autopilot Pro) at S/ 99/mes with a 7-day free trial.
