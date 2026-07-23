@@ -29,22 +29,21 @@ async def update_my_profile(
     user: User = Depends(require_client),
     db: AsyncSession = Depends(get_db),
 ):
-    phone_updated = False
-    new_phone = None
+    send_welcome = False
+    target_phone = None
 
     if data.whatsapp_phone is not None and data.whatsapp_phone.strip() != "":
         cleaned_phone = data.whatsapp_phone.strip()
-        if user.whatsapp_phone != cleaned_phone:
-            user.whatsapp_phone = cleaned_phone
-            phone_updated = True
-            new_phone = cleaned_phone
+        user.whatsapp_phone = cleaned_phone
+        send_welcome = True
+        target_phone = cleaned_phone
 
     if data.industry_niche is not None:
         user.industry_niche = data.industry_niche
     await db.commit()
     await db.refresh(user)
 
-    if phone_updated and new_phone:
+    if send_welcome and target_phone:
         import asyncio
         from services.baileys_service import send_master_notification
 
@@ -56,7 +55,8 @@ async def update_my_profile(
             "• _\"¿Cuál es el saldo de mis campañas?\"_\n"
             "• _\"Analiza el CTR de mis anuncios\"_"
         )
-        asyncio.create_task(send_master_notification(new_phone, welcome_msg))
+        print(f"[ONBOARDING] Disparando bienvenida por WhatsApp a: {target_phone}")
+        asyncio.create_task(send_master_notification(target_phone, welcome_msg))
 
     return user
 
