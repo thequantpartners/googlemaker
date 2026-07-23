@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from "next/link";
-import { Plus, AlertCircle, CheckCircle2, Activity, XCircle, Users, CreditCard, TrendingUp, Target, ChevronDown, DollarSign, Phone, MessageSquare, Calendar } from "lucide-react";
+import { Plus, AlertCircle, CheckCircle2, Activity, XCircle, Users, CreditCard, TrendingUp, Target, ChevronDown, DollarSign, Phone, MessageSquare, Calendar, Settings } from "lucide-react";
 import PricingCards from "../components/PricingCards";
 
 function Skeleton({ className = "" }: { className?: string }) {
@@ -335,36 +335,36 @@ function DashboardContent() {
           <Target className="text-neon-purple" size={20} /> Centro de Control IA
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link href="/dashboard/whatsapp" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-green/40 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.02)] hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+          <Link href="/dashboard/setup-guide" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-purple/40 transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.02)] hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]">
              <div className="flex items-center gap-4">
-                <div className="p-3 bg-neon-green/10 text-neon-green rounded-xl group-hover:bg-neon-green/20 transition-colors border border-neon-green/20">
+                <div className="p-3 bg-neon-purple/10 text-neon-purple rounded-xl group-hover:bg-neon-purple/20 transition-colors border border-neon-purple/20">
                    <Phone size={24} />
                 </div>
                 <div>
-                   <h3 className="text-white font-semibold group-hover:text-neon-green transition-colors">Setter Virtual</h3>
-                   <p className="text-xs text-gray-400 mt-1">Gestiona tu setter virtual</p>
+                   <h3 className="text-white font-semibold group-hover:text-neon-purple transition-colors">Conexión 3 Pasos</h3>
+                   <p className="text-xs text-gray-400 mt-1">WhatsApp, TikTok & Google Ads</p>
                 </div>
              </div>
           </Link>
-          <Link href="/dashboard/chat-widget" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-purple/40 transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.02)] hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]">
-             <div className="flex items-center gap-4">
-                <div className="p-3 bg-neon-purple/10 text-neon-purple rounded-xl group-hover:bg-neon-purple/20 transition-colors border border-neon-purple/20">
-                   <MessageSquare size={24} />
-                </div>
-                <div>
-                   <h3 className="text-white font-semibold group-hover:text-neon-purple transition-colors">Leads Widget</h3>
-                   <p className="text-xs text-gray-400 mt-1">Configura el web chat</p>
-                </div>
-             </div>
-          </Link>
-          <Link href="/dashboard/calendar" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-blue/40 transition-all duration-300 shadow-[0_0_20px_rgba(59,130,246,0.02)] hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+          <Link href="/dashboard/configuracion" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-blue/40 transition-all duration-300 shadow-[0_0_20px_rgba(59,130,246,0.02)] hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]">
              <div className="flex items-center gap-4">
                 <div className="p-3 bg-neon-blue/10 text-neon-blue rounded-xl group-hover:bg-neon-blue/20 transition-colors border border-neon-blue/20">
-                   <Calendar size={24} />
+                   <Settings size={24} />
                 </div>
                 <div>
-                   <h3 className="text-white font-semibold group-hover:text-neon-blue transition-colors">Smart Calendar</h3>
-                   <p className="text-xs text-gray-400 mt-1">Citas y agenda automatizada</p>
+                   <h3 className="text-white font-semibold group-hover:text-neon-blue transition-colors">Cuentas Conectadas</h3>
+                   <p className="text-xs text-gray-400 mt-1">Perfil y conexiones de anuncios</p>
+                </div>
+             </div>
+          </Link>
+          <Link href="/dashboard/planes" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-green/40 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.02)] hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+             <div className="flex items-center gap-4">
+                <div className="p-3 bg-neon-green/10 text-neon-green rounded-xl group-hover:bg-neon-green/20 transition-colors border border-neon-green/20">
+                   <CreditCard size={24} />
+                </div>
+                <div>
+                   <h3 className="text-white font-semibold group-hover:text-neon-green transition-colors">Mi Plan & Facturación</h3>
+                   <p className="text-xs text-gray-400 mt-1">7 días gratis - S/ 99 / mes</p>
                 </div>
              </div>
           </Link>

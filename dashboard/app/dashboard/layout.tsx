@@ -84,14 +84,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     {
       title: "AUTOPILOT ADS",
       items: [
-        { name: "WhatsApp Copilot", href: "/dashboard/setup-guide", icon: Phone, locked: false, badge: "ACTIVO" },
         { name: "Cuentas Conectadas", href: "/dashboard/configuracion", icon: Settings, locked: true },
-      ]
-    },
-    {
-      title: "MÓDULOS EXTRAS",
-      items: [
-        { name: "Setter IA de Leads", href: "/dashboard/whatsapp", icon: MessageSquare, locked: true, badge: "PRÓXIMAMENTE" },
       ]
     },
     {
@@ -150,9 +143,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                         <span>{item.name}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        {item.badge && (
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${item.badge === 'ACTIVO' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
-                            {item.badge}
+                        {(item as any).badge && (
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${(item as any).badge === 'ACTIVO' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
+                            {(item as any).badge}
                           </span>
                         )}
                         <Lock className="w-3.5 h-3.5 text-gray-500 group-hover:text-amber-400 transition-colors" />
