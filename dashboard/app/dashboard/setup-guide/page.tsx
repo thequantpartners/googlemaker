@@ -6,30 +6,30 @@ import { QRCodeSVG } from 'qrcode.react';
 import { CheckCircle2, Phone, Briefcase, Rocket, ArrowRight, ShieldCheck, Video, QrCode, RefreshCw, AlertCircle } from "lucide-react";
 
 const COUNTRIES = [
-  { name: "Perú", code: "51", flag: "🇵🇪" },
-  { name: "México", code: "52", flag: "🇲🇽" },
-  { name: "Colombia", code: "57", flag: "🇨🇴" },
-  { name: "Argentina", code: "54", flag: "🇦🇷" },
-  { name: "Chile", code: "56", flag: "🇨🇱" },
-  { name: "Estados Unidos / Canadá", code: "1", flag: "🇺🇸" },
-  { name: "España", code: "34", flag: "🇪🇸" },
-  { name: "Ecuador", code: "593", flag: "🇪🇨" },
-  { name: "Guatemala", code: "502", flag: "🇬🇹" },
-  { name: "El Salvador", code: "503", flag: "🇸🇻" },
-  { name: "Honduras", code: "504", flag: "🇭🇳" },
-  { name: "Nicaragua", code: "505", flag: "🇳🇮" },
-  { name: "Costa Rica", code: "506", flag: "🇨🇷" },
-  { name: "Panamá", code: "507", flag: "🇵🇦" },
-  { name: "Rep. Dominicana", code: "1", flag: "🇩🇴" },
-  { name: "Bolivia", code: "591", flag: "🇧🇴" },
-  { name: "Paraguay", code: "595", flag: "🇵🇾" },
-  { name: "Uruguay", code: "598", flag: "🇺🇾" },
-  { name: "Venezuela", code: "58", flag: "🇻🇪" },
-  { name: "Brasil", code: "55", flag: "🇧🇷" },
-  { name: "Reino Unido", code: "44", flag: "🇬🇧" },
-  { name: "Italia", code: "39", flag: "🇮🇹" },
-  { name: "Francia", code: "33", flag: "🇫🇷" },
-  { name: "Alemania", code: "49", flag: "🇩🇪" },
+  { name: "Perú", code: "51", flag: "🇵🇪", digits: 9 },
+  { name: "México", code: "52", flag: "🇲🇽", digits: 10 },
+  { name: "Colombia", code: "57", flag: "🇨🇴", digits: 10 },
+  { name: "Argentina", code: "54", flag: "🇦🇷", digits: 10 },
+  { name: "Chile", code: "56", flag: "🇨🇱", digits: 9 },
+  { name: "EE.UU. / Canadá", code: "1", flag: "🇺🇸", digits: 10 },
+  { name: "España", code: "34", flag: "🇪🇸", digits: 9 },
+  { name: "Ecuador", code: "593", flag: "🇪🇨", digits: 9 },
+  { name: "Guatemala", code: "502", flag: "🇬🇹", digits: 8 },
+  { name: "El Salvador", code: "503", flag: "🇸🇻", digits: 8 },
+  { name: "Honduras", code: "504", flag: "🇭🇳", digits: 8 },
+  { name: "Nicaragua", code: "505", flag: "🇳🇮", digits: 8 },
+  { name: "Costa Rica", code: "506", flag: "🇨🇷", digits: 8 },
+  { name: "Panamá", code: "507", flag: "🇵🇦", digits: 8 },
+  { name: "Rep. Dominicana", code: "1", flag: "🇩🇴", digits: 10 },
+  { name: "Bolivia", code: "591", flag: "🇧🇴", digits: 8 },
+  { name: "Paraguay", code: "595", flag: "🇵🇾", digits: 9 },
+  { name: "Uruguay", code: "598", flag: "🇺🇾", digits: 8 },
+  { name: "Venezuela", code: "58", flag: "🇻🇪", digits: 10 },
+  { name: "Brasil", code: "55", flag: "🇧🇷", digits: 11 },
+  { name: "Reino Unido", code: "44", flag: "🇬🇧", digits: 10 },
+  { name: "Italia", code: "39", flag: "🇮🇹", digits: 10 },
+  { name: "Francia", code: "33", flag: "🇫🇷", digits: 9 },
+  { name: "Alemania", code: "49", flag: "🇩🇪", digits: 10 },
 ];
 
 function parsePhoneNumber(rawPhone: string) {
@@ -159,15 +159,35 @@ export default function OnboardingPage() {
 
   const handleCountryChange = (code: string) => {
     setSelectedCountryCode(code);
-    const full = code + localPhone.replace(/\D/g, "");
-    setWhatsappPhone(full);
+    const country = COUNTRIES.find(c => c.code === code);
+    let cleaned = localPhone.replace(/\D/g, "");
+    if (country && cleaned.length > country.digits) {
+      cleaned = cleaned.slice(0, country.digits);
+      setLocalPhone(cleaned);
+    }
+    setWhatsappPhone(code + cleaned);
   };
 
   const handleLocalPhoneChange = (val: string) => {
-    const digits = val.replace(/\D/g, "");
-    setLocalPhone(digits);
-    const full = selectedCountryCode + digits;
-    setWhatsappPhone(full);
+    let cleaned = val.replace(/\D/g, "");
+    
+    // Auto-detect pasted full international phone number starting with country code
+    const matchedCountry = COUNTRIES.find(c => cleaned.startsWith(c.code) && cleaned.length > c.code.length + 4);
+    let codeToUse = selectedCountryCode;
+    if (matchedCountry) {
+      codeToUse = matchedCountry.code;
+      setSelectedCountryCode(matchedCountry.code);
+      cleaned = cleaned.slice(matchedCountry.code.length);
+    }
+    
+    const country = COUNTRIES.find(c => c.code === codeToUse);
+    const maxDigits = country?.digits || 10;
+    if (cleaned.length > maxDigits) {
+      cleaned = cleaned.slice(0, maxDigits);
+    }
+
+    setLocalPhone(cleaned);
+    setWhatsappPhone(codeToUse + cleaned);
   };
 
   const saveMeData = async () => {
@@ -207,7 +227,8 @@ export default function OnboardingPage() {
     { id: 3, title: 'Google Ads (RMKTG)', icon: Briefcase },
   ];
 
-  const isUserPhoneConfigured = Boolean(whatsappPhone && whatsappPhone.replace(/\D/g, '').length >= 8);
+  const currentCountryObj = COUNTRIES.find(c => c.code === selectedCountryCode) || COUNTRIES[0];
+  const isUserPhoneConfigured = Boolean(localPhone && localPhone.length >= (currentCountryObj.digits - 1));
 
   if (loading) {
     return (
@@ -278,15 +299,15 @@ export default function OnboardingPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Tu Número de WhatsApp (Alertas)</label>
                     
-                    <div className="flex gap-2 w-full">
+                    <div className="flex gap-2.5 w-full items-center">
                       <select
                         value={selectedCountryCode}
                         onChange={(e) => handleCountryChange(e.target.value)}
-                        className="w-[28%] sm:w-[25%] max-w-[120px] bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-2 sm:px-3 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-xs sm:text-sm shrink-0 cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap"
+                        className="bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-3 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all text-sm font-semibold cursor-pointer shrink-0"
                       >
                         {COUNTRIES.map((c, idx) => (
-                          <option key={`${c.code}-${c.flag}-${idx}`} value={c.code} className="bg-[#0a0c10] text-white">
-                            {c.flag} +{c.code} ({c.name})
+                          <option key={`${c.code}-${c.flag}-${idx}`} value={c.code} className="bg-[#0a0c10] text-white py-1">
+                            {c.flag} +{c.code}
                           </option>
                         ))}
                       </select>
@@ -294,15 +315,21 @@ export default function OnboardingPage() {
                         type="tel"
                         value={localPhone}
                         onChange={(e) => handleLocalPhoneChange(e.target.value)}
-                        placeholder="Ej: 902105668"
-                        className="flex-1 w-[72%] sm:w-[75%] bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-sm"
+                        placeholder={`Ej: ${currentCountryObj.code === "51" ? "902105668" : "123456789"}`}
+                        className="flex-1 bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-all text-sm font-mono tracking-wide"
                       />
                     </div>
                     {whatsappPhone && (
-                      <p className="text-xs text-gray-400 mt-2 flex items-center gap-1.5">
-                        <span>Formato Internacional:</span>
-                        <span className="text-neon-purple font-mono font-semibold">+{whatsappPhone}</span>
-                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-400 mt-2 px-1">
+                        <span className="flex items-center gap-1.5">
+                          <span>{currentCountryObj.flag} {currentCountryObj.name}:</span>
+                          <span className="text-neon-purple font-mono font-semibold">+{whatsappPhone}</span>
+                        </span>
+                        <span className={localPhone.length === currentCountryObj.digits ? "text-emerald-400 font-medium flex items-center gap-1" : "text-gray-500"}>
+                          {localPhone.length === currentCountryObj.digits && <CheckCircle2 size={12} />}
+                          {localPhone.length}/{currentCountryObj.digits} dígitos
+                        </span>
+                      </div>
                     )}
                   </div>
                   <div className="p-4 bg-neon-purple/10 border border-neon-purple/20 rounded-xl text-xs text-gray-300">
