@@ -29,12 +29,35 @@ async def update_my_profile(
     user: User = Depends(require_client),
     db: AsyncSession = Depends(get_db),
 ):
-    if data.whatsapp_phone is not None:
-        user.whatsapp_phone = data.whatsapp_phone
+    phone_updated = False
+    new_phone = None
+
+    if data.whatsapp_phone is not None and data.whatsapp_phone.strip() != "":
+        cleaned_phone = data.whatsapp_phone.strip()
+        if user.whatsapp_phone != cleaned_phone:
+            user.whatsapp_phone = cleaned_phone
+            phone_updated = True
+            new_phone = cleaned_phone
+
     if data.industry_niche is not None:
         user.industry_niche = data.industry_niche
     await db.commit()
     await db.refresh(user)
+
+    if phone_updated and new_phone:
+        import asyncio
+        from services.baileys_service import send_master_notification
+
+        welcome_msg = (
+            f"🚀 *¡Hola {user.full_name or 'Emprendedor'}! Bienvenido a QSS (Quant Sales System).*\n\n"
+            "Tu número de WhatsApp ha sido vinculado exitosamente con el **Autopiloto de Ads**.\n\n"
+            "A partir de ahora, recibirás alertas automáticas y podrás operarlo directamente desde este chat.\n\n"
+            "💡 *Puedes probar enviándome comandos como:*\n"
+            "• _\"¿Cuál es el saldo de mis campañas?\"_\n"
+            "• _\"Analiza el CTR de mis anuncios\"_"
+        )
+        asyncio.create_task(send_master_notification(new_phone, welcome_msg))
+
     return user
 
 import uuid
