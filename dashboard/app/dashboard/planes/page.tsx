@@ -83,9 +83,9 @@ export default function PlanesPage() {
   return (
     <div className="max-w-6xl mx-auto pb-20 animate-fade-in-up">
       <div className="text-center md:text-left mb-12">
-        <h1 className="text-3xl font-bold text-white mb-2">Mi Plan</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Suscripción QSS Autopilot</h1>
         <p className="text-gray-400 text-lg">
-          Activa tu suscripción mensual para desbloquear tu Autopiloto de Ads por WhatsApp.
+          Disfruta de 7 días de prueba completamente gratis. Luego, solo S/ 99 al mes con acceso ilimitado a todos los motores de tráfico y bot de WhatsApp.
         </p>
       </div>
 

@@ -4,6 +4,46 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug, Send, Phone } from "lucide-react";
 
+const COUNTRIES = [
+  { name: "Perú", code: "51", flag: "🇵🇪" },
+  { name: "México", code: "52", flag: "🇲🇽" },
+  { name: "Colombia", code: "57", flag: "🇨🇴" },
+  { name: "Argentina", code: "54", flag: "🇦🇷" },
+  { name: "Chile", code: "56", flag: "🇨🇱" },
+  { name: "Estados Unidos / Canadá", code: "1", flag: "🇺🇸" },
+  { name: "España", code: "34", flag: "🇪🇸" },
+  { name: "Ecuador", code: "593", flag: "🇪🇨" },
+  { name: "Guatemala", code: "502", flag: "🇬🇹" },
+  { name: "El Salvador", code: "503", flag: "🇸🇻" },
+  { name: "Honduras", code: "504", flag: "🇭🇳" },
+  { name: "Nicaragua", code: "505", flag: "🇳🇮" },
+  { name: "Costa Rica", code: "506", flag: "🇨🇷" },
+  { name: "Panamá", code: "507", flag: "🇵🇦" },
+  { name: "Rep. Dominicana", code: "1", flag: "🇩🇴" },
+  { name: "Bolivia", code: "591", flag: "🇧🇴" },
+  { name: "Paraguay", code: "595", flag: "🇵🇾" },
+  { name: "Uruguay", code: "598", flag: "🇺🇾" },
+  { name: "Venezuela", code: "58", flag: "🇻🇪" },
+  { name: "Brasil", code: "55", flag: "🇧🇷" },
+  { name: "Reino Unido", code: "44", flag: "🇬🇧" },
+  { name: "Italia", code: "39", flag: "🇮🇹" },
+  { name: "Francia", code: "33", flag: "🇫🇷" },
+  { name: "Alemania", code: "49", flag: "🇩🇪" },
+];
+
+function parsePhoneNumber(rawPhone: string) {
+  const cleaned = rawPhone.replace(/\D/g, "");
+  if (!cleaned) return { code: "51", local: "" };
+  
+  const sortedCountries = [...COUNTRIES].sort((a, b) => b.code.length - a.code.length);
+  for (const country of sortedCountries) {
+    if (cleaned.startsWith(country.code) && cleaned.length > country.code.length) {
+      return { code: country.code, local: cleaned.slice(country.code.length) };
+    }
+  }
+  return { code: "51", local: cleaned };
+}
+
 export default function ConfiguracionPage() {
   const { data: session } = useSession();
   const [profile, setProfile] = useState<any>(null);
@@ -11,6 +51,8 @@ export default function ConfiguracionPage() {
   const [disconnecting, setDisconnecting] = useState(false);
   const [msg, setMsg] = useState({ text: "", type: "" });
   const [whatsappPhone, setWhatsappPhone] = useState("");
+  const [selectedCountryCode, setSelectedCountryCode] = useState("51");
+  const [localPhone, setLocalPhone] = useState("");
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
 
   const fetchProfile = async () => {
@@ -24,6 +66,9 @@ export default function ConfiguracionPage() {
         setProfile(data);
         if (data.whatsapp_phone) {
           setWhatsappPhone(data.whatsapp_phone);
+          const parsed = parsePhoneNumber(data.whatsapp_phone);
+          setSelectedCountryCode(parsed.code);
+          setLocalPhone(parsed.local);
         }
       }
     } catch (err) {
@@ -36,6 +81,19 @@ export default function ConfiguracionPage() {
   useEffect(() => {
     fetchProfile();
   }, [session]);
+
+  const handleCountryChange = (code: string) => {
+    setSelectedCountryCode(code);
+    const full = code + localPhone.replace(/\D/g, "");
+    setWhatsappPhone(full);
+  };
+
+  const handleLocalPhoneChange = (val: string) => {
+    const digits = val.replace(/\D/g, "");
+    setLocalPhone(digits);
+    const full = selectedCountryCode + digits;
+    setWhatsappPhone(full);
+  };
 
   const handleDisconnect = async () => {
     if (!confirm("Are you sure you want to disconnect all your Google Ads accounts? You will need to sign in again to reconnect them.")) return;
@@ -182,26 +240,46 @@ export default function ConfiguracionPage() {
           <Phone size={24} /> Alertas por WhatsApp (Master Setter)
         </h2>
         <p className="text-gray-400 mb-6 leading-relaxed">
-          Ingresa tu número de WhatsApp personal con código de país (ej. +51999888777). El Master Setter de la agencia te enviará notificaciones instantáneas aquí cuando consigas un nuevo lead o agendes una cita.
+          Selecciona el país e ingresa tu número de WhatsApp. El Master Setter te enviará notificaciones instantáneas aquí cuando consigas un nuevo lead o agendes una cita.
         </p>
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <input
-            type="text"
-            value={whatsappPhone}
-            onChange={(e) => setWhatsappPhone(e.target.value)}
-            placeholder="+51999888777"
-            className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green w-full"
-          />
+          <div className="flex gap-2 flex-1 w-full">
+            <select
+              value={selectedCountryCode}
+              onChange={(e) => handleCountryChange(e.target.value)}
+              className="bg-white/5 border border-white/10 text-white rounded-xl px-3 py-3 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green transition-colors text-sm shrink-0 cursor-pointer"
+            >
+              {COUNTRIES.map((c, idx) => (
+                <option key={`${c.code}-${c.flag}-${idx}`} value={c.code} className="bg-[#0a0c10] text-white">
+                  {c.flag} +{c.code} ({c.name})
+                </option>
+              ))}
+            </select>
+            <input
+              type="tel"
+              value={localPhone}
+              onChange={(e) => handleLocalPhoneChange(e.target.value)}
+              placeholder="902105668"
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-neon-green focus:ring-1 focus:ring-neon-green text-sm w-full"
+            />
+          </div>
           <button 
             onClick={handleSaveWhatsapp} 
             disabled={savingWhatsapp || !whatsappPhone}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-neon-green/20 hover:bg-neon-green text-neon-green hover:text-[#0B0E14] border border-neon-green/50 hover:border-neon-green rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-neon-green/20 hover:bg-neon-green text-neon-green hover:text-[#0B0E14] border border-neon-green/50 hover:border-neon-green rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto shrink-0"
           >
             {savingWhatsapp ? "Guardando..." : "Guardar Número"}
           </button>
         </div>
+        {whatsappPhone && (
+          <p className="text-xs text-gray-400 mt-3 flex items-center gap-1.5">
+            <span>Formato Guardado:</span>
+            <span className="text-neon-green font-mono font-semibold">+{whatsappPhone}</span>
+          </p>
+        )}
       </div>
     </div>
   );
 }
+

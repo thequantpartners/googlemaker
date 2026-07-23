@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Zap, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export interface PricingCardsProps {
@@ -16,108 +16,117 @@ export default function PricingCards({
   onSelectPlan,
   isLandingPage = false,
 }: PricingCardsProps) {
-  const getButtonProps = (tier: string) => {
+  const isCurrentPlan = currentTier && currentTier !== "none";
+  const tierToUse = "pro";
+
+  const getButtonProps = () => {
     if (isLandingPage) {
       return {
         isLink: true,
         href: "/auth/register",
-        text: "Iniciar Prueba Gratis",
+        text: "Iniciar Prueba Gratis de 7 Días",
         disabled: false,
       };
     }
-    const isCurrent = currentTier === tier;
     return {
       isLink: false,
-      onClick: () => onSelectPlan && onSelectPlan(tier),
-      disabled: selectingPlan || isCurrent,
+      onClick: () => onSelectPlan && onSelectPlan(tierToUse),
+      disabled: selectingPlan || Boolean(isCurrentPlan),
       text: selectingPlan
-        ? "Procesando..."
-        : isCurrent
-        ? "Plan Actual"
-        : "Iniciar Prueba de 7 Días",
+        ? "Procesando Mercado Pago..."
+        : isCurrentPlan
+        ? "✓ Plan Activo"
+        : "Comenzar Prueba Gratis de 7 Días",
     };
   };
 
-  const renderButton = (tier: string, className: string) => {
-    const props = getButtonProps(tier);
-    if (props.isLink) {
-      return (
-        <Link href={props.href!} className={`text-center flex items-center justify-center ${className}`}>
-          {props.text}
-        </Link>
-      );
-    }
-    return (
-      <button
-        onClick={props.onClick}
-        disabled={props.disabled}
-        className={className}
-      >
-        {props.text}
-      </button>
-    );
-  };
+  const buttonProps = getButtonProps();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full max-w-5xl mx-auto font-sans">
-      
-      {/* Starter Plan */}
-      <div className={`bg-[#0B0E14] border rounded-3xl p-8 flex flex-col transition-colors ${currentTier === 'starter' ? 'border-neon-purple shadow-[0_0_20px_rgba(168,85,247,0.15)]' : 'border-white/10 hover:border-white/20'}`}>
-        <div className="flex-1">
-          {currentTier === "starter" && (
-            <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-xs font-bold tracking-wider mb-6">
-              PLAN ACTUAL
-            </div>
-          )}
-          <h2 className="text-2xl font-bold text-white mb-2">Starter</h2>
-          <div className="text-4xl font-black text-white mb-4 tracking-tight">S/ 97<span className="text-base text-gray-500 font-normal">/mes</span></div>
-          <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Ideal para independientes que recién empiezan.</p>
-          <ul className="space-y-4 mb-8 text-gray-300 text-sm">
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 500 Mensajes Mensuales</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> IA Básica (Prompt Estándar)</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 1 Número de WhatsApp (o Web Chat)</li>
-          </ul>
+    <div className="w-full max-w-2xl mx-auto font-sans">
+      <div className="bg-[#0B0E14] border-2 border-neon-purple/80 rounded-3xl p-8 sm:p-10 relative shadow-[0_0_50px_rgba(168,85,247,0.25)] overflow-hidden transition-all hover:border-neon-purple">
+        
+        {/* Badge superior */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-gradient-to-r from-neon-purple to-neon-pink text-white px-5 py-1.5 rounded-b-xl text-xs font-extrabold tracking-wider uppercase shadow-[0_4px_14px_rgba(168,85,247,0.4)] flex items-center gap-1.5">
+          <Sparkles size={14} /> Plan Todo Incluido · 7 Días Gratis
         </div>
-        {renderButton("starter", `w-full py-3.5 rounded-2xl border text-sm transition-colors font-semibold ${currentTier === 'starter' ? 'bg-white/10 text-gray-400 border-white/10 cursor-not-allowed' : 'border-white/10 bg-transparent hover:bg-white/5 text-white'}`)}
-      </div>
 
-      {/* Growth Plan */}
-      <div className={`bg-[#0B0E14] border rounded-3xl p-8 flex flex-col relative ${currentTier === 'growth' ? 'border-neon-purple shadow-[0_0_30px_rgba(168,85,247,0.3)]' : 'border-neon-purple/80 hover:border-neon-purple shadow-[0_0_20px_rgba(168,85,247,0.1)]'}`}>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neon-purple text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider whitespace-nowrap shadow-[0_4px_14px_rgba(168,85,247,0.39)]">
-          {currentTier === "growth" ? "PLAN ACTUAL" : "MÁS POPULAR"}
-        </div>
-        <div className="flex-1 mt-2">
-          <h2 className="text-2xl font-bold text-white mb-2">Growth</h2>
-          <div className="text-4xl font-black text-neon-purple mb-4 tracking-tight">S/ 199<span className="text-base text-gray-500 font-normal">/mes</span></div>
-          <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">Para negocios que reciben buen volumen de leads.</p>
-          <ul className="space-y-4 mb-8 text-gray-300 text-sm">
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 2,000 Mensajes Mensuales</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Custom Prompts & Memoria</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Agendamiento de Citas (Smart Calendar)</li>
-          </ul>
-        </div>
-        {renderButton("growth", `w-full py-3.5 rounded-2xl text-sm font-bold transition-all shadow-[0_4px_14px_rgba(100,100,255,0.3)] ${currentTier === 'growth' ? 'bg-neon-purple/30 text-neon-purple cursor-not-allowed' : 'bg-gradient-to-r from-[#8B6CE0] to-[#5D85F0] text-white hover:opacity-90'}`)}
-      </div>
-
-      {/* Pro Plan */}
-      <div className={`bg-[#0B0E14] border rounded-3xl p-8 flex flex-col transition-colors ${currentTier === 'pro' ? 'border-neon-purple shadow-[0_0_20px_rgba(168,85,247,0.15)]' : 'border-white/10 hover:border-white/20'}`}>
-        <div className="flex-1">
-          {currentTier === "pro" && (
-            <div className="inline-block bg-white text-black px-4 py-1 rounded-full text-xs font-bold tracking-wider mb-6">
-              PLAN ACTUAL
+        <div className="mt-4 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center sm:items-baseline justify-between gap-2 mb-4">
+            <div>
+              <h2 className="text-3xl font-black text-white tracking-tight">QSS Autopilot Pro</h2>
+              <p className="text-gray-400 text-sm mt-1">Acceso total a todos los motores de tráfico y bot de WhatsApp.</p>
             </div>
+            <div className="text-center sm:text-right mt-2 sm:mt-0">
+              <div className="text-5xl font-black text-white tracking-tight flex items-baseline justify-center sm:justify-end gap-1">
+                <span className="text-2xl font-bold text-neon-purple">S/</span>99
+                <span className="text-sm font-medium text-gray-400">/mes</span>
+              </div>
+              <span className="inline-block mt-1 text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                🎁 7 días de prueba gratis
+              </span>
+            </div>
+          </div>
+
+          <div className="h-px bg-white/10 my-6"></div>
+
+          {/* Características */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-sm">
+            <div className="flex items-start gap-3 text-gray-200">
+              <CheckCircle2 size={18} className="text-neon-purple shrink-0 mt-0.5" />
+              <span><strong>WhatsApp Autopiloto 24/7</strong> (Alertas & comandos por chat)</span>
+            </div>
+            <div className="flex items-start gap-3 text-gray-200">
+              <CheckCircle2 size={18} className="text-neon-purple shrink-0 mt-0.5" />
+              <span><strong>Motor IA para Anuncios</strong> (Auditoría de CTR y apagado automático)</span>
+            </div>
+            <div className="flex items-start gap-3 text-gray-200">
+              <CheckCircle2 size={18} className="text-neon-purple shrink-0 mt-0.5" />
+              <span><strong>Google Ads OAuth</strong> (Remarketing & audiencias automáticas)</span>
+            </div>
+            <div className="flex items-start gap-3 text-gray-200">
+              <CheckCircle2 size={18} className="text-neon-purple shrink-0 mt-0.5" />
+              <span><strong>TikTok Ads Manager</strong> (Tráfico offline servidor a servidor)</span>
+            </div>
+            <div className="flex items-start gap-3 text-gray-200">
+              <CheckCircle2 size={18} className="text-neon-purple shrink-0 mt-0.5" />
+              <span><strong>Sistema Anti-Baneo Conectado</strong> (Operación segura de cuentas)</span>
+            </div>
+            <div className="flex items-start gap-3 text-gray-200">
+              <CheckCircle2 size={18} className="text-neon-purple shrink-0 mt-0.5" />
+              <span><strong>Soporte Prioritario & Actualizaciones</strong> incluidas sin costo extra</span>
+            </div>
+          </div>
+
+          {/* Botón de pago / registro */}
+          {buttonProps.isLink ? (
+            <Link
+              href={buttonProps.href!}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-neon-purple to-neon-pink text-white font-bold text-base hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(168,85,247,0.4)]"
+            >
+              <Zap size={20} /> {buttonProps.text}
+            </Link>
+          ) : (
+            <button
+              onClick={buttonProps.onClick}
+              disabled={buttonProps.disabled}
+              className={`w-full py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-2 ${
+                isCurrentPlan
+                  ? "bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-neon-purple to-neon-pink text-white hover:opacity-90 shadow-[0_0_25px_rgba(168,85,247,0.4)]"
+              }`}
+            >
+              <Zap size={20} /> {buttonProps.text}
+            </button>
           )}
-          <h2 className="text-2xl font-bold text-white mb-2">Scale (Pro)</h2>
-          <div className="text-4xl font-black text-white mb-4 tracking-tight">S/ 499<span className="text-base text-gray-500 font-normal">/mes</span></div>
-          <p className="text-gray-400 mb-8 h-12 text-sm leading-relaxed">El autopilot definitivo para múltiples agentes.</p>
-          <ul className="space-y-4 mb-8 text-gray-300 text-sm">
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> 10,000 Mensajes Mensuales</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Motor IA Avanzado y Personalizado</li>
-            <li className="flex items-center gap-3"><CheckCircle2 size={18} className="text-neon-purple shrink-0" /> Soporte Dedicado</li>
-          </ul>
+
+          <p className="text-center text-xs text-gray-500 mt-4 flex items-center justify-center gap-1.5">
+            <ShieldCheck size={14} className="text-emerald-400" /> Pago 100% seguro con Mercado Pago · Cancela en cualquier momento en 1 clic
+          </p>
+
         </div>
-        {renderButton("pro", `w-full py-3.5 rounded-2xl border text-sm transition-colors font-semibold ${currentTier === 'pro' ? 'bg-white/10 text-gray-400 border-white/10 cursor-not-allowed' : 'border-white/10 bg-transparent hover:bg-white/5 text-white'}`)}
       </div>
     </div>
   );
 }
+

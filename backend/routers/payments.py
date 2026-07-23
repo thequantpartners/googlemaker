@@ -15,9 +15,9 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
 MERCADOPAGO_ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 
 MP_PRICES = {
-    "starter": 97.00,
-    "growth": 199.00,
-    "pro": 499.00
+    "starter": 99.00,
+    "growth": 99.00,
+    "pro": 99.00
 }
 
 class SubscriptionRequest(BaseModel):

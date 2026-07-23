@@ -12,6 +12,8 @@
 
 ## Done
 
+- [x] Add International Country Selector dropdown (flag + dial code) and fix WhatsApp connection status to reflect user registration status (2026-07-22).
+- [x] Simplify SaaS Pricing to a single unified plan (QSS Autopilot Pro) at S/ 99/mes with a 7-day free trial across Frontend and Backend (2026-07-22).
 - [x] Pivot product focus to WhatsApp AI Ads Autopilot & 3-Step Setup Onboarding (2026-07-22).
 - [x] Build `google_ads_service.py` ad-level CTR metrics querying and campaign status mutation logic (2026-07-22).
 - [x] Build `tiktok_ads_service.py` base adapter module for TikTok Business Ads API & MCP integration (2026-07-22).

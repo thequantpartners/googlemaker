@@ -1,6 +1,9 @@
 # Changelog
 
 ## 2026-07-22
+- Added International Country Selector (flag + dial code) across Setup Guide and Settings, auto-parsing phone numbers into E.164 international format.
+- Fixed WhatsApp connection status indicator to display "Connected" only when the client's phone number is saved and registered.
+- Simplified SaaS Pricing into a single unified plan (QSS Autopilot Pro) at S/ 99/mes with a 7-day free trial.
 - Pivoted primary acquisition model to TikTok Ads (Adquisición) + Google Ads (Remarketing) + WhatsApp AI Ads Autopilot.
 - Extended `google_ads_service.py` to query ad-level CTR performance and mutate campaign statuses (pause/enable).
 - Created `tiktok_ads_service.py` adapter module to handle TikTok Business Ads reporting and Server-to-Server offline event dispatching.

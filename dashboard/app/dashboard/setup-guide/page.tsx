@@ -3,7 +3,47 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 import { QRCodeSVG } from 'qrcode.react';
-import { CheckCircle2, Phone, Briefcase, Rocket, ArrowRight, ShieldCheck, Video, QrCode, RefreshCw } from "lucide-react";
+import { CheckCircle2, Phone, Briefcase, Rocket, ArrowRight, ShieldCheck, Video, QrCode, RefreshCw, AlertCircle } from "lucide-react";
+
+const COUNTRIES = [
+  { name: "Perú", code: "51", flag: "🇵🇪" },
+  { name: "México", code: "52", flag: "🇲🇽" },
+  { name: "Colombia", code: "57", flag: "🇨🇴" },
+  { name: "Argentina", code: "54", flag: "🇦🇷" },
+  { name: "Chile", code: "56", flag: "🇨🇱" },
+  { name: "Estados Unidos / Canadá", code: "1", flag: "🇺🇸" },
+  { name: "España", code: "34", flag: "🇪🇸" },
+  { name: "Ecuador", code: "593", flag: "🇪🇨" },
+  { name: "Guatemala", code: "502", flag: "🇬🇹" },
+  { name: "El Salvador", code: "503", flag: "🇸🇻" },
+  { name: "Honduras", code: "504", flag: "🇭🇳" },
+  { name: "Nicaragua", code: "505", flag: "🇳🇮" },
+  { name: "Costa Rica", code: "506", flag: "🇨🇷" },
+  { name: "Panamá", code: "507", flag: "🇵🇦" },
+  { name: "Rep. Dominicana", code: "1", flag: "🇩🇴" },
+  { name: "Bolivia", code: "591", flag: "🇧🇴" },
+  { name: "Paraguay", code: "595", flag: "🇵🇾" },
+  { name: "Uruguay", code: "598", flag: "🇺🇾" },
+  { name: "Venezuela", code: "58", flag: "🇻🇪" },
+  { name: "Brasil", code: "55", flag: "🇧🇷" },
+  { name: "Reino Unido", code: "44", flag: "🇬🇧" },
+  { name: "Italia", code: "39", flag: "🇮🇹" },
+  { name: "Francia", code: "33", flag: "🇫🇷" },
+  { name: "Alemania", code: "49", flag: "🇩🇪" },
+];
+
+function parsePhoneNumber(rawPhone: string) {
+  const cleaned = rawPhone.replace(/\D/g, "");
+  if (!cleaned) return { code: "51", local: "" };
+  
+  const sortedCountries = [...COUNTRIES].sort((a, b) => b.code.length - a.code.length);
+  for (const country of sortedCountries) {
+    if (cleaned.startsWith(country.code) && cleaned.length > country.code.length) {
+      return { code: country.code, local: cleaned.slice(country.code.length) };
+    }
+  }
+  return { code: "51", local: cleaned };
+}
 
 export default function OnboardingPage() {
   const { data: session, status } = useSession();
@@ -20,6 +60,8 @@ export default function OnboardingPage() {
 
   // Form states
   const [whatsappPhone, setWhatsappPhone] = useState("");
+  const [selectedCountryCode, setSelectedCountryCode] = useState("51");
+  const [localPhone, setLocalPhone] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -94,7 +136,11 @@ export default function OnboardingPage() {
 
         if (meRes.ok) {
           const data = await meRes.json();
-          setWhatsappPhone(data.whatsapp_phone || "");
+          const phone = data.whatsapp_phone || "";
+          setWhatsappPhone(phone);
+          const parsed = parsePhoneNumber(phone);
+          setSelectedCountryCode(parsed.code);
+          setLocalPhone(parsed.local);
         }
         if (credRes.ok) {
           const data = await credRes.json();
@@ -110,6 +156,19 @@ export default function OnboardingPage() {
     }
     if (status !== "loading") fetchData();
   }, [session, status]);
+
+  const handleCountryChange = (code: string) => {
+    setSelectedCountryCode(code);
+    const full = code + localPhone.replace(/\D/g, "");
+    setWhatsappPhone(full);
+  };
+
+  const handleLocalPhoneChange = (val: string) => {
+    const digits = val.replace(/\D/g, "");
+    setLocalPhone(digits);
+    const full = selectedCountryCode + digits;
+    setWhatsappPhone(full);
+  };
 
   const saveMeData = async () => {
     if (!session?.backendToken) return false;
@@ -147,6 +206,8 @@ export default function OnboardingPage() {
     { id: 2, title: 'TikTok Ads', icon: Video },
     { id: 3, title: 'Google Ads (RMKTG)', icon: Briefcase },
   ];
+
+  const isUserPhoneConfigured = Boolean(whatsappPhone && whatsappPhone.replace(/\D/g, '').length >= 8);
 
   if (loading) {
     return (
@@ -207,7 +268,7 @@ export default function OnboardingPage() {
             <div className="animate-fade-in">
               <h2 className="text-2xl font-bold text-white mb-2">1. Vincula tu WhatsApp (Comandos & Escaneo QR)</h2>
               <p className="text-gray-400 mb-8">
-                Escanea el código QR desde tu app de WhatsApp (<span className="text-white font-medium">Ajustes &gt; Dispositivos vinculados</span>) para conectar tu cuenta y controlar el Autopiloto de Ads por chat.
+                Ingresa tu número con el código de tu país para recibir alertas instantáneas y operar el Autopiloto de Ads por WhatsApp.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 items-center">
@@ -216,13 +277,33 @@ export default function OnboardingPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Tu Número de WhatsApp (Alertas)</label>
-                    <input
-                      type="text"
-                      value={whatsappPhone}
-                      onChange={(e) => setWhatsappPhone(e.target.value)}
-                      placeholder="Ej: 51999888777 (Código de país sin '+')"
-                      className="w-full bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors"
-                    />
+                    
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedCountryCode}
+                        onChange={(e) => handleCountryChange(e.target.value)}
+                        className="bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-3 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-sm shrink-0 cursor-pointer"
+                      >
+                        {COUNTRIES.map((c, idx) => (
+                          <option key={`${c.code}-${c.flag}-${idx}`} value={c.code} className="bg-[#0a0c10] text-white">
+                            {c.flag} +{c.code} ({c.name})
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="tel"
+                        value={localPhone}
+                        onChange={(e) => handleLocalPhoneChange(e.target.value)}
+                        placeholder="Ej: 902105668"
+                        className="flex-1 bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors text-sm"
+                      />
+                    </div>
+                    {whatsappPhone && (
+                      <p className="text-xs text-gray-400 mt-2 flex items-center gap-1.5">
+                        <span>Formato Internacional:</span>
+                        <span className="text-neon-purple font-mono font-semibold">+{whatsappPhone}</span>
+                      </p>
+                    )}
                   </div>
                   <div className="p-4 bg-neon-purple/10 border border-neon-purple/20 rounded-xl text-xs text-gray-300">
                     💡 <span className="font-semibold text-white">Comandos Disponibles:</span> Una vez vinculado, podrás escribirle al bot: <br />
@@ -230,15 +311,25 @@ export default function OnboardingPage() {
                   </div>
                 </div>
 
-                {/* QR Scanner Section */}
+                {/* Status / QR Scanner Section */}
                 <div className="flex flex-col items-center justify-center p-6 bg-[#0a0c10] border border-gray-800 rounded-2xl min-h-[220px]">
-                  {baileysStatus === "connected" ? (
+                  {isUserPhoneConfigured && baileysStatus === "connected" ? (
                     <div className="text-center space-y-3">
                       <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
                         <CheckCircle2 size={32} />
                       </div>
                       <p className="text-emerald-400 font-bold text-base">¡WhatsApp Conectado!</p>
-                      <p className="text-xs text-gray-400">Tu número está listo para recibir reportes y ejecutar comandos.</p>
+                      <p className="text-xs text-gray-400">Tu número <span className="text-white font-mono font-semibold">+{whatsappPhone}</span> está listo para recibir reportes y ejecutar comandos.</p>
+                    </div>
+                  ) : !isUserPhoneConfigured ? (
+                    <div className="text-center space-y-3">
+                      <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
+                        <AlertCircle size={28} />
+                      </div>
+                      <p className="text-amber-400 font-semibold text-sm">Pendiente de Ingresar Número</p>
+                      <p className="text-xs text-gray-400 max-w-xs">
+                        Selecciona el país e ingresa tu número de teléfono a la izquierda para activar la conexión internacional por WhatsApp.
+                      </p>
                     </div>
                   ) : baileysQr ? (
                     <div className="text-center space-y-3">
