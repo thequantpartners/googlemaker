@@ -40,6 +40,7 @@ Then use the generated compact context.
 * Prefer exact code changes over vague recommendations.
 * Validate before saying done.
 * For UI tasks, check visual memory first.
+* Act as a Proactive AI Engineer: When pivoting features or refactoring UI/UX, perform a proactive audit across the entire codebase to locate and purge all legacy copy, dead routes, and outdated UI components without waiting for the user to point them out.
 * External AI agents (like Jules) always submit their work via Pull Requests. When reviewing other agents' work, always fetch and check remote branches (e.g., `git fetch --all`) instead of looking for local changes in `main`.
 * If major/important changes are made to the project, update README.md and AGENTS.md (if rules change). Do not update them for minor changes.
 
