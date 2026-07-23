@@ -62,6 +62,7 @@ export default function OnboardingPage() {
   const [whatsappPhone, setWhatsappPhone] = useState("");
   const [selectedCountryCode, setSelectedCountryCode] = useState("51");
   const [localPhone, setLocalPhone] = useState("");
+  const [showPhoneConfirmModal, setShowPhoneConfirmModal] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -217,6 +218,11 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleConfirmPhoneAndProceed = async () => {
+    setShowPhoneConfirmModal(false);
+    await handleNext(1);
+  };
+
   const handleOAuth = () => {
     window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google-ads/login?token=${session?.backendToken}&return_to=${encodeURIComponent(window.location.href)}`;
   };
@@ -369,7 +375,7 @@ export default function OnboardingPage() {
 
               <div className="flex justify-end mt-10">
                 <button 
-                  onClick={() => handleNext(1)}
+                  onClick={() => isUserPhoneValid && setShowPhoneConfirmModal(true)}
                   disabled={saving || !isUserPhoneValid}
                   className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
                     saving || !isUserPhoneValid
@@ -467,6 +473,48 @@ export default function OnboardingPage() {
 
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showPhoneConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#0B0E14] border border-gray-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-[0_0_50px_rgba(168,85,247,0.25)] space-y-6 text-center animate-scale-in">
+            <div className="w-16 h-16 rounded-full bg-neon-purple/10 border border-neon-purple/30 text-neon-purple flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+              <Phone size={32} />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold text-white">¿Confirmas tu número de WhatsApp?</h3>
+              <p className="text-sm text-gray-400">
+                El Autopiloto de Ads enviará reportes y responderá comandos directamente a este número:
+              </p>
+              <div className="py-3 px-4 bg-[#0a0c10] border border-gray-800 rounded-2xl my-3 inline-block w-full">
+                <span className="text-2xl font-black font-mono text-neon-purple tracking-wide">
+                  +{whatsappPhone}
+                </span>
+                <p className="text-xs text-gray-400 mt-1 font-medium">
+                  {currentCountryObj.flag} {currentCountryObj.name}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => setShowPhoneConfirmModal(false)}
+                className="w-full py-3 rounded-xl border border-gray-700 bg-white/5 text-gray-300 font-semibold hover:bg-white/10 hover:text-white transition-all text-sm"
+              >
+                No, corregir
+              </button>
+              <button
+                onClick={handleConfirmPhoneAndProceed}
+                disabled={saving}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-neon-purple to-neon-pink text-white font-bold hover:opacity-90 transition-all text-sm shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-1.5"
+              >
+                {saving ? "Guardando..." : "Sí, es correcto"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
