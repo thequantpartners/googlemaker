@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from "next-auth/react";
-import { CheckCircle2, Phone, Briefcase, Rocket, ArrowRight, ShieldCheck, Video } from "lucide-react";
+import { QRCodeSVG } from 'qrcode.react';
+import { CheckCircle2, Phone, Briefcase, Rocket, ArrowRight, ShieldCheck, Video, QrCode, RefreshCw } from "lucide-react";
 
 export default function OnboardingPage() {
   const { data: session, status } = useSession();
@@ -11,9 +12,14 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [connectedAds, setConnectedAds] = useState(false);
 
+  // Baileys QR state
+  const [baileysUrl] = useState("https://qss-baileys-server-production.up.railway.app");
+  const [baileysStatus, setBaileysStatus] = useState("disconnected");
+  const [baileysQr, setBaileysQr] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+
   // Form states
   const [whatsappPhone, setWhatsappPhone] = useState("");
-  const [tiktokToken, setTiktokToken] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -22,6 +28,60 @@ export default function OnboardingPage() {
     if (stepParam) setCurrentStep(parseInt(stepParam));
     if (connectedParam === 'success') setConnectedAds(true);
   }, []);
+
+  // Fetch initial Baileys QR status
+  useEffect(() => {
+    async function checkBaileysStatus() {
+      try {
+        const res = await fetch(`${baileysUrl}/api/status`);
+        if (res.ok) {
+          const data = await res.json();
+          setBaileysStatus(data.status);
+          if (data.qr) setBaileysQr(data.qr);
+        }
+      } catch (e) {
+        console.error("Failed to fetch initial Baileys status", e);
+      }
+    }
+    checkBaileysStatus();
+  }, [baileysUrl]);
+
+  // Poll Baileys status when active
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (baileysUrl && isPolling) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`${baileysUrl}/api/status`);
+          if (res.ok) {
+            const data = await res.json();
+            setBaileysStatus(data.status);
+            setBaileysQr(data.qr);
+            if (data.status === 'connected') {
+              setIsPolling(false);
+            }
+          }
+        } catch (e) {
+          console.error("Polling error", e);
+        }
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [baileysUrl, isPolling]);
+
+  const handleStartQrScan = async () => {
+    setIsPolling(true);
+    try {
+      const res = await fetch(`${baileysUrl}/api/connect`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setBaileysStatus(data.status);
+        if (data.qr) setBaileysQr(data.qr);
+      }
+    } catch (e) {
+      console.error("Error starting QR scan:", e);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -145,21 +205,64 @@ export default function OnboardingPage() {
           {/* STEP 1 */}
           {currentStep === 1 && (
             <div className="animate-fade-in">
-              <h2 className="text-2xl font-bold text-white mb-2">1. Vincula tu WhatsApp (Comandos & Alertas)</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">1. Vincula tu WhatsApp (Comandos & Escaneo QR)</h2>
               <p className="text-gray-400 mb-8">
-                Ingresa tu número de WhatsApp personal. Desde este chat podrás escribir órdenes en español como: <br />
-                <span className="text-neon-purple italic font-medium">"Revisa mi CTR. Si alguno es menor a 1%, apágalo"</span> y recibir informes diarios.
+                Escanea el código QR desde tu app de WhatsApp (<span className="text-white font-medium">Ajustes &gt; Dispositivos vinculados</span>) para conectar tu cuenta y controlar el Autopiloto de Ads por chat.
               </p>
               
-              <div className="mb-6 max-w-lg">
-                <label className="block text-sm font-medium text-gray-300 mb-2">Tu Número de WhatsApp</label>
-                <input
-                  type="text"
-                  value={whatsappPhone}
-                  onChange={(e) => setWhatsappPhone(e.target.value)}
-                  placeholder="Ej: 51999888777 (Código de país sin '+')"
-                  className="w-full bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 items-center">
+                
+                {/* Phone Input Section */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Tu Número de WhatsApp (Alertas)</label>
+                    <input
+                      type="text"
+                      value={whatsappPhone}
+                      onChange={(e) => setWhatsappPhone(e.target.value)}
+                      placeholder="Ej: 51999888777 (Código de país sin '+')"
+                      className="w-full bg-[#0a0c10] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-neon-purple focus:ring-1 focus:ring-neon-purple transition-colors"
+                    />
+                  </div>
+                  <div className="p-4 bg-neon-purple/10 border border-neon-purple/20 rounded-xl text-xs text-gray-300">
+                    💡 <span className="font-semibold text-white">Comandos Disponibles:</span> Una vez vinculado, podrás escribirle al bot: <br />
+                    <span className="text-neon-purple italic">"Analiza el CTR de mis anuncios. Si alguno es menor a 1%, apágalo"</span>.
+                  </div>
+                </div>
+
+                {/* QR Scanner Section */}
+                <div className="flex flex-col items-center justify-center p-6 bg-[#0a0c10] border border-gray-800 rounded-2xl min-h-[220px]">
+                  {baileysStatus === "connected" ? (
+                    <div className="text-center space-y-3">
+                      <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                        <CheckCircle2 size={32} />
+                      </div>
+                      <p className="text-emerald-400 font-bold text-base">¡WhatsApp Conectado!</p>
+                      <p className="text-xs text-gray-400">Tu número está listo para recibir reportes y ejecutar comandos.</p>
+                    </div>
+                  ) : baileysQr ? (
+                    <div className="text-center space-y-3">
+                      <div className="p-3 bg-white rounded-xl shadow-lg inline-block">
+                        <QRCodeSVG value={baileysQr} size={150} />
+                      </div>
+                      <p className="text-xs text-gray-400 flex items-center justify-center gap-1.5">
+                        <RefreshCw size={12} className="animate-spin text-neon-purple" /> Escanea desde WhatsApp en tu teléfono
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-4">
+                      <QrCode size={48} className="text-gray-600 mx-auto" />
+                      <p className="text-xs text-gray-400">Genera tu código QR seguro para vincular la sesión de WhatsApp.</p>
+                      <button
+                        onClick={handleStartQrScan}
+                        className="px-4 py-2.5 rounded-xl bg-neon-purple text-white text-xs font-bold hover:opacity-90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2 mx-auto"
+                      >
+                        <RefreshCw size={14} className={isPolling ? "animate-spin" : ""} /> Generar Código QR
+                      </button>
+                    </div>
+                  )}
+                </div>
+
               </div>
 
               <div className="flex justify-end mt-10">
