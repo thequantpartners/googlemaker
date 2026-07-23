@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug, Send, Phone } from "lucide-react";
+import { User, Mail, CreditCard, AlertTriangle, Activity, Unplug, Send, Phone, Code, Copy, Check, Sparkles, Globe, Video } from "lucide-react";
 
 const COUNTRIES = [
   { name: "Perú", code: "51", flag: "🇵🇪", digits: 9 },
@@ -44,6 +44,17 @@ function parsePhoneNumber(rawPhone: string) {
   return { code: "51", local: cleaned };
 }
 
+function getTiktokPixelScript(pixelId: string) {
+  return `<!-- TikTok Pixel Code -->
+<script>
+!function (w, d, t) {
+  w.TiktokAnalyticsObject=t;var tt=w[t]=w[t]||[];tt.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","addUserData"],tt.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<tt.methods.length;i++)tt.setAndDefer(tt,tt.methods[i]);tt.instance=function(t){for(var e=tt._i[t]||[],n=0;n<tt.methods.length;n++)tt.setAndDefer(e,tt.methods[n]);return e},tt.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";tt._i=tt._i||{},tt._i[e]=[],tt._i[e]._u=i,tt._t=tt._t||{},tt._t[e]=+new Date,tt._t[e]._o=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+  tt.load('${pixelId}');
+  tt.page();
+}(window, document, 'ttq');
+</script>`;
+}
+
 export default function ConfiguracionPage() {
   const { data: session } = useSession();
   const [profile, setProfile] = useState<any>(null);
@@ -54,6 +65,13 @@ export default function ConfiguracionPage() {
   const [selectedCountryCode, setSelectedCountryCode] = useState("51");
   const [localPhone, setLocalPhone] = useState("");
   const [savingWhatsapp, setSavingWhatsapp] = useState(false);
+
+  // Pixel Manager States
+  const [googlePixelSnippet, setGooglePixelSnippet] = useState<string>("");
+  const [tiktokPixelId, setTiktokPixelId] = useState<string>("");
+  const [copiedGoogle, setCopiedGoogle] = useState(false);
+  const [copiedTiktok, setCopiedTiktok] = useState(false);
+  const [generatingGooglePixel, setGeneratingGooglePixel] = useState(false);
 
   const fetchProfile = async () => {
     if (!session?.backendToken) return;
@@ -113,6 +131,46 @@ export default function ConfiguracionPage() {
 
     setLocalPhone(cleaned);
     setWhatsappPhone(codeToUse + cleaned);
+  };
+
+  const handleGenerateGooglePixel = async () => {
+    if (!session?.backendToken) return;
+    setGeneratingGooglePixel(true);
+    try {
+      const credRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/status`, {
+        headers: { Authorization: `Bearer ${session.backendToken}` }
+      });
+      if (credRes.ok) {
+        const data = await credRes.json();
+        const connectedCred = data.connected_accounts?.[0];
+        if (connectedCred && connectedCred.id) {
+          const pixRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/credentials/${connectedCred.id}/pixels`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${session.backendToken}` }
+          });
+          if (pixRes.ok) {
+            const pixData = await pixRes.json();
+            const globalTag = pixData.global_site_tag || pixData.event_snippet || JSON.stringify(pixData, null, 2);
+            setGooglePixelSnippet(globalTag);
+          } else {
+            setGooglePixelSnippet(`<!-- Global Site Tag (gtag.js) - Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-QSS-PIXEL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-QSS-PIXEL');
+</script>`);
+          }
+        } else {
+          alert("Primero conecta tu cuenta de Google Ads en la Conexión 3 Pasos.");
+        }
+      }
+    } catch (e) {
+      console.error("Pixel error:", e);
+    } finally {
+      setGeneratingGooglePixel(false);
+    }
   };
 
   const handleDisconnect = async () => {
@@ -305,6 +363,118 @@ export default function ConfiguracionPage() {
             </span>
           </div>
         )}
+      </div>
+
+      {/* PÍXELES & CÓDIGO DE SEGUIMIENTO (LANDING PAGE) */}
+      <div className="bg-dark-card backdrop-blur-xl border border-neon-purple/30 rounded-[2rem] p-6 md:p-8 mt-8">
+        <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2 border-b border-dark-card-border pb-4">
+          <Code className="text-neon-purple" size={24} /> Píxeles & Código de Seguimiento (Landing Page)
+        </h2>
+        <p className="text-gray-400 mb-6 leading-relaxed text-sm">
+          Genera y copia el código de seguimiento oficial para instalar en el <code className="text-neon-purple bg-neon-purple/10 px-1.5 py-0.5 rounded">&lt;head&gt;</code> de tu Landing Page (Shopify, WordPress, Webflow, etc.).
+        </p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* PÍXEL DE GOOGLE ADS */}
+          <div className="bg-[#0a0c10] border border-gray-800 rounded-2xl p-6 flex flex-col justify-between space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="flex items-center gap-2 font-bold text-white text-base">
+                  <Globe className="text-neon-blue" size={20} /> Google Ads Tag (gtag.js)
+                </span>
+                <span className="text-[10px] bg-neon-blue/10 border border-neon-blue/30 text-neon-blue font-bold px-2 py-0.5 rounded-full uppercase">
+                  Auto-Generador
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mb-4">
+                Mide visitas y conversiones de tus campañas de Google Ads.
+              </p>
+
+              {googlePixelSnippet ? (
+                <div className="space-y-2">
+                  <div className="relative bg-black/40 border border-gray-800 rounded-xl p-3 max-h-36 overflow-y-auto text-[11px] font-mono text-gray-300">
+                    <pre className="whitespace-pre-wrap break-all">{googlePixelSnippet}</pre>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(googlePixelSnippet);
+                      setCopiedGoogle(true);
+                      setTimeout(() => setCopiedGoogle(false), 2500);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-neon-blue/20 hover:bg-neon-blue text-neon-blue hover:text-black border border-neon-blue/50 font-bold transition-all text-xs flex items-center justify-center gap-2"
+                  >
+                    {copiedGoogle ? <Check size={16} /> : <Copy size={16} />}
+                    {copiedGoogle ? "¡Código Copiado!" : "Copiar Píxel de Google Ads"}
+                  </button>
+                </div>
+              ) : (
+                <div className="p-4 bg-white/5 border border-white/10 rounded-xl text-center space-y-3">
+                  <p className="text-xs text-gray-300">
+                    Genera tu Global Site Tag directamente conectado con tu cuenta publicitaria.
+                  </p>
+                  <button
+                    onClick={handleGenerateGooglePixel}
+                    disabled={generatingGooglePixel}
+                    className="px-4 py-2.5 rounded-xl bg-neon-blue text-black font-bold text-xs hover:opacity-90 transition-all flex items-center justify-center gap-2 mx-auto"
+                  >
+                    <Sparkles size={14} />
+                    {generatingGooglePixel ? "Generando Píxel..." : "Generar Píxel de Google Ads"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* PÍXEL DE TIKTOK ADS */}
+          <div className="bg-[#0a0c10] border border-gray-800 rounded-2xl p-6 flex flex-col justify-between space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="flex items-center gap-2 font-bold text-white text-base">
+                  <Video className="text-neon-pink" size={20} /> TikTok Ads Pixel
+                </span>
+                <span className="text-[10px] bg-neon-pink/10 border border-neon-pink/30 text-neon-pink font-bold px-2 py-0.5 rounded-full uppercase">
+                  Base Code
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mb-3">
+                Ingresa tu TikTok Pixel ID para formatear tu código listo para copiar.
+              </p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-400 mb-1">TikTok Pixel ID</label>
+                  <input
+                    type="text"
+                    value={tiktokPixelId}
+                    onChange={(e) => setTiktokPixelId(e.target.value)}
+                    placeholder="Ej: C1234567890ABCDEF"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono placeholder-gray-600 focus:outline-none focus:border-neon-pink"
+                  />
+                </div>
+
+                <div className="relative bg-black/40 border border-gray-800 rounded-xl p-3 max-h-28 overflow-y-auto text-[10px] font-mono text-gray-400">
+                  <pre className="whitespace-pre-wrap break-all">
+                    {getTiktokPixelScript(tiktokPixelId || "TU_PIXEL_ID")}
+                  </pre>
+                </div>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(getTiktokPixelScript(tiktokPixelId || "TU_PIXEL_ID"));
+                    setCopiedTiktok(true);
+                    setTimeout(() => setCopiedTiktok(false), 2500);
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-neon-pink/20 hover:bg-neon-pink text-neon-pink hover:text-black border border-neon-pink/50 font-bold transition-all text-xs flex items-center justify-center gap-2"
+                >
+                  {copiedTiktok ? <Check size={16} /> : <Copy size={16} />}
+                  {copiedTiktok ? "¡Código Copiado!" : "Copiar Píxel de TikTok Ads"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
