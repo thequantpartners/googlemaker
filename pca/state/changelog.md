@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-22
+- Pivoted primary acquisition model to TikTok Ads (Adquisición) + Google Ads (Remarketing) + WhatsApp AI Ads Autopilot.
+- Extended `google_ads_service.py` to query ad-level CTR performance and mutate campaign statuses (pause/enable).
+- Created `tiktok_ads_service.py` adapter module to handle TikTok Business Ads reporting and Server-to-Server offline event dispatching.
+- Redesigned Client Dashboard and Onboarding Setup Guide into a 3-step UI/UX with live Baileys QR Code scanner.
+- Purged legacy components (Cerebro IA, Smart Calendar, Cobros Auto, Master Setter, Onboarding Creator) across Client and SuperAdmin layouts.
+- Added Proactive AI Engineer Mindset rule to `AGENTS.md`.
+
 ## 2026-07-18
 - Refactored Mercado Pago subscription architecture to use 3 static preapproval plans instead of creating a new plan per user, preventing dashboard clutter.
 - Implemented frontend-based subscription linking (`/payments/link-subscription`) to map users to their payment using `preapproval_id` from the checkout `back_url`.

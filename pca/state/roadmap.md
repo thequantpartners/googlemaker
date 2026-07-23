@@ -7,14 +7,17 @@
 ## Pending
 
 - [ ] Add more snapshots and templates for specific industries.
-- [ ] Integrate TikTok Business MCP for primary ad spend and KPI tracking.
+- [ ] Connect live TikTok Business MCP credentials upon account approval.
 - [ ] Automate Google Ads Remarketing (Global Site Tag / Customer Match) as a background system.
-- [ ] Implement WhatsApp AI Ads Autopilot commands (CTR analysis, budget scaling, ad pausing) via Baileys & LLM Function Calling.
-- [ ] Update UI to display "Próximamente" badge on inbound Lead Chatbot module.
-- [ ] Redesign Client Dashboard to strictly show TikTok Spend, Google RMKTG Leads, and Bot Closed Leads.
 
 ## Done
 
+- [x] Pivot product focus to WhatsApp AI Ads Autopilot & 3-Step Setup Onboarding (2026-07-22).
+- [x] Build `google_ads_service.py` ad-level CTR metrics querying and campaign status mutation logic (2026-07-22).
+- [x] Build `tiktok_ads_service.py` base adapter module for TikTok Business Ads API & MCP integration (2026-07-22).
+- [x] Redesign Client Dashboard & Setup Guide UI/UX into a 3-Step Onboarding with live Baileys QR Code scanner (2026-07-22).
+- [x] Purge legacy UI components (Cerebro IA, Smart Calendar, Cobros Auto, Master Setter, Onboarding Creator) across Client and SuperAdmin layouts (2026-07-22).
+- [x] Add Proactive AI Engineer Mindset rule to `AGENTS.md` (2026-07-22).
 - [x] Migrated Autopilot notifications from Telegram to WhatsApp Master Bot (Baileys) via Text-Based Menus.
 - [x] Integrate Native Google Calendar OAuth and AI Tools for zero-touch automatic scheduling.
 - [x] Refactored UX: Sidebar minimalista, Setup Guide forzado, y arquitectura Master Bot (Baileys) para notificaciones de WhatsApp.

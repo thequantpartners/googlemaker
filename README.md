@@ -25,19 +25,12 @@ pca task "current task"
 
 ## Features
 
-*   **WhatsApp AI Receptionist (SaaS Core)**: An autonomous agent operating on WhatsApp to qualify leads 24/7.
-    *   **Volume-Based Pricing Model**: 3 tiers (Starter, Growth, Scale) priced in Soles (PEN) based on `monthly_message_count`.
-    *   **GoHighLevel-Style Onboarding**: Users select their industry snapshot, connect their WhatsApp via QR (Baileys) or official API (YCloud), and activate subscriptions immediately.
-    *   **Dual WhatsApp Architecture**: 
-        *   *Baileys (QR)*: Experimental mode for instant onboarding and Aha-moment testing without Meta Business verification.
-        *   *YCloud (API)*: Production mode with strict HMAC-SHA256 signature verification for scalable deployments.
-    *   **Multi-Account Support**: Supports multiple Google Ads customer IDs mapped to subscription limits.
-*   **AI Chat Widget (Lead Capture)**: Native embeddable widget for client websites.
-    *   **Rule-based Pre-qualification**: Deterministic state machine to evaluate user intent.
-    *   **AI Handoff**: Gemini 2.0 Flash integration for autonomous lead closing.
-    *   **CORS Sub-app Isolation**: Secure internal API separation from public widget endpoints.
-*   **Lightweight CRM & Payments (QSS)**:
-    *   **Lead Tracking**: Auto-captures `gclid` and UTM parameters for robust Google Ads attribution.
-    *   **Dynamic Payments**: Configurable payment providers per client (`ClientPaymentConfig`), natively supporting Stripe checkouts or Custom redirect links (e.g., LawPay).
-    *   **Conversion Metrics**: Centralized dashboard calculating Ad Spend vs Leads Captured vs Consultations Paid vs Full Cases Paid.
-*   **Enterprise Operations (SOP Playbook)**: M&A-ready operational documentation structured with RACI matrices, defining the 8-phase agency lifecycle from "White-Glove" onboarding to technical deployment and client success.
+*   **WhatsApp AI Ads Autopilot (SaaS Core)**: An autonomous AI Ads Operations manager operating 24/7 on WhatsApp.
+    *   **TikTok Ads Acquisition Engine**: Primary Top-of-Funnel traffic driver using TikTok Business MCP.
+    *   **Google Ads Remarketing Engine**: Automatic background retargeting for non-converting landing page traffic.
+    *   **Closed-Loop Offline Conversions**: Server-to-Server event feedback to optimize TikTok & Google ad algorithms based on qualified WhatsApp conversions.
+    *   **3-Step Zero-Friction Onboarding**: Users connect TikTok Ads, Google Ads, and link their WhatsApp in under 30 seconds.
+    *   **Direct Chat Control**: Marketers analyze CTR, scale budgets, and pause underperforming ads directly from WhatsApp in natural language without opening a PC.
+*   **Lightweight CRM & Payments**:
+    *   **Lead Tracking**: Auto-captures `gclid`, `wbraid`, and UTM parameters.
+    *   **Conversion Metrics**: Centralized dashboard calculating TikTok Spend vs Google RMKTG Leads vs Closed Sales vs ROI.
