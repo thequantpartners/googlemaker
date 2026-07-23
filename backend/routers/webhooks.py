@@ -21,7 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
-from models import ClientPaymentConfig, Lead, ChatSession, ChatWidgetConfig, User
+from models import ClientPaymentConfig, Lead, ChatSession, ChatWidgetConfig, User, GoogleAdsCredential
 from services.chat_engine import process_chat_message
 
 router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
@@ -592,6 +592,92 @@ class BaileysPayload(BaseModel):
     text: str
     name: str | None = None
 
+
+async def handle_autopilot_query(client_user: User, text: str, db: AsyncSession) -> str:
+    """
+    Maneja consultas y comandos del Autopiloto enviados por el dueño de la cuenta por WhatsApp.
+    """
+    cred_result = await db.execute(
+        select(GoogleAdsCredential).where(GoogleAdsCredential.user_id == client_user.id)
+    )
+    cred = cred_result.scalars().first()
+
+    text_lower = text.strip().lower()
+
+    if not cred or not cred.refresh_token:
+        return (
+            "⚠️ *Tu cuenta de Google Ads no está vinculada aún en QSS.*\n\n"
+            "Para consultar tu saldo y métricas en tiempo real desde este chat:\n"
+            "1️⃣ Ingresa a tu panel web: https://qss.thequantpartners.com/dashboard/setup-guide\n"
+            "2️⃣ Ve al Paso 3 (Google Ads) y haz clic en *Conectar Google Ads*."
+        )
+
+    try:
+        from services.google_ads_service import get_google_ads_client, fetch_campaign_metrics
+        import asyncio
+
+        ads_client = get_google_ads_client(cred.refresh_token, cred.login_customer_id)
+        campaigns = await asyncio.to_thread(fetch_campaign_metrics, ads_client, cred.target_customer_id)
+
+        if not campaigns:
+            return (
+                "📊 *Reporte del Autopiloto QSS*\n\n"
+                f"👤 *Cuenta ID:* `{cred.target_customer_id}`\n"
+                "ℹ️ No se encontraron campañas activas o con datos recientes en esta cuenta."
+            )
+
+        total_cost = sum(c.get("cost", 0) for c in campaigns)
+        total_clicks = sum(c.get("clicks", 0) for c in campaigns)
+        total_impressions = sum(c.get("impressions", 0) for c in campaigns)
+        total_conversions = sum(c.get("conversions", 0) for c in campaigns)
+
+        avg_ctr = (total_clicks / total_impressions * 100) if total_impressions > 0 else 0.0
+
+        if any(w in text_lower for w in ["saldo", "inversion", "inversión", "gasto"]):
+            return (
+                f"💳 *Resumen de Inversión y Saldo — Google Ads*\n\n"
+                f"🎯 *Campañas encontradas:* {len(campaigns)}\n"
+                f"💰 *Inversión Total Registrada:* ${total_cost:,.2f}\n"
+                f"🖱️ *Clics Generados:* {total_clicks:,}\n"
+                f"🎯 *Conversiones:* {total_conversions:,}\n"
+                f"📈 *CTR Promedio:* {avg_ctr:.2f}%\n\n"
+                "✅ _Autopiloto QSS monitoreando 24/7._"
+            )
+        elif any(w in text_lower for w in ["ctr", "anuncio", "campaña", "campana"]):
+            campaign_summary = []
+            for c in campaigns[:5]:
+                c_name = c.get("name", "Campaña")
+                c_ctr = c.get("ctr", 0)
+                c_status = c.get("status", "ENABLED")
+                campaign_summary.append(f"• *{c_name}*: CTR {c_ctr:.2f}% ({c_status})")
+            
+            summary_str = "\n".join(campaign_summary)
+            return (
+                f"📊 *Análisis de Rendimiento de Anuncios — QSS*\n\n"
+                f"{summary_str}\n\n"
+                f"📈 *CTR General:* {avg_ctr:.2f}%\n"
+                f"🖱️ *Total Clics:* {total_clicks:,}\n\n"
+                "💡 _Tip: Si deseas pausar alguna campaña con CTR bajo, indícamelo aquí._"
+            )
+        else:
+            return (
+                f"🤖 *QSS Autopiloto de Ads — Cuenta Activa*\n\n"
+                f"🎯 *Cuenta ID:* `{cred.target_customer_id}`\n"
+                f"💰 *Inversión:* ${total_cost:,.2f} | 🖱️ *Clics:* {total_clicks:,} | 📈 *CTR:* {avg_ctr:.2f}%\n\n"
+                "💡 *Comandos disponibles:*\n"
+                "• _'¿Cuál es el saldo de mis campañas?'_\n"
+                "• _'Analiza el CTR de mis anuncios'_\n"
+                "• _'Resumen de conversiones'_"
+            )
+
+    except Exception as e:
+        print(f"[Autopilot Error] {e}")
+        return (
+            f"⚠️ *Error al consultar Google Ads:* {str(e)[:100]}\n\n"
+            "Verifica que tu cuenta de Google Ads esté conectada y con permisos vigentes."
+        )
+
+
 @router.post("/baileys")
 async def baileys_webhook(
     payload: BaileysPayload,
@@ -602,7 +688,7 @@ async def baileys_webhook(
 ):
     """
     Experimental Webhook for Baileys (Synchronous Request-Reply).
-    Returns the LLM generated response directly in the HTTP body.
+    Returns the LLM / Autopilot generated response directly in the HTTP body.
     """
     # 1. Validación de Seguridad usando el generic_webhook_secret
     result = await db.execute(
@@ -621,6 +707,10 @@ async def baileys_webhook(
     # 1.5. Check if this is an Admin/Client trying to use Autopilot
     user_result = await db.execute(select(User).where(User.whatsapp_phone == payload.wa_id))
     client_user = user_result.scalar_one_or_none()
+
+    if client_user:
+        autopilot_reply = await handle_autopilot_query(client_user, payload.text, db)
+        return {"ok": True, "reply": autopilot_reply}
     
 
     # 2. Llamada al Cerebro LLM (Para leads normales)
