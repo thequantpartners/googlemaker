@@ -228,7 +228,7 @@ export default function OnboardingPage() {
   ];
 
   const currentCountryObj = COUNTRIES.find(c => c.code === selectedCountryCode) || COUNTRIES[0];
-  const isUserPhoneConfigured = Boolean(localPhone && localPhone.length >= (currentCountryObj.digits - 1));
+  const isUserPhoneValid = Boolean(localPhone && localPhone.length === currentCountryObj.digits);
 
   if (loading) {
     return (
@@ -325,8 +325,8 @@ export default function OnboardingPage() {
                           <span>{currentCountryObj.flag} {currentCountryObj.name}:</span>
                           <span className="text-neon-purple font-mono font-semibold">+{whatsappPhone}</span>
                         </span>
-                        <span className={localPhone.length === currentCountryObj.digits ? "text-emerald-400 font-medium flex items-center gap-1" : "text-gray-500"}>
-                          {localPhone.length === currentCountryObj.digits && <CheckCircle2 size={12} />}
+                        <span className={isUserPhoneValid ? "text-emerald-400 font-medium flex items-center gap-1" : "text-gray-500"}>
+                          {isUserPhoneValid && <CheckCircle2 size={12} />}
                           {localPhone.length}/{currentCountryObj.digits} dígitos
                         </span>
                       </div>
@@ -340,7 +340,7 @@ export default function OnboardingPage() {
 
                 {/* Status / QR Scanner Section */}
                 <div className="flex flex-col items-center justify-center p-6 bg-[#0a0c10] border border-gray-800 rounded-2xl min-h-[220px]">
-                  {isUserPhoneConfigured && baileysStatus === "connected" ? (
+                  {isUserPhoneValid && baileysStatus === "connected" ? (
                     <div className="text-center space-y-3">
                       <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
                         <CheckCircle2 size={32} />
@@ -348,35 +348,19 @@ export default function OnboardingPage() {
                       <p className="text-emerald-400 font-bold text-base">¡WhatsApp Conectado!</p>
                       <p className="text-xs text-gray-400">Tu número <span className="text-white font-mono font-semibold">+{whatsappPhone}</span> está listo para recibir reportes y ejecutar comandos.</p>
                     </div>
-                  ) : !isUserPhoneConfigured ? (
+                  ) : (
                     <div className="text-center space-y-3">
                       <div className="w-14 h-14 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto border border-amber-500/20">
                         <AlertCircle size={28} />
                       </div>
-                      <p className="text-amber-400 font-semibold text-sm">Pendiente de Ingresar Número</p>
+                      <p className="text-amber-400 font-semibold text-sm">
+                        {localPhone ? `Ingresa los ${currentCountryObj.digits} dígitos completos` : "Pendiente de Ingresar Número"}
+                      </p>
                       <p className="text-xs text-gray-400 max-w-xs">
-                        Selecciona el país e ingresa tu número de teléfono a la izquierda para activar la conexión internacional por WhatsApp.
+                        {localPhone
+                          ? `Falta${currentCountryObj.digits - localPhone.length === 1 ? "" : "n"} ${currentCountryObj.digits - localPhone.length} dígito${currentCountryObj.digits - localPhone.length === 1 ? "" : "s"} para completar tu número de ${currentCountryObj.name} (+${currentCountryObj.code}).`
+                          : "Selecciona el país e ingresa tu número de teléfono a la izquierda para activar la conexión internacional por WhatsApp."}
                       </p>
-                    </div>
-                  ) : baileysQr ? (
-                    <div className="text-center space-y-3">
-                      <div className="p-3 bg-white rounded-xl shadow-lg inline-block">
-                        <QRCodeSVG value={baileysQr} size={150} />
-                      </div>
-                      <p className="text-xs text-gray-400 flex items-center justify-center gap-1.5">
-                        <RefreshCw size={12} className="animate-spin text-neon-purple" /> Escanea desde WhatsApp en tu teléfono
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-4">
-                      <QrCode size={48} className="text-gray-600 mx-auto" />
-                      <p className="text-xs text-gray-400">Genera tu código QR seguro para vincular la sesión de WhatsApp.</p>
-                      <button
-                        onClick={handleStartQrScan}
-                        className="px-4 py-2.5 rounded-xl bg-neon-purple text-white text-xs font-bold hover:opacity-90 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center gap-2 mx-auto"
-                      >
-                        <RefreshCw size={14} className={isPolling ? "animate-spin" : ""} /> Generar Código QR
-                      </button>
                     </div>
                   )}
                 </div>
@@ -386,8 +370,12 @@ export default function OnboardingPage() {
               <div className="flex justify-end mt-10">
                 <button 
                   onClick={() => handleNext(1)}
-                  disabled={saving}
-                  className="bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors flex items-center gap-2"
+                  disabled={saving || !isUserPhoneValid}
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                    saving || !isUserPhoneValid
+                      ? "bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700/60 opacity-60"
+                      : "bg-white text-black hover:bg-gray-200 cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                  }`}
                 >
                   {saving ? "Guardando..." : "Continuar a TikTok Ads"} <ArrowRight size={18} />
                 </button>
