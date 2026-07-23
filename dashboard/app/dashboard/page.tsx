@@ -183,9 +183,9 @@ function DashboardContent() {
         <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/50">
           <AlertCircle className="text-red-500 w-10 h-10" />
         </div>
-        <h1 className="text-3xl font-bold text-red-500 mb-4">Account Suspended</h1>
+        <h1 className="text-3xl font-bold text-red-500 mb-4">Cuenta Suspendida</h1>
         <p className="text-gray-400 text-lg">
-          Your account has been suspended. You cannot perform actions or connect Google Ads accounts.
+          Tu cuenta se encuentra suspendida. Contacta a soporte para reactivar tus credenciales y acceso al autopiloto.
         </p>
       </div>
     );
@@ -195,9 +195,9 @@ function DashboardContent() {
   if (!loading && statusData?.plan_limit === 0 && statusData?.ad_spend_limit === 0) {
     return (
       <div className="max-w-7xl mx-auto mt-10 text-center animate-fade-in-up pb-20">
-        <h1 className="text-4xl font-bold text-white mb-4">Choose Your Ad Spend Tier</h1>
+        <h1 className="text-4xl font-bold text-white mb-4">Activa tu Plan QSS Autopilot Pro</h1>
         <p className="text-gray-400 text-lg mb-12">
-          Unlock the autopilot for your Immigration Law campaigns. All features included.
+          Desbloquea el autopiloto de anuncios por WhatsApp. Incluye 7 días de prueba gratis.
         </p>
         <PricingCards selectingPlan={selectingPlan} onSelectPlan={handleSelectPlan} />
       </div>
@@ -217,20 +217,20 @@ function DashboardContent() {
       {/* Top action bar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Business Overview</h1>
-          <p className="text-gray-400 text-sm">Track your investment and real revenue.</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Resumen de Inversión & Métricas</h1>
+          <p className="text-gray-400 text-sm">Monitorea la inversión publicitaria y la facturación real en tiempo real.</p>
         </div>
       </div>
 
       {searchParams.get("connected") === "success" && (
         <div className="mb-8 p-4 bg-neon-green/10 border border-neon-green/30 text-neon-green rounded-xl flex items-center gap-3">
-          <CheckCircle2 size={20} /> Google Ads Account successfully connected!
+          <CheckCircle2 size={20} /> ¡Cuenta de Google Ads conectada exitosamente!
         </div>
       )}
 
       {searchParams.get("connected") === "error" && (
         <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl flex items-center gap-3">
-          <AlertCircle size={20} /> {searchParams.get("message") || "Error connecting Google Ads account."}
+          <AlertCircle size={20} /> {searchParams.get("message") || "Error conectando cuenta de Google Ads."}
         </div>
       )}
 
@@ -245,7 +245,7 @@ function DashboardContent() {
             <div className="p-2 rounded-xl bg-neon-purple/10 border border-neon-purple/20">
               <Activity size={18} className="text-neon-purple" />
             </div>
-            <span className="text-[10px] font-semibold text-neon-purple/70 uppercase tracking-widest">Invested</span>
+            <span className="text-[10px] font-semibold text-neon-purple/70 uppercase tracking-widest">Inversión</span>
           </div>
           {metricsLoading ? (
             <Skeleton className="h-8 w-24 mb-1" />
@@ -254,7 +254,7 @@ function DashboardContent() {
               ${globalMetrics.cost.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           )}
-          <p className="text-xs text-gray-500 mt-1">Total Ad Spend</p>
+          <p className="text-xs text-gray-500 mt-1">Inversión Total Anuncios</p>
         </div>
 
         {/* Total Leads */}
@@ -270,7 +270,7 @@ function DashboardContent() {
           {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (
             <p className="text-3xl font-bold text-white tracking-tight">{crmMetrics?.total_leads_tracked ?? 0}</p>
           )}
-          <p className="text-xs text-gray-500 mt-1">Total leads captured</p>
+          <p className="text-xs text-gray-500 mt-1">Leads Totales Capturados</p>
         </div>
 
         {/* Paid Clients */}
@@ -281,14 +281,14 @@ function DashboardContent() {
             <div className="p-2 rounded-xl bg-neon-green/10 border border-neon-green/20">
               <CheckCircle2 size={18} className="text-neon-green" />
             </div>
-            <span className="text-[10px] font-semibold text-neon-green/70 uppercase tracking-widest">Sales</span>
+            <span className="text-[10px] font-semibold text-neon-green/70 uppercase tracking-widest">Ventas</span>
           </div>
           {crmLoading ? <Skeleton className="h-8 w-16 mb-1" /> : (
             <p className="text-3xl font-bold text-white tracking-tight">
               {(crmMetrics?.consultation_paid_count ?? 0) + (crmMetrics?.full_case_paid_count ?? 0)}
             </p>
           )}
-          <p className="text-xs text-gray-500 mt-1">Total Paid Clients</p>
+          <p className="text-xs text-gray-500 mt-1">Ventas Confirmadas</p>
         </div>
 
         {/* Total Revenue */}
@@ -299,14 +299,14 @@ function DashboardContent() {
             <div className="p-2 rounded-xl bg-neon-green/20 border border-neon-green/40">
               <DollarSign size={18} className="text-neon-green" />
             </div>
-            <span className="text-[10px] font-bold text-neon-green uppercase tracking-widest">Revenue</span>
+            <span className="text-[10px] font-bold text-neon-green uppercase tracking-widest">Ingresos</span>
           </div>
           {crmLoading ? <Skeleton className="h-8 w-24 mb-1" /> : (
             <p className="text-3xl font-bold text-white tracking-tight">
               ${((crmMetrics as any)?.total_revenue ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           )}
-          <p className="text-xs text-gray-400 mt-1">Real Money Generated</p>
+          <p className="text-xs text-gray-400 mt-1">Facturación Real Generada</p>
         </div>
 
         {/* Conversion Rate (ROI Proxy) */}
@@ -317,7 +317,7 @@ function DashboardContent() {
             <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
               <Target size={18} className="text-amber-400" />
             </div>
-            <span className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-widest">Rate</span>
+            <span className="text-[10px] font-semibold text-amber-400/70 uppercase tracking-widest">Conversión</span>
           </div>
           {crmLoading ? <Skeleton className="h-8 w-20 mb-1" /> : (() => {
             const total = crmMetrics?.total_leads_tracked ?? 0;
@@ -325,49 +325,7 @@ function DashboardContent() {
             const rate = total > 0 ? ((paid / total) * 100).toFixed(1) : "0.0";
             return <p className="text-3xl font-bold text-white tracking-tight">{rate}%</p>;
           })()}
-          <p className="text-xs text-gray-500 mt-1">Lead → Sale rate</p>
-        </div>
-      </div>
-
-      {/* Centro de Control IA (Quick Links) */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-          <Target className="text-neon-purple" size={20} /> Centro de Control IA
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link href="/dashboard/setup-guide" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-purple/40 transition-all duration-300 shadow-[0_0_20px_rgba(168,85,247,0.02)] hover:shadow-[0_0_20px_rgba(168,85,247,0.1)]">
-             <div className="flex items-center gap-4">
-                <div className="p-3 bg-neon-purple/10 text-neon-purple rounded-xl group-hover:bg-neon-purple/20 transition-colors border border-neon-purple/20">
-                   <Phone size={24} />
-                </div>
-                <div>
-                   <h3 className="text-white font-semibold group-hover:text-neon-purple transition-colors">Conexión 3 Pasos</h3>
-                   <p className="text-xs text-gray-400 mt-1">WhatsApp, TikTok & Google Ads</p>
-                </div>
-             </div>
-          </Link>
-          <Link href="/dashboard/configuracion" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-blue/40 transition-all duration-300 shadow-[0_0_20px_rgba(59,130,246,0.02)] hover:shadow-[0_0_20px_rgba(59,130,246,0.1)]">
-             <div className="flex items-center gap-4">
-                <div className="p-3 bg-neon-blue/10 text-neon-blue rounded-xl group-hover:bg-neon-blue/20 transition-colors border border-neon-blue/20">
-                   <Settings size={24} />
-                </div>
-                <div>
-                   <h3 className="text-white font-semibold group-hover:text-neon-blue transition-colors">Cuentas Conectadas</h3>
-                   <p className="text-xs text-gray-400 mt-1">Perfil y conexiones de anuncios</p>
-                </div>
-             </div>
-          </Link>
-          <Link href="/dashboard/planes" className="group p-5 bg-dark-card/80 backdrop-blur-xl border border-white/[0.06] rounded-2xl hover:border-neon-green/40 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.02)] hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-             <div className="flex items-center gap-4">
-                <div className="p-3 bg-neon-green/10 text-neon-green rounded-xl group-hover:bg-neon-green/20 transition-colors border border-neon-green/20">
-                   <CreditCard size={24} />
-                </div>
-                <div>
-                   <h3 className="text-white font-semibold group-hover:text-neon-green transition-colors">Mi Plan & Facturación</h3>
-                   <p className="text-xs text-gray-400 mt-1">7 días gratis - S/ 99 / mes</p>
-                </div>
-             </div>
-          </Link>
+          <p className="text-xs text-gray-500 mt-1">Tasa Lead → Venta</p>
         </div>
       </div>
 
