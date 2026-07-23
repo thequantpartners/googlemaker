@@ -708,88 +708,20 @@ async def baileys_webhook(
     user_result = await db.execute(select(User).where(User.whatsapp_phone == payload.wa_id))
     client_user = user_result.scalar_one_or_none()
 
+    # 2. Respuestas de Autopiloto de Ads
     if client_user:
         autopilot_reply = await handle_autopilot_query(client_user, payload.text, db)
         return {"ok": True, "reply": autopilot_reply}
-    
 
-    # 2. Llamada al Cerebro LLM (Para leads normales)
-    try:
-        session_result = await db.execute(
-            select(ChatSession).where(
-                ChatSession.session_id == payload.wa_id,
-                ChatSession.client_id == client_id,
-            )
-        )
-        chat_session = session_result.scalar_one_or_none()
-        
-        # --- COMANDO DE RESET PARA PRUEBAS ---
-        if payload.text.strip().lower() in ["/reset", "/reiniciar"]:
-            if chat_session:
-                await db.delete(chat_session)
-                await db.commit()
-            return {"ok": True, "reply": "🔄 Tu sesión ha sido reiniciada. Envía un 'hola' para empezar desde cero."}
-
-        if not chat_session:
-            chat_session = ChatSession(
-                session_id=payload.wa_id,
-                client_id=client_id
-            )
-            db.add(chat_session)
-            await db.commit()
-            await db.refresh(chat_session)
-
-        config_result = await db.execute(
-            select(ChatWidgetConfig).where(ChatWidgetConfig.client_id == client_id)
-        )
-        chat_config = config_result.scalar_one_or_none()
-        
-        user_result = await db.execute(select(User).where(User.id == client_id))
-        client_user = user_result.scalar_one_or_none()
-
-        if chat_config and chat_config.is_enabled and getattr(chat_config, 'ai_apply_whatsapp', True) and client_user:
-            engine_result = await process_chat_message(
-                session=chat_session,
-                config=chat_config,
-                user_message=payload.text,
-                db=db,
-                client_user=client_user
-            )
-            
-            reply_lines = []
-            for msg in engine_result.messages:
-                reply_lines.append(msg["content"])
-                if msg.get("options"):
-                    reply_lines.append("")
-                    for i, opt in enumerate(msg["options"], 1):
-                        reply_lines.append(f"{i}. {opt}")
-            
-            llm_reply_text = "\n".join(reply_lines)
-        else:
-            llm_reply_text = "El asistente virtual no está activado en este momento."
-            
-    except Exception as e:
-        print(f"Error procesando mensaje en chat_engine (Baileys): {e}")
-        llm_reply_text = "Lo siento, estamos experimentando dificultades técnicas."
-
-    # Determinar delays según configuración
-    wa_delay_mode = pay_cfg.provider_keys.get("wa_delay_mode", "human") if pay_cfg.provider_keys else "human"
-    if wa_delay_mode == "instant":
-        base_delay, char_delay, max_delay = 0, 0, 0
-    elif wa_delay_mode == "fast":
-        base_delay, char_delay, max_delay = 1000, 20, 4000
-    elif wa_delay_mode == "medium":
-        base_delay, char_delay, max_delay = 2000, 40, 8000
-    else: # human
-        base_delay, char_delay, max_delay = 4000, 80, 15000
-
-    # 3. Retornar la respuesta síncrona
+    # 3. Remitentes No Registrados (Invitación a QSS Autopilot)
     return {
-        "ok": True, 
-        "reply": llm_reply_text,
-        "base_delay": base_delay,
-        "char_delay": char_delay,
-        "max_delay": max_delay
+        "ok": True,
+        "reply": (
+            "🚀 *¡Hola! Este es el Asistente Oficial del Autopiloto de Ads de QSS (Quant Sales System).*\n\n"
+            "Este número está reservado para la operación y monitoreo en tiempo real de cuentas conectadas a QSS.\n\n"
+            "💡 *Para conectar tus campañas de Google Ads / TikTok Ads y operar por WhatsApp, regístrate en:*\n"
+            "👉 https://qss.thequantpartners.com"
+        )
     }
 
 
