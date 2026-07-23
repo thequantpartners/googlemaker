@@ -7,6 +7,11 @@
 ## Pending
 
 - [ ] Add more snapshots and templates for specific industries.
+- [ ] Integrate TikTok Business MCP for primary ad spend and KPI tracking.
+- [ ] Automate Google Ads Remarketing (Global Site Tag / Customer Match) as a background system.
+- [ ] Implement WhatsApp AI Ads Autopilot commands (CTR analysis, budget scaling, ad pausing) via Baileys & LLM Function Calling.
+- [ ] Update UI to display "Próximamente" badge on inbound Lead Chatbot module.
+- [ ] Redesign Client Dashboard to strictly show TikTok Spend, Google RMKTG Leads, and Bot Closed Leads.
 
 ## Done
 

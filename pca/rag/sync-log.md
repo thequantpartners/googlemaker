@@ -47,3 +47,4 @@
  
 [2026-07-16] Implemented Mercado Pago 7-day trial, Dual Magic Forms (Iframe/Public), Google Ads Offline Conversions via gclid, and Dashboard CPL/ROI widgets.
 - **2026-07-18**: Fixed backend production crash caused by legacy imports and endpoints attempting to load removed Autopilot models. Purged orphaned routes in admin, clients, public, webhooks, and removed telegram.
+- **2026-07-18**: Refactored Mercado Pago subscriptions to use 3 static `preapproval_plan` configurations instead of generating one per user, preventing dashboard clutter. Implemented frontend `preapproval_id` extraction to trigger the `/link-subscription` backend endpoint to activate plans accurately without relying solely on webhooks.

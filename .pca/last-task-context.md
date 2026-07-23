@@ -1,7 +1,7 @@
 # PCA Task Context
 
 ## Task
-Implementar integración con Google Ads Offline Conversions desde webhooks de Mercado Pago
+implementar tiktok ads con mcp como fuente principal y dejar google ads como remarketing
 
 ## Mode
 local-only — No vector retrieval. Context built from local memory files.
@@ -50,9 +50,9 @@ Only after explicit user confirmation with `SI`:
 5. Update `README.md` and `AGENTS.md` (if major/important changes were made)
 
 ## Relevant Context Commits
+- [general] docs: close task and update context logs (2026-07-18T22:39:11.822Z)
+- [general] docs: close task and update context logs (2026-07-18T04:10:54.585Z)
 - [general] docs: close task and update context logs (2026-07-18T03:41:29.014Z)
-- [general] docs: close task and update context logs (2026-07-17T01:00:39.194Z)
-- [general] docs: close task and update context logs (2026-07-17T00:07:51.237Z)
 
 ## Agent Instructions
 Use the project memory above as your only context source.

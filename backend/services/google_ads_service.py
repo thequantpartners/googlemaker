@@ -125,6 +125,80 @@ def fetch_campaign_metrics(client: GoogleAdsClient, target_customer_id: str) -> 
             print(f"Error: {error.message}")
         raise ValueError(f"Failed to fetch campaigns: {ex.failure.errors[0].message if ex.failure.errors else str(ex)}")
 
+def fetch_ad_metrics(client: GoogleAdsClient, target_customer_id: str) -> list[dict]:
+    """
+    Fetch ad-level metrics (CTR, impressions, clicks, cost) for the last 30 days.
+    """
+    ga_service = client.get_service("GoogleAdsService")
+    query = """
+        SELECT
+          ad_group_ad.ad.id,
+          ad_group_ad.ad.name,
+          campaign.id,
+          campaign.name,
+          ad_group_ad.status,
+          metrics.impressions,
+          metrics.clicks,
+          metrics.cost_micros,
+          metrics.conversions,
+          metrics.ctr
+        FROM ad_group_ad
+        WHERE segments.date DURING LAST_30_DAYS
+          AND ad_group_ad.status != 'REMOVED'
+        ORDER BY metrics.clicks DESC
+    """
+    try:
+        customer_id_clean = target_customer_id.replace("-", "")
+        response = ga_service.search(customer_id=customer_id_clean, query=query)
+        ads = []
+        for row in response:
+            impressions = int(row.metrics.impressions)
+            clicks = int(row.metrics.clicks)
+            ctr = float(row.metrics.ctr * 100.0) if row.metrics.ctr else (clicks / impressions * 100.0 if impressions > 0 else 0.0)
+            ad_name = row.ad_group_ad.ad.name or f"Ad #{row.ad_group_ad.ad.id}"
+            ads.append({
+                "ad_id": str(row.ad_group_ad.ad.id),
+                "ad_name": ad_name,
+                "campaign_id": str(row.campaign.id),
+                "campaign_name": row.campaign.name,
+                "status": row.ad_group_ad.status.name,
+                "impressions": impressions,
+                "clicks": clicks,
+                "ctr": round(ctr, 2),
+                "cost": float(row.metrics.cost_micros / 1_000_000.0),
+                "conversions": float(row.metrics.conversions)
+            })
+        return ads
+    except Exception as ex:
+        print(f"Error fetching ad metrics: {ex}")
+        return []
+
+def update_campaign_status(client: GoogleAdsClient, target_customer_id: str, campaign_id: str, status: str) -> bool:
+    """
+    Pause or Enable a campaign or ad. status should be 'PAUSED' or 'ENABLED'.
+    """
+    customer_id_clean = target_customer_id.replace("-", "")
+    campaign_service = client.get_service("CampaignService")
+    campaign_operation = client.get_type("CampaignOperation")
+    
+    campaign = campaign_operation.update
+    campaign.resource_name = campaign_service.campaign_path(customer_id_clean, campaign_id)
+    if status.upper() == "PAUSED":
+        campaign.status = client.enums.CampaignStatusEnum.PAUSED
+    else:
+        campaign.status = client.enums.CampaignStatusEnum.ENABLED
+
+    client.copy_from(
+        campaign_operation.update_mask,
+        protobuf_helpers.field_mask(None, campaign._pb),
+    )
+    try:
+        campaign_service.mutate_campaigns(customer_id=customer_id_clean, operations=[campaign_operation])
+        return True
+    except Exception as ex:
+        print(f"Error updating campaign status: {ex}")
+        return False
+
 
 
 

@@ -1,6 +1,8 @@
 # Changelog
 
 ## 2026-07-18
+- Refactored Mercado Pago subscription architecture to use 3 static preapproval plans instead of creating a new plan per user, preventing dashboard clutter.
+- Implemented frontend-based subscription linking (`/payments/link-subscription`) to map users to their payment using `preapproval_id` from the checkout `back_url`.
 - Purged legacy "fluff" models (OrchestratorLogs, SavedStrategies, MagicForms) from the backend and generated Alembic migrations to clean up the database.
 - Integrated fully asynchronous Google Ads Offline Conversions triggered automatically upon successful Stripe/MercadoPago payment webhooks or Cal.com/Google Calendar meeting confirmations via the AI Chat Engine.
 - Cleaned up the Frontend Dashboard: removed Magic Forms, Campañas Ads, and Ads Copilot sections to focus the UI strictly on the CRM, Smart Calendar, and Lead KPIs.

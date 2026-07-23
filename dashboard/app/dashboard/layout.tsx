@@ -75,38 +75,29 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   const navGroups = [
     {
-      title: "GENERAL",
+      title: "PRINCIPAL",
       items: [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, locked: true },
-        { name: "Setup Guide", href: "/dashboard/setup-guide", icon: ListChecks, locked: false },
-      ]
-    },
-
-    {
-      title: "1. CEREBRO IA",
-      items: [
-        { name: "Configuración IA", href: "/dashboard/ai-brain", icon: BrainCircuit, locked: true },
+        { name: "Conexión 3 Pasos", href: "/dashboard/setup-guide", icon: ListChecks, locked: false },
       ]
     },
     {
-      title: "2. HERRAMIENTAS",
+      title: "AUTOPILOT ADS",
       items: [
-        { name: "Smart Calendar", href: "/dashboard/calendar", icon: Calendar, locked: true },
-        { name: "Cobros Auto", href: "/dashboard/payment-settings", icon: Wallet, locked: true },
+        { name: "WhatsApp Copilot", href: "/dashboard/setup-guide", icon: Phone, locked: false, badge: "ACTIVO" },
+        { name: "Cuentas Conectadas", href: "/dashboard/configuracion", icon: Settings, locked: true },
       ]
     },
     {
-      title: "3. CANALES",
+      title: "MÓDULOS EXTRAS",
       items: [
-        { name: "Web Chat Widget", href: "/dashboard/chat-widget", icon: MessageSquare, locked: true },
-        { name: "WhatsApp Setter", href: "/dashboard/whatsapp", icon: Phone, locked: true },
+        { name: "Setter IA de Leads", href: "/dashboard/whatsapp", icon: MessageSquare, locked: true, badge: "PRÓXIMAMENTE" },
       ]
     },
     {
-      title: "ADMINISTRACIÓN",
+      title: "MI CUENTA",
       items: [
-        { name: "Configuración", href: "/dashboard/configuracion", icon: Settings, locked: true },
-        { name: "Mi Plan", href: "/dashboard/planes", icon: CreditCard, locked: false },
+        { name: "Mi Plan & Facturación", href: "/dashboard/planes", icon: CreditCard, locked: false },
       ]
     }
   ];
@@ -150,13 +141,22 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                   return (
                     <div
                       key={item.name}
-                      className="flex items-center justify-between px-4 py-2.5 rounded-xl font-medium text-gray-500 bg-white/[0.02] opacity-50 cursor-not-allowed"
+                      onClick={() => router.push("/dashboard/planes")}
+                      className="flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium text-gray-500 opacity-60 cursor-pointer hover:bg-white/5 transition-all group"
+                      title="Requiere plan activo"
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon size={18} className="text-gray-500" />
-                        <span className="text-sm">{item.name}</span>
+                        <item.icon className="w-4 h-4 text-gray-500" />
+                        <span>{item.name}</span>
                       </div>
-                      <Lock size={14} className="text-gray-500" />
+                      <div className="flex items-center gap-1.5">
+                        {item.badge && (
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${item.badge === 'ACTIVO' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`}>
+                            {item.badge}
+                          </span>
+                        )}
+                        <Lock className="w-3.5 h-3.5 text-gray-500 group-hover:text-amber-400 transition-colors" />
+                      </div>
                     </div>
                   );
                 }
@@ -166,13 +166,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                     key={item.name}
                     href={item.href}
                     onClick={() => setIsSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium transition-all ${
-                      isActive 
-                      ? "bg-neon-green/10 text-neon-green border border-neon-green/20" 
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                    className={`flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-gradient-to-r from-neon-purple/20 to-transparent text-white border-l-2 border-neon-purple shadow-[0_0_15px_rgba(168,85,247,0.15)]"
+                        : "text-gray-400 hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    <item.icon size={18} className={isActive ? "text-neon-green" : "text-gray-400"} />
                     <span className="text-sm">{item.name}</span>
                   </Link>
                 );
